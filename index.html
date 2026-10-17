@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>神诞斋期版本对照</title>
+<meta name="description" content="江南周期性神诞持斋研究：神明在各版本斋期表中的记载，与实践记录、《申报》、风俗志的对照。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f2f1ed;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --accent: #8a2b1a;
+  --v1: #2a78d6; --v2: #eb6834; --v3: #1baf7a; --v4: #eda100;
+  --ev1: #1c5cab; --ev2: #3987e5; --ev3: #86b6ef;
+  --hl: #fff3c4;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
+    --v1: #3987e5; --v2: #d95926; --v3: #199e70; --v4: #c98500;
+    --ev1: #86b6ef; --ev2: #3987e5; --ev3: #184f95;
+    --hl: #4a3f12;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
+  --v1: #3987e5; --v2: #d95926; --v3: #199e70; --v4: #c98500;
+  --ev1: #86b6ef; --ev2: #3987e5; --ev3: #184f95;
+  --hl: #4a3f12;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.7 "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+a { color: var(--accent); }
+header.top {
+  border-bottom: 1px solid var(--grid); background: var(--surface);
+  position: sticky; top: 0; z-index: 10;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+.top .wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+.brand { font-weight: 700; font-size: 17px; letter-spacing: .04em; }
+.brand small { font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 13px; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+nav a {
+  text-decoration: none; color: var(--ink-2); padding: 4px 10px; border-radius: 6px; font-size: 14px;
+}
+nav a.on { background: var(--surface-2); color: var(--ink); font-weight: 600; }
+#theme { background: none; border: 1px solid var(--grid); color: var(--ink-2); border-radius: 6px; padding: 3px 8px; cursor: pointer; font: inherit; font-size: 13px; }
+main { padding: 24px 0 64px; }
+h1 { font-size: 26px; margin: 0 0 6px; }
+h2 { font-size: 19px; margin: 32px 0 10px; }
+h3 { font-size: 16px; margin: 22px 0 8px; }
+.lede { color: var(--ink-2); max-width: 760px; margin: 0 0 20px; }
+.card { background: var(--surface); border: 1px solid var(--grid); border-radius: 10px; padding: 16px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile .n { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile .l { color: var(--ink-2); font-size: 13px; }
+.tile .s { color: var(--muted); font-size: 12px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 12px; }
+.controls input[type=search], .controls select {
+  font: inherit; font-size: 14px; padding: 5px 9px; border: 1px solid var(--axis); border-radius: 6px;
+  background: var(--surface); color: var(--ink); min-width: 0;
+}
+.controls label { font-size: 14px; color: var(--ink-2); display: inline-flex; gap: 5px; align-items: center; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--grid); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.scroll table { min-width: 760px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--grid); }
+th { font-weight: 600; color: var(--ink-2); background: var(--surface-2); position: sticky; top: 0; white-space: nowrap; }
+th.sortable { cursor: pointer; }
+th.sortable:hover { color: var(--ink); }
+tr.row { cursor: pointer; }
+tr.row:hover td { background: var(--surface-2); }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+.v-W001 { --c: var(--v1); } .v-W014 { --c: var(--v2); } .v-W063 { --c: var(--v3); } .v-W085 { --c: var(--v4); }
+.sw.v { background: var(--c); }
+.cell-v { border-left: 3px solid var(--c); padding-left: 7px; }
+.cell-empty { color: var(--axis); }
+.tag { display: inline-block; font-size: 12px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--axis); color: var(--ink-2); margin: 0 4px 2px 0; white-space: nowrap; }
+.tag.strong { border-color: var(--ink-2); color: var(--ink); }
+.flag { color: var(--accent); font-size: 12px; white-space: nowrap; }
+/* calendar */
+.cal { display: grid; grid-template-columns: 64px repeat(var(--lanes), minmax(150px, 1fr)); min-width: calc(64px + var(--lanes) * 150px); }
+.cal > div { border-bottom: 1px solid var(--grid); border-right: 1px solid var(--grid); padding: 6px; }
+.cal .hd { background: var(--surface-2); font-weight: 600; font-size: 13px; position: sticky; top: 0; }
+.cal .mo { font-weight: 600; color: var(--ink-2); font-size: 14px; }
+.chip {
+  display: inline-block; font-size: 12px; line-height: 1.5; padding: 1px 6px; margin: 2px 3px 2px 0;
+  border-radius: 4px; background: var(--surface-2); border-left: 3px solid var(--c, var(--axis)); cursor: pointer;
+  color: var(--ink);
+}
+.chip.p { border-left: 3px solid var(--ink-2); }
+.chip.p.weak { border-left-style: dotted; color: var(--ink-2); }
+.chip.hl { background: var(--hl); outline: 1px solid var(--ink-2); }
+.chip .dd { color: var(--muted); margin-right: 3px; }
+/* profile */
+.prof-head { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
+.prof-head h1 { margin: 0; }
+.kv { display: grid; grid-template-columns: 90px 1fr; gap: 4px 12px; font-size: 14px; margin-top: 10px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.rec { border-top: 1px solid var(--grid); padding: 10px 0; }
+.rec:first-child { border-top: 0; }
+.rec .meta { font-size: 13px; color: var(--ink-2); }
+.rec .q { margin: 6px 0 2px; padding-left: 10px; border-left: 2px solid var(--axis); color: var(--ink); font-size: 14px; }
+.rec .nt { font-size: 13px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.godlist { columns: 4 160px; font-size: 14px; }
+.godlist a { display: block; text-decoration: none; color: var(--ink); padding: 1px 0; }
+.godlist a span { color: var(--muted); font-size: 12px; }
+svg text { fill: var(--ink-2); font-size: 11px; font-family: inherit; }
+svg .axis { stroke: var(--axis); }
+svg .gridl { stroke: var(--grid); }
+.tip {
+  position: fixed; pointer-events: none; z-index: 50; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--axis); border-radius: 8px; padding: 8px 10px; font-size: 13px; max-width: 300px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none;
+}
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); margin: 6px 0 10px; }
+.legend .sw.e1 { background: var(--ev1); } .legend .sw.e2 { background: var(--ev2); } .legend .sw.e3 { background: var(--ev3); }
+.gap li { margin-bottom: 6px; }
+.gap .cnt { font-weight: 700; font-variant-numeric: tabular-nums; }
+footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid); padding: 16px 0 32px; }
+@media (max-width: 640px) {
+  h1 { font-size: 22px; }
+  .tile .n { font-size: 24px; }
+  nav { margin-left: 0; }
+  .kv { grid-template-columns: 70px 1fr; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">神诞斋期版本对照<small>江南周期性持斋研究</small></div>
+    <nav id="nav">
+      <a href="#overview" data-v="overview">概览</a>
+      <a href="#matrix" data-v="matrix">版本对照</a>
+      <a href="#calendar" data-v="calendar">斋期日历</a>
+      <a href="#gods" data-v="gods">神明档案</a>
+      <a href="#gaps" data-v="gaps">缺口</a>
+    </nav>
+    <button id="theme" type="button" aria-label="切换深浅色">深浅色</button>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<footer class="wrap" id="foot"></footer>
+<div class="tip" id="tip"></div>
+<script src="data.js"></script>
+<script>
+(function () {
+'use strict';
+var D = window.ZHAI;
+var app = document.getElementById('app');
+var tip = document.getElementById('tip');
+
+// ---------- 主题 ----------
+var themeBtn = document.getElementById('theme');
+try { var saved = localStorage.getItem('zhai-theme'); if (saved) document.documentElement.setAttribute('data-theme', saved); } catch (e) {}
+themeBtn.onclick = function () {
+  var cur = document.documentElement.getAttribute('data-theme');
+  var dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  var next = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('zhai-theme', next); } catch (e) {}
+};
+
+// ---------- 数据索引 ----------
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+var G = {}; D.deities.forEach(function (g) { G[g.id] = g; });
+var V = {}; D.versions.forEach(function (v) { V[v.id] = v; });
+var HAVE = D.versions.filter(function (v) { return v.n > 0; })
+  .sort(function (a, b) { return order(a) - order(b); });
+function order(v) { return { W001: 1, W014: 2, W085: 3, W063: 4 }[v.id] || 9; }
+function vYear(v) { return v.year ? String(v.year) : (v.date || '年代未定'); }
+var MN = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+var byG = {};
+function bucket(id) { return byG[id] || (byG[id] = { cal: {}, nCal: 0, prac: [], sb: [], fs: [], cl: [] }); }
+D.calendar.forEach(function (c) { if (!c.g) return; var b = bucket(c.g); (b.cal[c.w] = b.cal[c.w] || []).push(c); b.nCal++; });
+D.practice.forEach(function (p) { if (p.g) bucket(p.g).prac.push(p); });
+D.shenbao.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).sb.push(s); }); });
+D.fengsu.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).fs.push(s); }); });
+D.classics.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).cl.push(s); }); });
+var NOFAST = '仅日期巧合';
+function fastPrac(b) { return b.prac.filter(function (p) { return p.ev !== NOFAST; }); }
+function dateOf(c) { return [c.m, c.d].filter(Boolean).join('') || '（无日期）'; }
+function godLink(id, txt) { var g = G[id]; return '<a href="#g/' + id + '">' + esc(txt || (g ? g.name : id)) + '</a>'; }
+function vSw(id) { return '<span class="sw v v-' + id + '"></span>'; }
+function vName(v) { return esc(v.title) + (v.ed ? '<span class="muted small">（' + esc(v.ed) + '）</span>' : ''); }
+
+// ---------- 提示框 ----------
+function showTip(e, html) {
+  tip.innerHTML = html; tip.style.display = 'block';
+  var x = e.clientX + 14, y = e.clientY + 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+function hideTip() { tip.style.display = 'none'; }
+
+// ---------- 视图：概览 ----------
+function viewOverview() {
+  var have = HAVE.length, all = D.versions.length;
+  var strong = D.practice.filter(function (p) { return p.ev !== NOFAST; }).length;
+  var h = '<h1>神明在斋期表各版本中的记载</h1>' +
+    '<p class="lede">以神明为单位，对照：①规范性文本（斋期表、善书斋名清单）各版本记了哪些神、哪天、要不要斋；②实践记录、《申报》、风俗志中这些神的斋是否真的有人守。数据来自「' + esc(D.source) + '」。</p>' +
+    '<div class="tiles">' +
+    tile(D.deities.filter(function (g) { return !/^X/.test(g.id); }).length, '神明（神明表）', '另有 ' + D.deities.filter(function (g) { return /^X/.test(g.id); }).length + ' 个只见于斋期表的神名') +
+    tile(have + ' / ' + all, '已取得的斋期文本', '其余 ' + (all - have) + ' 种待取得') +
+    tile(D.calendar.length, '斋期表条目', '「与前一版本相比」全部为「未比较」') +
+    tile(D.practice.length, '实践记录', '其中言及持斋 ' + strong + ' 条') +
+    tile(D.shenbao.length, '《申报》中有神名的篇目', '') +
+    '</div>';
+
+  h += '<h2>斋期文本的版本链</h2><p class="lede small">实心：已取得并录入；空心：文献表中已登记、尚未取得。点圆点看说明。年代不详的放在右侧。</p>' +
+    '<div class="card" id="vtl"></div>';
+
+  h += '<h2>实践记录最多的神明</h2><div class="legend">' +
+    '<span><span class="sw e1"></span>明确</span><span><span class="sw e2"></span>可推断</span><span><span class="sw e3"></span>仅日期巧合（未言斋）</span></div>' +
+    '<div class="card" id="topbar"></div>';
+  app.innerHTML = h;
+  drawTimeline(document.getElementById('vtl'));
+  drawTopBar(document.getElementById('topbar'));
+}
+function tile(n, l, s) { return '<div class="card tile"><div class="n">' + n + '</div><div class="l">' + l + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
+
+function drawTimeline(el) {
+  var vs = D.versions.slice().sort(function (a, b) { return (a.year || 9999) - (b.year || 9999); });
+  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, lab = Math.min(170, W * 0.38), H = vs.length * rowH + 30;
+  var x0 = lab + 10, x1 = W - 70, lo = 1600, hi = 1940, xu = W - 30;
+  var sx = function (yr) { return x0 + (yr - lo) / (hi - lo) * (x1 - x0); };
+  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="斋期文本版本时间线">';
+  for (var t = 1600; t <= 1940; t += (W < 500 ? 100 : 50)) s += '<line class="gridl" x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 22) + '"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
+  s += '<text x="' + xu + '" y="' + (H - 6) + '" text-anchor="middle">未定</text>';
+  vs.forEach(function (v, i) {
+    var y = i * rowH + 14, cx = v.year ? sx(v.year) : xu, got = v.n > 0;
+    s += '<g class="v-' + v.id + '" data-v="' + v.id + '" style="cursor:pointer">' +
+      '<rect x="0" y="' + (y - 11) + '" width="' + W + '" height="' + rowH + '" fill="transparent"/>' +
+      '<text x="' + lab + '" y="' + (y + 4) + '" text-anchor="end" style="font-size:12px;' + (got ? 'fill:var(--ink);font-weight:600' : '') + '">' + esc(v.title) + (got ? '（' + v.n + '条）' : '') + '</text>' +
+      '<line class="gridl" x1="' + x0 + '" x2="' + cx + '" y1="' + y + '" y2="' + y + '" stroke-dasharray="2 3"/>' +
+      '<circle cx="' + cx + '" cy="' + y + '" r="6" stroke-width="2" style="fill:' + (got ? 'var(--c,var(--ink-2))' : 'var(--surface)') + ';stroke:' + (got ? 'var(--surface)' : 'var(--muted)') + '"/></g>';
+  });
+  s += '</svg>';
+  el.innerHTML = s + '<div id="vinfo" class="small" style="margin-top:6px;min-height:3em"></div>';
+  el.querySelectorAll('g[data-v]').forEach(function (g) {
+    var v = V[g.getAttribute('data-v')];
+    var html = '<b>' + esc(v.title) + '</b> ' + esc(v.date || '') + '<br>' + esc(v.ed || '') + (v.author ? ' · ' + esc(v.author) : '') + '<br>状态：' + esc(v.status) + (v.n ? '，录入 ' + v.n + ' 条' : '') + (v.note ? '<br><span class="muted">' + esc(v.note) + '</span>' : '');
+    g.addEventListener('mousemove', function (e) { showTip(e, html); });
+    g.addEventListener('mouseleave', hideTip);
+    g.addEventListener('click', function () { document.getElementById('vinfo').innerHTML = html; });
+  });
+}
+
+function drawTopBar(el) {
+  var rows = Object.keys(byG).map(function (id) {
+    var b = byG[id], c = { '明确': 0, '可推断': 0, '仅日期巧合': 0 };
+    b.prac.forEach(function (p) { if (c[p.ev] != null) c[p.ev]++; });
+    return { id: id, c: c, t: b.prac.length };
+  }).filter(function (r) { return r.t > 0; }).sort(function (a, b) { return b.t - a.t; }).slice(0, 15);
+  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, lab = 90, H = rows.length * rowH + 24;
+  var max = rows[0].t, sx = function (n) { return n / max * (W - lab - 40); };
+  var keys = ['明确', '可推断', '仅日期巧合'], fills = ['var(--ev1)', 'var(--ev2)', 'var(--ev3)'];
+  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="实践记录最多的神明">';
+  rows.forEach(function (r, i) {
+    var y = i * rowH + 4, x = lab;
+    s += '<text x="' + (lab - 8) + '" y="' + (y + 14) + '" text-anchor="end" style="fill:var(--ink);font-size:13px">' + esc(G[r.id] ? G[r.id].name : r.id) + '</text>';
+    keys.forEach(function (k, j) {
+      var w = sx(r.c[k]); if (!w) return;
+      s += '<rect data-g="' + r.id + '" data-k="' + k + '" x="' + x + '" y="' + y + '" width="' + Math.max(w - 2, 1) + '" height="16" rx="3" style="fill:' + fills[j] + ';cursor:pointer"/>';
+      x += w;
+    });
+    s += '<text x="' + (x + 4) + '" y="' + (y + 13) + '">' + r.t + '</text>';
+  });
+  s += '</svg>';
+  el.innerHTML = s;
+  el.querySelectorAll('rect').forEach(function (rc) {
+    var r = rows.filter(function (q) { return q.id === rc.getAttribute('data-g'); })[0];
+    rc.addEventListener('mousemove', function (e) {
+      showTip(e, '<b>' + esc(G[r.id].name) + '</b><br>明确 ' + r.c['明确'] + ' · 可推断 ' + r.c['可推断'] + ' · 仅日期巧合 ' + r.c['仅日期巧合'] + '<br><span class="muted">点击看档案</span>');
+    });
+    rc.addEventListener('mouseleave', hideTip);
+    rc.addEventListener('click', function () { hideTip(); location.hash = 'g/' + r.id; });
+  });
+}
+
+// ---------- 视图：版本对照矩阵 ----------
+var M = { q: '', type: '', only: 'any', sort: 'prac' };
+function viewMatrix() {
+  var types = {}; D.deities.forEach(function (g) { types[g.type || '未分类'] = 1; });
+  var h = '<h1>版本对照</h1><p class="lede">每行一个神明，每列一个已取得的规范性文本。格中是该文本所记的日期与原文所标类型；空格表示该版本未收此神。右侧三列是叙事史料中的条数（实践记录括号内为言及持斋的条数）。点一行看神明档案。</p>' +
+    '<div class="controls">' +
+    '<input type="search" id="mq" placeholder="搜神名或异名" value="' + esc(M.q) + '">' +
+    '<select id="mt"><option value="">全部类型</option>' + Object.keys(types).map(function (t) { return '<option' + (M.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+    '<select id="mo">' +
+    [['any', '全部神明'], ['prac', '有持斋实践记录'], ['gap', '有持斋实践、但道藏本《玉匣記》未收'], ['nocal', '有持斋实践、但所有已取得版本都未收'], ['onlycal', '只见于规范文本、无任何叙事记录']]
+      .map(function (o) { return '<option value="' + o[0] + '"' + (M.only === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
+    '</select><span class="muted small" id="mcount"></span></div>' +
+    '<div class="scroll"><table id="mtab"><thead><tr>' +
+    '<th class="sortable" data-s="name">神明</th><th>类型</th>' +
+    HAVE.map(function (v) { return '<th class="sortable v-' + v.id + '" data-s="' + v.id + '">' + vSw(v.id) + esc(v.title) + '<br><span class="muted small">' + esc(vYear(v)) + '</span></th>'; }).join('') +
+    '<th class="sortable" data-s="prac">实践</th><th class="sortable" data-s="sb">申报</th><th class="sortable" data-s="fs">风俗志</th></tr></thead><tbody></tbody></table></div>';
+  app.innerHTML = h;
+  var fill = function () {
+    var q = M.q.trim();
+    var rows = D.deities.filter(function (g) {
+      var b = byG[g.id] || bucket(g.id), fp = fastPrac(b).length;
+      if (q && (g.name + g.alias).indexOf(q) < 0) return false;
+      if (M.type && (g.type || '未分类') !== M.type) return false;
+      if (M.only === 'prac' && !fp) return false;
+      if (M.only === 'gap' && !(fp && !b.cal.W001)) return false;
+      if (M.only === 'nocal' && !(fp && !b.nCal)) return false;
+      if (M.only === 'onlycal' && !(b.nCal && !b.prac.length && !b.sb.length && !b.fs.length)) return false;
+      return true;
+    });
+    var key = function (g) {
+      var b = byG[g.id];
+      if (M.sort === 'name') return g.id;
+      if (M.sort === 'prac') return -(b.prac.length * 1000 + fastPrac(b).length);
+      if (M.sort === 'sb') return -b.sb.length;
+      if (M.sort === 'fs') return -b.fs.length;
+      return -((b.cal[M.sort] || []).length);
+    };
+    rows.sort(function (a, b) { var ka = key(a), kb = key(b); return ka < kb ? -1 : ka > kb ? 1 : (a.id < b.id ? -1 : 1); });
+    document.getElementById('mcount').textContent = rows.length + ' 个神明';
+    document.querySelector('#mtab tbody').innerHTML = rows.map(function (g) {
+      var b = byG[g.id], fp = fastPrac(b).length;
+      return '<tr class="row" data-g="' + g.id + '"><td><b>' + esc(g.name) + '</b>' + (fp && !b.cal.W001 ? '<br><span class="flag">道藏本未收</span>' : '') + '</td><td class="small muted">' + esc(g.type) + '</td>' +
+        HAVE.map(function (v) {
+          var cs = b.cal[v.id];
+          if (!cs) return '<td class="cell-empty">—</td>';
+          return '<td class="small"><div class="cell-v v-' + v.id + '">' + cs.map(function (c) {
+            return esc(c.m || c.d ? dateOf(c) : (c.zhai || '无日期')) + (c.label && c.label !== '（未标）' ? ' <span class="muted">' + esc(c.label.length > 10 ? c.label.slice(0, 10) + '…' : c.label) + '</span>' : '');
+          }).join('<br>') + '</div></td>';
+        }).join('') +
+        '<td class="num">' + (b.prac.length ? b.prac.length + ' <span class="muted">(' + fp + ')</span>' : '<span class="cell-empty">0</span>') + '</td>' +
+        '<td class="num">' + (b.sb.length || '<span class="cell-empty">0</span>') + '</td>' +
+        '<td class="num">' + (b.fs.length || '<span class="cell-empty">0</span>') + '</td></tr>';
+    }).join('');
+  };
+  fill();
+  document.getElementById('mq').oninput = function (e) { M.q = e.target.value; fill(); };
+  document.getElementById('mt').onchange = function (e) { M.type = e.target.value; fill(); };
+  document.getElementById('mo').onchange = function (e) { M.only = e.target.value; fill(); };
+  document.querySelectorAll('#mtab th.sortable').forEach(function (th) { th.onclick = function () { M.sort = th.getAttribute('data-s'); fill(); }; });
+  document.querySelector('#mtab tbody').onclick = function (e) { var tr = e.target.closest('tr.row'); if (tr) location.hash = 'g/' + tr.getAttribute('data-g'); };
+}
+
+// ---------- 视图：斋期日历 ----------
+var CAL = { weak: false };
+function viewCalendar() {
+  var lanes = HAVE.map(function (v) { return { id: v.id, name: v.title, sub: vYear(v) }; });
+  lanes.push({ id: 'P', name: '实践记录', sub: '叙事史料' });
+  var h = '<h1>斋期日历</h1><p class="lede">按月排列各版本所记的神诞与斋日，最右一列是实践记录中的日期。把鼠标移到一个神名上，所有版本里同一个神都会高亮，可以看出同一神在不同版本中的日期是否一致、哪个版本有而哪个版本无。点击进入神明档案。</p>' +
+    '<div class="controls"><label><input type="checkbox" id="weak"' + (CAL.weak ? ' checked' : '') + '> 实践记录也显示「仅日期巧合」（未言斋）的条目（虚线）</label></div>' +
+    '<div class="legend">' + HAVE.map(function (v) { return '<span>' + vSw(v.id) + esc(v.title) + '</span>'; }).join('') + '<span><span class="sw" style="background:var(--ink-2)"></span>实践记录</span></div>' +
+    '<div class="scroll"><div class="cal" style="--lanes:' + lanes.length + '">' +
+    '<div class="hd">月</div>' + lanes.map(function (l) { return '<div class="hd">' + (l.id !== 'P' ? vSw(l.id) : '') + esc(l.name) + ' <span class="muted small">' + esc(l.sub) + '</span></div>'; }).join('');
+  var cell = function (mn, l) {
+    if (l.id === 'P') {
+      var agg = {}, ord = [];
+      D.practice.filter(function (p) { return p.mn === mn && p.g && (CAL.weak || p.ev !== NOFAST); }).forEach(function (p) {
+        if (!agg[p.g]) { agg[p.g] = []; ord.push(p.g); }
+        agg[p.g].push(p);
+      });
+      return ord.map(function (g) {
+        var ps = agg[g], weak = ps.every(function (p) { return p.ev === NOFAST; });
+        var t = ps.map(function (p) { return p.id + ' ' + p.date + '｜' + p.period + '｜' + p.place + '｜' + p.ev; }).join('\n');
+        return '<span class="chip p' + (weak ? ' weak' : '') + '" data-g="' + g + '" data-t="' + esc(t) + '">' + esc(G[g] ? G[g].name : g) + (ps.length > 1 ? ' <span class="dd">×' + ps.length + '</span>' : '') + '</span>';
+      }).join('');
+    }
+    return D.calendar.filter(function (c) { return c.w === l.id && c.mn === mn; }).map(function (c) {
+      var nm = c.g ? (G[c.g] ? G[c.g].name : c.g) : (c.label || c.zhai || '节令');
+      return '<span class="chip v-' + c.w + '"' + (c.g ? ' data-g="' + c.g + '"' : '') + ' data-t="' + esc(c.id + ' ' + dateOf(c) + '｜' + (c.label || '') + (c.req ? '｜' + c.req : '')) + '"><span class="dd">' + esc(String(c.d || '').replace(/^初/, '初')) + '</span>' + esc(nm) + '</span>';
+    }).join('');
+  };
+  for (var mn = 1; mn <= 12; mn++) {
+    h += '<div class="mo">' + MN[mn] + '</div>' + lanes.map(function (l) { return '<div>' + cell(mn, l) + '</div>'; }).join('');
+  }
+  h += '<div class="mo small">每月／不定</div>' + lanes.map(function (l) {
+    if (l.id === 'P') return '<div class="small muted">' + D.practice.filter(function (p) { return !p.mn && p.g && (CAL.weak || p.ev !== NOFAST); }).length + ' 条无法按月归入</div>';
+    return '<div>' + D.calendar.filter(function (c) { return c.w === l.id && !c.mn; }).map(function (c) {
+      var nm = c.g ? (G[c.g] ? G[c.g].name : c.g) : (c.zhai || c.label);
+      return '<span class="chip v-' + c.w + '"' + (c.g ? ' data-g="' + c.g + '"' : '') + ' data-t="' + esc(c.id + ' ' + (c.m || '') + (c.d || '') + '｜' + (c.zhai || '') + '｜' + (c.label || '')) + '">' + esc(nm) + '</span>';
+    }).join('') + '</div>';
+  }).join('');
+  h += '</div></div>';
+  app.innerHTML = h;
+  document.getElementById('weak').onchange = function (e) { CAL.weak = e.target.checked; viewCalendar(); };
+  var grid = app.querySelector('.cal');
+  grid.addEventListener('mouseover', function (e) {
+    var c = e.target.closest('.chip'); if (!c) return;
+    var g = c.getAttribute('data-g');
+    if (g) grid.querySelectorAll('.chip[data-g="' + g + '"]').forEach(function (x) { x.classList.add('hl'); });
+  });
+  grid.addEventListener('mousemove', function (e) { var c = e.target.closest('.chip'); if (c) showTip(e, esc(c.getAttribute('data-t')).replace(/\n/g, '<br>')); else hideTip(); });
+  grid.addEventListener('mouseout', function (e) {
+    var c = e.target.closest('.chip'); if (!c) return;
+    grid.querySelectorAll('.chip.hl').forEach(function (x) { x.classList.remove('hl'); }); hideTip();
+  });
+  grid.addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c && c.getAttribute('data-g')) { hideTip(); location.hash = 'g/' + c.getAttribute('data-g'); } });
+}
+
+// ---------- 视图：神明列表 ----------
+function viewGods() {
+  var groups = {};
+  D.deities.forEach(function (g) { (groups[g.type || '未分类'] = groups[g.type || '未分类'] || []).push(g); });
+  var h = '<h1>神明档案</h1><p class="lede">点神名看该神在各版本中的记载、经典核查和全部叙事记录。名后数字：斋期表条目数 / 实践记录数。</p>';
+  Object.keys(groups).forEach(function (t) {
+    h += '<h2>' + esc(t) + '</h2><div class="godlist">' + groups[t].map(function (g) {
+      var b = byG[g.id] || bucket(g.id);
+      return '<a href="#g/' + g.id + '">' + esc(g.name) + ' <span>' + b.nCal + ' / ' + b.prac.length + '</span></a>';
+    }).join('') + '</div>';
+  });
+  app.innerHTML = h;
+}
+
+// ---------- 视图：单个神明 ----------
+function viewGod(id) {
+  var g = G[id]; if (!g) { app.innerHTML = '<p>找不到 ' + esc(id) + '</p>'; return; }
+  var b = byG[id] || bucket(id), fp = fastPrac(b);
+  var h = '<p class="small"><a href="#gods">← 全部神明</a></p><div class="prof-head"><h1>' + esc(g.name) + '</h1><span class="muted">' + esc(id) + ' · ' + esc(g.type) + '</span></div>' +
+    '<dl class="kv">' + (g.alias ? '<dt>异名</dt><dd>' + esc(g.alias) + '</dd>' : '') +
+    (g.dates ? '<dt>主要日期</dt><dd>' + esc(g.dates) + (g.dateSrc ? ' <span class="muted small">（' + esc(g.dateSrc) + '）</span>' : '') + '</dd>' : '') +
+    (g.note ? '<dt>备注</dt><dd>' + esc(g.note) + '</dd>' : '') + '</dl>';
+
+  h += '<h2>各版本所载</h2><div class="scroll"><table><thead><tr><th>版本</th><th>日期</th><th>原文所标</th><th>编码</th><th>节制要求</th><th>原文</th></tr></thead><tbody>';
+  HAVE.forEach(function (v) {
+    var cs = b.cal[v.id];
+    if (!cs) { h += '<tr><td class="v-' + v.id + '">' + vSw(v.id) + vName(v) + '</td><td colspan="5" class="cell-empty">未收</td></tr>'; return; }
+    cs.forEach(function (c, i) {
+      h += '<tr>' + (i === 0 ? '<td rowspan="' + cs.length + '" class="v-' + v.id + '">' + vSw(v.id) + vName(v) + '<br><span class="muted small">' + esc(vYear(v)) + '</span></td>' : '') +
+        '<td>' + esc(dateOf(c)) + '<br><span class="muted small">' + c.id + '</span></td><td>' + esc(c.label) + (c.zhai ? '<br><span class="muted small">' + esc(c.zhai) + '</span>' : '') + '</td><td>' + esc(c.kind) + '</td><td>' + esc(c.req || '—') + '</td><td class="small">' + esc(c.text) + (c.note ? '<div class="muted">' + esc(c.note) + '</div>' : '') + '</td></tr>';
+    });
+  });
+  var missing = D.versions.filter(function (v) { return !v.n; });
+  h += '</tbody></table></div><p class="small muted">尚未取得、无法对照的版本：' + missing.map(function (v) { return esc(v.title) + '（' + esc(vYear(v)) + '）'; }).join('、') + '</p>';
+
+  if (b.cl.length) {
+    h += '<h2>经典核查</h2><div class="card">' + b.cl.map(function (c) {
+      return '<div class="rec"><b>' + esc(c.jing) + '</b> <span class="muted small">' + esc(c.ed) + '</span><div class="meta">有无具体斋日规定：' + esc(c.has) + '</div>' + (c.ex ? '<div class="q">' + esc(c.ex) + '</div>' : '') + (c.sig ? '<div class="nt">' + esc(c.sig) + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+
+  var dated = b.prac.filter(function (p) { return +p.year; }).length + b.sb.length;
+  if (dated) h += '<h2>叙事史料的年代分布</h2><div class="legend"><span><span class="sw" style="background:var(--ev1)"></span>实践记录·言及持斋</span><span><span class="sw" style="background:var(--surface);border:2px solid var(--ev1)"></span>实践记录·仅日期巧合</span><span><span class="sw" style="background:var(--v2)"></span>《申报》</span></div><div class="card" id="strip"></div>';
+
+  h += '<h2>实践记录 <span class="muted small">' + b.prac.length + ' 条，言及持斋 ' + fp.length + ' 条</span></h2>';
+  if (b.prac.length) {
+    var ps = b.prac.slice().sort(function (a, c) { return (+a.year || 9999) - (+c.year || 9999); });
+    h += '<div class="card">' + ps.map(function (p) {
+      return '<div class="rec"><b>' + p.id + '</b> ' + esc(p.when || '') + ' · ' + esc(p.place) + (p.pref ? '（' + esc(p.pref) + '）' : '') +
+        ' <span class="tag' + (p.ev === '明确' ? ' strong' : '') + '">' + esc(p.ev) + '</span>' +
+        '<div class="meta">' + esc(p.wt) + (p.loc ? ' · ' + esc(p.loc) : '') + ' · ' + esc(p.genre) + '｜斋名：' + esc(p.zhai || '—') + '｜日期：' + esc(p.date || '—') + '｜形式：' + esc(p.form || '—') + '</div>' +
+        '<div class="meta">D ' + esc(p.D) + ' · A ' + esc(p.A) + ' · C ' + esc(p.C) + ' · B ' + esc(p.B) + (p.who ? '｜持斋者：' + esc(p.who) : '') + (p.cal ? '｜对应斋期表：' + esc(p.cal) : '') + '</div>' +
+        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + esc(p.note) + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  } else h += '<p class="muted">无。</p>';
+
+  h += '<div class="grid2"><div><h2>《申报》 <span class="muted small">' + b.sb.length + ' 篇</span></h2>';
+  h += b.sb.length ? '<div class="card">' + b.sb.slice().sort(function (a, c) { return a.date < c.date ? -1 : 1; }).map(function (s) {
+    return '<div class="rec"><b>' + esc(s.date) + '</b> ' + esc(s.title) + ' <span class="tag">相关度 ' + esc(s.rel || '—') + '</span><div class="meta">' + esc(s.place) + '｜' + esc(s.kind) + (s.rec ? '｜已录入 ' + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + '</div></div>';
+  }).join('') + '</div>' : '<p class="muted">无。</p>';
+  h += '</div><div><h2>风俗志 <span class="muted small">' + b.fs.length + ' 处</span></h2>';
+  h += b.fs.length ? '<div class="card">' + b.fs.map(function (s) {
+    return '<div class="rec"><b>' + esc(s.book) + '</b> ' + esc(s.item) + ' <span class="tag">' + esc(s.tag) + '</span><div class="meta">' + esc(s.when) + '｜' + esc(s.place) + '｜' + esc(s.date) + (s.rec ? '｜已录入 ' + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + '</div></div>';
+  }).join('') + '</div>' : '<p class="muted">无。</p>';
+  h += '</div></div>';
+  app.innerHTML = h;
+  var st = document.getElementById('strip'); if (st) drawStrip(st, b);
+}
+
+function drawStrip(el, b) {
+  var W = Math.max(el.clientWidth - 32, 280), H = 96, x0 = 16, x1 = W - 16, lo = 1500, hi = 1950;
+  var sx = function (y) { return x0 + (y - lo) / (hi - lo) * (x1 - x0); };
+  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="年代分布">';
+  for (var t = 1500; t <= 1950; t += 50) s += '<line class="gridl" x1="' + sx(t) + '" x2="' + sx(t) + '" y1="6" y2="72"/><text x="' + sx(t) + '" y="88" text-anchor="middle">' + t + '</text>';
+  s += '<text x="' + x0 + '" y="22" style="font-size:10px">实践</text><text x="' + x0 + '" y="56" style="font-size:10px">申报</text>';
+  var pts = [];
+  b.prac.forEach(function (p) { var y = +p.year; if (y >= lo && y <= hi) pts.push({ x: sx(y), y: 30, weak: p.ev === NOFAST, t: p.id + ' ' + p.year + '｜' + p.place + '｜' + p.ev + '｜' + p.wt }); });
+  b.sb.forEach(function (r) { var y = +String(r.date).slice(0, 4); if (y) pts.push({ x: sx(y), y: 62, sb: 1, t: r.date + '｜' + r.title + '｜' + r.place }); });
+  pts.forEach(function (p, i) {
+    var jit = ((i * 37) % 9) - 4;
+    s += '<circle data-i="' + i + '" cx="' + p.x + '" cy="' + (p.y + jit) + '" r="5" stroke-width="2" style="' +
+      (p.sb ? 'fill:var(--v2);stroke:var(--surface)' : p.weak ? 'fill:var(--surface);stroke:var(--ev1)' : 'fill:var(--ev1);stroke:var(--surface)') + '"/>';
+  });
+  s += '</svg>';
+  el.innerHTML = s;
+  el.querySelectorAll('circle').forEach(function (c) {
+    var p = pts[+c.getAttribute('data-i')];
+    c.addEventListener('mousemove', function (e) { showTip(e, esc(p.t)); });
+    c.addEventListener('mouseleave', hideTip);
+  });
+}
+
+// ---------- 视图：缺口 ----------
+function viewGaps() {
+  var noCmp = D.calendar.filter(function (c) { return c.cmp === '未比较'; }).length;
+  var linked = D.practice.filter(function (p) { return p.cal; }).length;
+  var fastG = Object.keys(byG).filter(function (id) { return fastPrac(byG[id]).length; });
+  var notInW001 = fastG.filter(function (id) { return !byG[id].cal.W001; });
+  var notAny = fastG.filter(function (id) { return !byG[id].nCal; });
+  var w001only = Object.keys(byG).filter(function (id) { var b = byG[id]; return b.cal.W001 && !fastPrac(b).length; });
+  var w001NoReq = D.calendar.filter(function (c) { return c.w === 'W001' && !c.req; }).length;
+  var missing = D.versions.filter(function (v) { return !v.n; });
+  var li = function (n, t, list) { return '<li><span class="cnt">' + n + '</span> ' + t + (list ? '<div class="small">' + list + '</div>' : '') + '</li>'; };
+  var links = function (ids) { return ids.map(function (id) { return godLink(id) + '<span class="muted">(' + fastPrac(byG[id]).length + ')</span>'; }).join('、'); };
+  var h = '<h1>缺口</h1><p class="lede">以下各项由数据库自动统计，随数据更新。它们是「神明内容版本研究」下一步最直接的工作对象。</p><div class="card"><ul class="gap">' +
+    li(noCmp + ' / ' + D.calendar.length, '条斋期表条目的「与前一版本相比」仍为「未比较」。版本比较这一栏尚未启用。') +
+    li(linked + ' / ' + D.practice.length, '条实践记录填了「对应斋期表条目ID」。实践与规范文本之间的链接几乎还没建立。') +
+    li(w001NoReq + ' / ' + D.calendar.filter(function (c) { return c.w === 'W001'; }).length, '条道藏本《玉匣記》条目没有节制要求：1607 年本是神诞表，大多不说要斋。何时、在哪个版本里神诞日变成了斋日，是版本研究的核心问题。') +
+    li(notInW001.length, '个神明有持斋实践记录，但道藏本《玉匣記》未收（括号内为言及持斋的实践条数）：', links(notInW001)) +
+    li(notAny.length, '个神明有持斋实践记录，但目前所有已取得版本都未收：', links(notAny)) +
+    li(w001only.length, '个神明见于道藏本《玉匣記》，却没有任何言及持斋的实践记录（按「负面证据」处理）。', w001only.slice(0, 60).map(function (id) { return godLink(id); }).join('、')) +
+    li(missing.length, '种斋期文本已登记、未取得：', missing.map(function (v) { return esc(v.title) + '（' + esc(vYear(v)) + '）'; }).join('、')) +
+    li(D.practice.filter(function (p) { return p.cal === '' && p.ev !== NOFAST; }).length, '条言及持斋的实践记录尚未与任何斋期表条目对应。') +
+    '</ul></div>';
+  app.innerHTML = h;
+}
+
+// ---------- 路由 ----------
+function route() {
+  hideTip();
+  var hsh = location.hash.replace(/^#/, '') || 'overview';
+  var v = hsh.split('/')[0];
+  document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === (v === 'g' ? 'gods' : v)); });
+  if (v === 'g') viewGod(hsh.split('/')[1]);
+  else if (v === 'matrix') viewMatrix();
+  else if (v === 'calendar') viewCalendar();
+  else if (v === 'gods') viewGods();
+  else if (v === 'gaps') viewGaps();
+  else viewOverview();
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { var v = location.hash; if (!v || v === '#overview' || /^#g\//.test(v)) route(); }, 200); });
+document.getElementById('foot').innerHTML = '数据来源：' + esc(D.source) + '。' + (D.noQuotes ? '公开版：实践记录、《申报》、风俗志及识典古籍所收斋期文本的原文摘录未收入，只列编号、摘要与编码。' : '') + '「已核对原书」目前全部为「否」：原文摘录多据电子文本或资料库全文，引用前请核原书。';
+route();
+})();
+</script>
+</body>
+</html>

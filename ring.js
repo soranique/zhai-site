@@ -76,11 +76,11 @@ function prepare(data) {
 // ---------- 历盘 ----------
 function disc(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec';
-  sec.innerHTML = '<div class="zr-hero"><div class="zr-disc"><svg viewBox="0 0 800 800" role="img" aria-label="' + L('历盘：十二个月扇区乘三十日环，每格显示当日的神圣日条目', 'Calendar disc: twelve month sectors by thirty day rings; each cell shows that day’s sacred-day entries') + '"></svg><div class="zr-steps" role="group" aria-label="' + L('逐层显示', 'Show layer by layer') + '"></div></div><aside class="zr-panel" aria-live="polite"></aside></div>' +
-    '<p class="zr-hint">' + L('十二个月是十二个扇区，从内到外是初一到三十；一格是一天，格中每一色块是一条神圣日条目。泥金色底格是十齋日。移动或点按一格查看当日，下方按钮可逐层显示。',
-      'The twelve lunar months are twelve sectors; days 1 to 30 run from the inside out. Each cell is a day, and each coloured block in it is one sacred-day entry. Cells with a gold ground are the ten fast days (shizhai ri 十齋日). Hover over or tap a cell to see that day; the buttons below reveal the layers one by one.') + '</p>';
+  sec.innerHTML = '<div class="zr-hero"><div class="zr-disc"><svg viewBox="0 0 800 800" role="img" aria-label="' + L('历盘：十二个月扇区乘三十日环，每格显示当日的神圣日条目', 'Calendar disc: twelve month sectors by thirty day rings; each cell shows that day’s sacred-day entries') + '"></svg><button type="button" class="zr-back" hidden>' + L('← 返回全年', '← Whole year') + '</button><div class="zr-steps" role="group" aria-label="' + L('逐层显示', 'Show layer by layer') + '"></div></div><aside class="zr-panel" aria-live="polite"></aside></div>' +
+    '<p class="zr-hint">' + L('十二个月是十二个扇区，从内到外是初一到三十；一格是一天，格中每一色块是一条神圣日条目。泥金色底格是十齋日。移动或点按一格查看当日；点击某个月可放大该月，再点其他月份切换，点盘外或按 Esc 返回全年。下方按钮可逐层显示。',
+      'The twelve lunar months are twelve sectors; days 1 to 30 run from the inside out. Each cell is a day, and each coloured block in it is one sacred-day entry. Cells with a gold ground are the ten fast days (shizhai ri 十齋日). Hover over or tap a cell to see that day; click a month to zoom in on it, click another month to switch, and click outside the disc or press Esc to return to the whole year. The buttons below reveal the layers one by one.') + '</p>';
   root.appendChild(sec);
-  var svg = sec.querySelector('svg'), panel = sec.querySelector('.zr-panel'), stepsEl = sec.querySelector('.zr-steps');
+  var svg = sec.querySelector('svg'), panel = sec.querySelector('.zr-panel'), stepsEl = sec.querySelector('.zr-steps'), backBtn = sec.querySelector('.zr-back');
   var C = 400, RI = 122, RO = 352, DR = (RO - RI) / 30, TOPGAP = 5.5, GAP = 0.9, MW = (360 - TOPGAP - 11 * GAP) / 12;
   function rad(a) { return a * Math.PI / 180; }
   function mStart(m) { return -90 + TOPGAP / 2 + (m - 1) * (MW + GAP); }
@@ -91,36 +91,45 @@ function disc(root, D) {
   }
   var cells = {}, slices = [], rngEls = [];
   var gC = svgEl('g', {}, svg), gS = svgEl('g', {}, svg);
+  // 每个月的格子、色块、月名、跨日细条各放一组，悬停／放大时按月变灰
+  var MG = [[]];
   for (var m = 1; m <= 12; m++) {
     var a0 = mStart(m), a1 = a0 + MW;
+    var gCm = svgEl('g', { 'class': 'zr-mg' }, gC), gSm = svgEl('g', { 'class': 'zr-mg' }, gS);
+    MG[m] = [gCm, gSm];
     for (var d = 1; d <= 30; d++) {
       var r1 = RI + (d - 1) * DR + 0.45, r2 = RI + d * DR - 0.45, k = m * 100 + d;
-      cells[k] = svgEl('path', { d: wedge(r1, r2, a0, a1), fill: 'var(--zr-cell)', 'class': 'zr-cell' }, gC);
+      cells[k] = svgEl('path', { d: wedge(r1, r2, a0, a1), fill: 'var(--zr-cell)', 'class': 'zr-cell' }, gCm);
       var list = D.byDay[k]; if (!list) continue;
       var n = list.length, span = (MW - 0.4 * (n - 1)) / n;
       list.forEach(function (r, j) {
         var s0 = a0 + j * (span + 0.4), s1 = s0 + span;
         if (r.p.length > 1) {
           var rm = (r1 + r2) / 2;
-          slices.push({ el: svgEl('path', { d: wedge(r1, rm, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gS), r: r });
-          slices.push({ el: svgEl('path', { d: wedge(rm, r2, s0, s1), fill: 'var(' + TR[r.p[1]].c + ')', 'class': 'zr-slice' }, gS), r: r });
-        } else slices.push({ el: svgEl('path', { d: wedge(r1, r2, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gS), r: r });
+          slices.push({ el: svgEl('path', { d: wedge(r1, rm, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gSm), r: r });
+          slices.push({ el: svgEl('path', { d: wedge(rm, r2, s0, s1), fill: 'var(' + TR[r.p[1]].c + ')', 'class': 'zr-slice' }, gSm), r: r });
+        } else slices.push({ el: svgEl('path', { d: wedge(r1, r2, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gSm), r: r });
       });
     }
     var lp = P(RO + 26, a0 + MW / 2);
-    svgEl('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 18, 'font-weight': 700, fill: 'var(--zr-ink)' }, svg).textContent = monthLabel(m);
+    var lab = svgEl('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 18, 'font-weight': 700, fill: 'var(--zr-ink)', 'class': 'zr-mg' }, svg);
+    lab.textContent = monthLabel(m);
+    MG[m].push(lab);
   }
+  var topDays = svgEl('g', { 'class': 'zr-mg' }, svg);
   [1, 8, 15, 23, 30].forEach(function (d) {
-    svgEl('text', { x: C, y: C - (RI + (d - 0.5) * DR), 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 7.5, fill: 'var(--zr-gold)' }, svg).textContent = d;
+    svgEl('text', { x: C, y: C - (RI + (d - 0.5) * DR), 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 7.5, fill: 'var(--zr-gold)' }, topDays).textContent = d;
   });
   D.ranges.forEach(function (r) {
     var a = rangeOf(r), s = a[0], e = a[1] || a[0], st = mStart(s[0]);
-    rngEls.push(svgEl('path', { d: wedge(RI + (s[1] - 1) * DR, RI + e[1] * DR, st - 0.82, st - 0.08), fill: 'var(--zr-gold)', opacity: 0, style: 'transition:opacity .5s' }, svg));
+    var el = svgEl('path', { d: wedge(RI + (s[1] - 1) * DR, RI + e[1] * DR, st - 0.82, st - 0.08), fill: 'var(--zr-gold)', opacity: 0, 'class': 'zr-mg', style: 'transition:opacity .5s' }, svg);
+    rngEls.push(el); MG[s[0]].push(el);
   });
   svgEl('circle', { cx: C, cy: C, r: RI - 10, fill: 'none', stroke: 'var(--zr-line)' }, svg);
   var c1 = svgEl('text', { x: C, y: C - 8, 'text-anchor': 'middle', 'font-size': 28, 'font-weight': 700, fill: 'var(--zr-ink)' }, svg);
   var c2 = svgEl('text', { x: C, y: C + 26, 'text-anchor': 'middle', 'font-size': 13, fill: 'var(--zr-muted)' }, svg);
-  var hl = svgEl('path', { d: '', fill: 'none', stroke: 'var(--zr-ink)', 'stroke-width': 1.6, 'pointer-events': 'none' }, svg);
+  var hl = svgEl('path', { d: '', fill: 'none', stroke: 'var(--zr-ink)', 'stroke-width': 1.8, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, svg);
+  var dayLabs = svgEl('g', { 'pointer-events': 'none' }, svg);
 
   var STEPS = [
     { lab: L('空白之年', 'An empty year'), fast: false, show: [] }, { lab: L('十斋日', 'Ten fast days'), fast: true, show: [] },
@@ -154,6 +163,18 @@ function disc(root, D) {
       (r.note ? '<div class="zr-note">' + esc(r.note) + '</div>' : '') + '</div></li>';
   }
   function renderPanel() {
+    if (zoom && !sel) {
+      var days = [];
+      for (var dd = 1; dd <= 30; dd++) if (D.byDay[zoom * 100 + dd]) days.push(dd);
+      var total = days.reduce(function (t, x) { return t + D.byDay[zoom * 100 + x].length; }, 0);
+      panel.innerHTML = '<div><div class="zr-pd">' + (EN() ? ORD(zoom) + ' month' : MN[zoom]) + '</div><div class="zr-pmeta">' +
+        L(nEntries(total) + ' · ' + days.length + ' 个神圣日', nEntries(total) + ' · ' + days.length + ' sacred days') + '</div></div>' +
+        '<ul class="zr-mlist">' + days.map(function (x) {
+          var l = D.byDay[zoom * 100 + x];
+          return '<li><i class="zr-sw" style="background:' + (D.TEN.indexOf(x) >= 0 ? 'var(--zr-gold)' : 'var(--zr-wei)') + '"></i><div><div class="zr-nm">' + lunarLong(zoom, x) + '<span class="zr-chip">' + nEntries(l.length) + '</span></div><div class="zr-sub">' + l.map(function (r) { return NH(r.name); }).join(L('、', '; ')) + '</div></div></li>';
+        }).join('') + '</ul><p class="zr-hint">' + L('移到某一格看当日详情；点盘外或按 Esc 返回全年。', 'Hover over a cell for that day; click outside the disc or press Esc to return.') + '</p>' + legend();
+      return;
+    }
     if (!sel) {
       var top = Object.keys(D.byDay).map(function (k) { return [+k, D.byDay[k]]; }).sort(function (a, b) { return b[1].length - a[1].length; }).slice(0, 4);
       panel.innerHTML = '<div class="zr-eyebrow">' + L('最拥挤的日子', 'The most crowded days') + '</div><ul>' + top.map(function (t) {
@@ -166,20 +187,95 @@ function disc(root, D) {
     panel.innerHTML = '<div><div class="zr-pd">' + lunarLong(m, d) + '</div><div class="zr-pmeta">' + nEntries(list.length) + (D.TEN.indexOf(d) >= 0 ? ' · ' + TEN_LAB() : '') + '</div></div>' +
       (list.length || inR.length ? '<ul>' + list.map(item).join('') + inR.map(item).join('') + '</ul>' : '<p class="zr-hint">' + L('此日没有条目。', 'No entries on this day.') + '</p>') + legend();
   }
-  function pick(ev) {
-    var b = svg.getBoundingClientRect(), s = 800 / b.width, x = (ev.clientX - b.left) * s - C, y = (ev.clientY - b.top) * s - C, r = Math.hypot(x, y);
-    if (r < RI || r > RO) return;
+  // 屏幕坐标 → 历盘上的月、日（放大后 viewBox 改变，用 CTM 换算）
+  function locate(ev) {
+    var pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+    var q = pt.matrixTransform(svg.getScreenCTM().inverse()), x = q.x - C, y = q.y - C, r = Math.hypot(x, y);
+    if (r < RI || r > RO + 40) return { m: 0, d: 0 };
     var a = Math.atan2(y, x) * 180 / Math.PI; if (a < -90) a += 360;
     var m = 0; for (var i = 1; i <= 12; i++) { if (a >= mStart(i) - GAP / 2 && a <= mStart(i) + MW + GAP / 2) { m = i; break; } }
-    if (!m) return;
-    var d = Math.min(30, Math.max(1, Math.floor((r - RI) / DR) + 1)), k = m * 100 + d;
+    return { m: m, d: m && r <= RO ? Math.min(30, Math.max(1, Math.floor((r - RI) / DR) + 1)) : 0 };
+  }
+  // ---- 按月变灰与放大 ----
+  var zoom = 0, hover = 0, VB0 = [0, 0, 800, 800], vb = VB0.slice(), anim = 0;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function shade() {
+    var focus = zoom || hover;
+    for (var i = 1; i <= 12; i++) MG[i].forEach(function (el) {
+      el.classList.toggle('zr-dim', !!focus && i !== focus && !zoom);
+      el.classList.toggle('zr-bg', !!zoom && i !== zoom);
+    });
+    // 放大时，本月月名与顶部日数改由 dayLabs 显示
+    for (var j = 1; j <= 12; j++) MG[j][2].classList.toggle('zr-hide', j === zoom);
+    topDays.classList.toggle('zr-hide', !!zoom);
+    svg.classList.toggle('zr-zoomed', !!zoom);
+  }
+  function setVB(v) { vb = v; svg.setAttribute('viewBox', v.map(function (x) { return x.toFixed(2); }).join(' ')); }
+  function animateTo(to, done) {
+    cancelAnimationFrame(anim);
+    var from = vb.slice(), t0 = performance.now(), dur = reduce ? 0 : 480;
+    (function step(now) {
+      var t = dur ? Math.min(1, (now - t0) / dur) : 1, e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      setVB(from.map(function (f, i) { return f + (to[i] - f) * e; }));
+      if (t < 1) anim = requestAnimationFrame(step); else if (done) done();
+    })(t0);
+  }
+  function monthBox(m) {
+    var a0 = mStart(m), a1 = a0 + MW, xs = [], ys = [];
+    for (var i = 0; i <= 8; i++) [RI, RO].forEach(function (rr) { var p = P(rr, a0 + (a1 - a0) * i / 8); xs.push(p[0]); ys.push(p[1]); });
+    var pad = 16, x0 = Math.min.apply(null, xs) - pad, y0 = Math.min.apply(null, ys) - pad, w = Math.max.apply(null, xs) + pad - x0, h = Math.max.apply(null, ys) + pad - y0;
+    var side = Math.max(w, h);  // 取正方形，放大倍数对各月一致
+    return [x0 - (side - w) / 2, y0 - (side - h) / 2, side, side];
+  }
+  function drawDayLabels(m, box) {
+    dayLabs.innerHTML = '';
+    var px = svg.getBoundingClientRect().width / box[2], fs = 11 / px, every = DR * px >= 15 ? 1 : 5;
+    var a = mStart(m) - 2.2, ae = mStart(m) + MW / 2;
+    for (var d = 1; d <= 30; d++) {
+      if (every > 1 && d !== 1 && d % every) continue;
+      var p = P(RI + (d - 0.5) * DR, a), ten = D.TEN.indexOf(d) >= 0;
+      // 用 style 而非属性：网站的全局 CSS「svg text」会盖过 font-size、fill 属性
+      svgEl('text', { x: p[0], y: p[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'class': 'zr-daylab',
+        style: 'font-size:' + fs.toFixed(2) + 'px;fill:' + (ten ? 'var(--zr-gold)' : 'var(--zr-ink-2)') + ';font-weight:' + (ten ? 700 : 400) }, dayLabs).textContent = d;
+    }
+    var lp = P(RO + 8 / px + fs, ae);
+    svgEl('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'class': 'zr-daylab',
+      style: 'font-size:' + (fs * 1.5).toFixed(2) + 'px;fill:var(--zr-ink);font-weight:700' }, dayLabs).textContent = EN() ? ORD(m) + ' month' : MN[m];
+  }
+  function zoomTo(m) {
+    zoom = m; hover = 0; sel = null; hl.setAttribute('d', ''); dayLabs.innerHTML = '';
+    shade(); backBtn.hidden = false; renderPanel();
+    var box = monthBox(m);
+    animateTo(box, function () { if (zoom === m) drawDayLabels(m, box); });
+  }
+  function zoomOut() {
+    if (!zoom) return;
+    zoom = 0; sel = null; hl.setAttribute('d', ''); dayLabs.innerHTML = '';
+    shade(); backBtn.hidden = true; apply(); renderPanel();
+    animateTo(VB0);
+  }
+  backBtn.onclick = zoomOut;
+  function onKey(e) { if (!svg.isConnected) { removeEventListener('keydown', onKey); return; } if (e.key === 'Escape') zoomOut(); }
+  addEventListener('keydown', onKey);
+
+  function pick(ev) {
+    var loc = locate(ev), m = loc.m, d = loc.d;
+    if (!zoom && m !== hover) { hover = m; shade(); }
+    if (!m || !d || (zoom && m !== zoom)) return;
+    var k = m * 100 + d;
     if (k === sel) return; sel = k;
     hl.setAttribute('d', wedge(RI + (d - 1) * DR, RI + d * DR, mStart(m), mStart(m) + MW));
     c1.setAttribute('font-size', EN() ? 26 : 28); c1.textContent = lunar(m, d);
     c2.textContent = nEntries((D.byDay[k] || []).length) + (D.TEN.indexOf(d) >= 0 ? ' · ' + TEN_LAB() : '');
     renderPanel();
   }
-  svg.addEventListener('pointermove', pick); svg.addEventListener('click', pick);
+  svg.addEventListener('pointermove', pick);
+  svg.addEventListener('pointerleave', function () { if (!zoom && hover) { hover = 0; shade(); } });
+  svg.addEventListener('click', function (ev) {
+    var m = locate(ev).m;
+    if (!zoom) { if (m) zoomTo(m); return; }
+    if (m === zoom) pick(ev); else if (m) zoomTo(m); else zoomOut();
+  });
   apply(); renderPanel();
 }
 

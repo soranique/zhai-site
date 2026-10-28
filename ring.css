@@ -49,6 +49,20 @@
 .zr .zr-disc svg { display: block; width: 100%; max-width: 780px; height: auto; margin: 0 auto; touch-action: manipulation; }
 .zr .zr-cell { transition: fill .5s ease; }
 .zr .zr-slice { transition: opacity .55s ease; }
+/* 按月变灰：悬停时其他月份变淡；放大时其他月份退为灰色背景 */
+.zr .zr-mg { transition: opacity .3s ease, filter .3s ease; }
+.zr .zr-mg.zr-dim { opacity: .28; filter: grayscale(1); }
+.zr .zr-mg.zr-bg { opacity: .12; filter: grayscale(1); }
+.zr .zr-mg.zr-hide { opacity: 0; }
+.zr .zr-disc { position: relative; }
+.zr .zr-disc svg { cursor: pointer; }
+.zr .zr-daylab { paint-order: stroke; stroke: var(--zr-surface); stroke-width: .3em; stroke-linejoin: round; }
+.zr .zr-back {
+  position: absolute; top: 0; left: 0; z-index: 2; font: inherit; font-size: 13.5px; cursor: pointer;
+  background: var(--zr-surface); color: var(--zr-ink); border: 1px solid var(--zr-gold); border-radius: 999px; padding: 4px 13px;
+}
+.zr .zr-back[hidden] { display: none; }
+.zr .zr-panel .zr-mlist { max-height: 460px; overflow: auto; padding-right: 4px; }
 .zr .zr-steps { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
 .zr .zr-steps button {
   font: inherit; font-size: 13.5px; background: transparent; color: var(--zr-ink-2);

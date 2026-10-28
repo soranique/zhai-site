@@ -36,6 +36,8 @@ python3 build_ring_data.py 玉匣記版本对比.xlsx --sheet "1821-1861暫定_�
   --edition-en "<i>Tongshan lu</i> 同善錄, Zhengxin zhifu zhaiqi 正心致福齋期 (Daoguang 道光–Xianfeng 咸豐 era, 1821–1861, provisional; publisher unknown)" --no-notes
 ```
 
+改了 `data.js`、`ring.js` 等文件后，再运行 `python3 stamp_versions.py`：它给 `index.html` 里的文件地址加上版本号，读者的浏览器才会取新文件，而不是沿用缓存的旧版。
+
 不会运行程序也没关系：把新的 Excel 交给 Claude，说「更新网站数据」即可。
 
 本仓库不包含 Excel 数据库本身，公开版也不含原文摘录（只保留道藏本《玉匣記》与《報恩論》这两种开放文本的斋期表原文）。「已核对原书」目前全部为「否」：原文摘录多据电子文本或资料库全文，引用前请核原书。

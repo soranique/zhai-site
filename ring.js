@@ -76,9 +76,9 @@ function prepare(data) {
 // ---------- 历盘 ----------
 function disc(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec';
-  sec.innerHTML = '<div class="zr-hero"><div class="zr-disc"><svg viewBox="0 0 800 800" role="img" aria-label="' + L('历盘：十二个月扇区乘三十日环，每格显示当日的神圣日条目', 'Calendar disc: twelve month sectors by thirty day rings; each cell shows that day’s sacred-day entries') + '"></svg><button type="button" class="zr-back" hidden>' + L('← 返回全年', '← Whole year') + '</button><div class="zr-steps" role="group" aria-label="' + L('逐层显示', 'Show layer by layer') + '"></div></div><aside class="zr-panel" aria-live="polite"></aside></div>' +
-    '<p class="zr-hint">' + L('十二个月是十二个扇区，从内到外是初一到三十；一格是一天，格中每一色块是一条神圣日条目。泥金色底格是十齋日。移动或点按一格查看当日；点击某个月可放大该月，再点其他月份切换，点盘外或按 Esc 返回全年。下方按钮可逐层显示。',
-      'The twelve lunar months are twelve sectors; days 1 to 30 run from the inside out. Each cell is a day, and each coloured block in it is one sacred-day entry. Cells with a gold ground are the ten fast days (shizhai ri 十齋日). Hover over or tap a cell to see that day; click a month to zoom in on it, click another month to switch, and click outside the disc or press Esc to return to the whole year. The buttons below reveal the layers one by one.') + '</p>';
+  sec.innerHTML = '<div class="zr-hero"><div class="zr-disc"><svg viewBox="0 0 800 800" role="img" aria-label="' + L('历盘：十二个月扇区乘三十日环，每格显示当日的神圣日条目', 'Calendar disc: twelve month sectors by thirty day rings; each cell shows that day’s sacred-day entries') + '"></svg><button type="button" class="zr-back" hidden>' + L('← 返回全年', '← Whole year') + '</button><div class="zr-steps" role="group" aria-label="' + L('选择显示的日子', 'Choose which days to show') + '"></div></div><aside class="zr-panel" aria-live="polite"></aside></div>' +
+    '<p class="zr-hint">' + L('十二个月是十二个扇区，从内到外是初一到三十；一格是一天，格中每一色块是一条神圣日条目。泥金色底格是十齋日。移动或点按一格查看当日；点击某个月可放大该月，再点其他月份切换，点盘外或按 Esc 返回全年。下方按钮可单独开关各类日子并任意叠加：「空白之年」全部关闭，「全部」全部打开。',
+      'The twelve lunar months are twelve sectors; days 1 to 30 run from the inside out. Each cell is a day, and each coloured block in it is one sacred-day entry. Cells with a gold ground are the ten fast days (shizhai ri 十齋日). Hover over or tap a cell to see that day; click a month to zoom in on it, click another month to switch, and click outside the disc or press Esc to return to the whole year. The buttons below switch each kind of day on or off and can be combined; “An empty year” turns everything off and “All” turns everything on.') + '</p>';
   root.appendChild(sec);
   var svg = sec.querySelector('svg'), panel = sec.querySelector('.zr-panel'), stepsEl = sec.querySelector('.zr-steps'), backBtn = sec.querySelector('.zr-back');
   var C = 400, RI = 122, RO = 352, DR = (RO - RI) / 30, TOPGAP = 5.5, GAP = 0.9, MW = (360 - TOPGAP - 11 * GAP) / 12;
@@ -106,9 +106,9 @@ function disc(root, D) {
         var s0 = a0 + j * (span + 0.4), s1 = s0 + span;
         if (r.p.length > 1) {
           var rm = (r1 + r2) / 2;
-          slices.push({ el: svgEl('path', { d: wedge(r1, rm, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gSm), r: r });
-          slices.push({ el: svgEl('path', { d: wedge(rm, r2, s0, s1), fill: 'var(' + TR[r.p[1]].c + ')', 'class': 'zr-slice' }, gSm), r: r });
-        } else slices.push({ el: svgEl('path', { d: wedge(r1, r2, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gSm), r: r });
+          slices.push({ el: svgEl('path', { d: wedge(r1, rm, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gSm), r: r, t: r.p[0] });
+          slices.push({ el: svgEl('path', { d: wedge(rm, r2, s0, s1), fill: 'var(' + TR[r.p[1]].c + ')', 'class': 'zr-slice' }, gSm), r: r, t: r.p[1] });
+        } else slices.push({ el: svgEl('path', { d: wedge(r1, r2, s0, s1), fill: 'var(' + TR[r.p[0]].c + ')', 'class': 'zr-slice' }, gSm), r: r, t: r.p[0] });
       });
     }
     var lp = P(RO + 26, a0 + MW / 2);
@@ -131,25 +131,45 @@ function disc(root, D) {
   var hl = svgEl('path', { d: '', fill: 'none', stroke: 'var(--zr-ink)', 'stroke-width': 1.8, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }, svg);
   var dayLabs = svgEl('g', { 'pointer-events': 'none' }, svg);
 
-  var STEPS = [
-    { lab: L('空白之年', 'An empty year'), fast: false, show: [] }, { lab: L('十斋日', 'Ten fast days'), fast: true, show: [] },
-    { lab: L('道', 'Daoist'), fast: true, show: ['T'] }, { lab: L('＋佛', '+ Buddhist'), fast: true, show: ['T', 'B'] },
-    { lab: L('＋地方・儒', '+ Local · Confucian'), fast: true, show: ['T', 'B', 'L', 'C'] }, { lab: L('全部', 'All'), fast: true, show: ORDER }];
-  var step = 5, sel = null;
-  stepsEl.innerHTML = STEPS.map(function (s, i) { return '<button type="button" data-i="' + i + '" aria-pressed="' + (i === step) + '"><i>' + (i + 1) + '</i>' + s.lab + '</button>'; }).join('');
+  // 图层按钮：「空白之年」全部关闭，「全部」全部打开；中间各项可单独开关、任意叠加
+  var LAYERS = [
+    { k: 'fast', lab: L('十斋日', 'Ten fast days') },
+    { k: 'T', lab: L('道', 'Daoist'), show: ['T'] },
+    { k: 'B', lab: L('佛', 'Buddhist'), show: ['B'] },
+    { k: 'LC', lab: L('地方・儒', 'Local · Confucian'), show: ['L', 'C'] },
+    { k: 'QU', lab: L('其他・未定', 'Other · undetermined'), show: ['Q', 'U'] }];
+  var on = {}, sel = null;
+  LAYERS.forEach(function (x) { on[x.k] = true; });
+  function allOn() { return LAYERS.every(function (x) { return on[x.k]; }); }
+  function noneOn() { return LAYERS.every(function (x) { return !on[x.k]; }); }
+  function shownTrad() { var t = []; LAYERS.forEach(function (x) { if (x.show && on[x.k]) t = t.concat(x.show); }); return t; }
+  // 复合条目（如 L&T）：只要其中一种性质被选中就计入条数；历盘上只显示被选中性质的那一半
+  function visible(r, t) { return r.p.some(function (p) { return t.indexOf(p) >= 0; }); }
+  var BTNS = [{ k: 'none', lab: L('空白之年', 'An empty year') }].concat(LAYERS).concat([{ k: 'all', lab: L('全部', 'All') }]);
+  stepsEl.innerHTML = BTNS.map(function (x, i) { return '<button type="button" data-k="' + x.k + '"><i>' + (i + 1) + '</i>' + x.lab + '</button>'; }).join('');
   stepsEl.querySelectorAll('button').forEach(function (b) {
-    b.onclick = function () { step = +b.getAttribute('data-i'); stepsEl.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); }); apply(); };
+    b.onclick = function () {
+      var k = b.getAttribute('data-k');
+      if (k === 'none' || k === 'all') LAYERS.forEach(function (x) { on[x.k] = k === 'all'; });
+      else on[k] = !on[k];
+      apply();
+    };
   });
   function apply() {
-    var S = STEPS[step];
-    Object.keys(cells).forEach(function (k) { cells[k].setAttribute('fill', S.fast && D.TEN.indexOf(k % 100) >= 0 ? 'var(--zr-fast)' : 'var(--zr-cell)'); });
-    slices.forEach(function (o) { o.el.style.opacity = step === 5 || o.r.p.every(function (p) { return S.show.indexOf(p) >= 0; }) ? 1 : 0; });
-    rngEls.forEach(function (e) { e.setAttribute('opacity', step === 5 ? 1 : 0); });
+    var t = shownTrad();
+    stepsEl.querySelectorAll('button').forEach(function (b) {
+      var k = b.getAttribute('data-k');
+      b.setAttribute('aria-pressed', k === 'none' ? noneOn() : k === 'all' ? allOn() : !!on[k]);
+    });
+    Object.keys(cells).forEach(function (k) { cells[k].setAttribute('fill', on.fast && D.TEN.indexOf(k % 100) >= 0 ? 'var(--zr-fast)' : 'var(--zr-cell)'); });
+    slices.forEach(function (o) { o.el.style.opacity = t.indexOf(o.t) >= 0 ? 1 : 0; });
+    rngEls.forEach(function (e, i) { e.setAttribute('opacity', visible(D.ranges[i], t) ? 1 : 0); });
     if (!sel) {
-      var shown = D.daily.filter(function (r) { return r.p.every(function (p) { return S.show.indexOf(p) >= 0; }); }).length;
-      c1.textContent = step === 0 ? L('一岁', 'One year') : step === 1 ? L('十斋', 'Ten fasts') : L('一岁神圣时间', 'A year of sacred time');
-      c1.setAttribute('font-size', step < 2 ? (EN() ? 32 : 40) : (EN() ? 22 : 28));
-      c2.textContent = step === 0 ? L('十二月 · 三百六十日', '12 months · 360 days') : step === 1 ? L('每月十日 · 一岁一百二十日', '10 days a month · 120 a year') : nEntries(step === 5 ? D.all.length : shown);
+      var shown = D.all.filter(function (r) { return visible(r, t); }).length;
+      var idle = !t.length;
+      c1.textContent = idle ? (on.fast ? L('十斋', 'Ten fasts') : L('一岁', 'One year')) : L('一岁神圣时间', 'A year of sacred time');
+      c1.setAttribute('font-size', idle ? (EN() ? 32 : 40) : (EN() ? 22 : 28));
+      c2.textContent = idle ? (on.fast ? L('每月十日 · 一岁一百二十日', '10 days a month · 120 a year') : L('十二月 · 三百六十日', '12 months · 360 days')) : nEntries(shown);
     }
   }
   function legend() {

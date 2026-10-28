@@ -11,6 +11,8 @@ import sys
 
 import openpyxl
 
+import pinyin_util
+
 MONTHS = ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二']
 MONTH_RE = re.compile(r'(闰)?(十一|十二|正|一|二|三|四|五|六|七|八|九|十|腊|臘)月')
 
@@ -165,7 +167,37 @@ def main(path, no_quotes=False):
         for r in practice + sb + fs:
             r['text'] = ''
 
+    # 英文版用的拼音：专有名词只注拼音，不翻译
+    names, titles = [], []
+    for g in deities:
+        names.append((g['name'], 'name'))
+        names += [(a.strip(), 'name') for a in re.split(r'[、，,；;]', g['alias']) if a.strip()]
+    for v in versions:
+        titles.append((v['title'], 'title'))
+    for c in calendar:
+        names += [(c['zhai'], 'term')]
+        if c['label'] and len(c['label']) <= 4 and c['w'] == 'W001':  # 道藏本的「聖誕」「成佛」等用语
+            names.append((c['label'], 'term'))
+        if c['req'] and len(c['req']) <= 4:
+            names.append((c['req'], 'term'))
+    for p in practice:
+        titles.append((p['wt'], 'title'))
+        names += [(p['place'], 'name'), (p['pref'], 'name'), (p['who'], 'person'), (p['zhai'], 'term')]
+    for r in sb:
+        titles.append((r['title'], 'title'))
+        names.append((r['place'], 'name'))
+    for r in fs:
+        titles.append((r['book'], 'title'))
+        names.append((r['place'], 'name'))
+    for r in cl:
+        titles.append((r['jing'], 'title'))
+    py = pinyin_util.build_map(names)
+    py_title = pinyin_util.build_map(titles)
+    if not pinyin_util.AVAILABLE:
+        print('（未安装 pypinyin / opencc-python-reimplemented，英文版将只显示汉字）')
+
     data = {'deities': deities, 'versions': versions, 'calendar': calendar, 'practice': practice,
+            'py': py, 'pyTitle': py_title,
             'shenbao': sb, 'fengsu': fs, 'classics': cl,
             'source': path.split('/')[-1], 'noQuotes': no_quotes}
     with open('data.js', 'w', encoding='utf-8') as f:

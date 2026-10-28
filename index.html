@@ -7,7 +7,7 @@
 <meta name="description" content="江南周期性神诞持斋研究：神明在各版本斋期表中的记载，与实践记录、《申报》、风俗志的对照。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ring.css">
 <style>
 :root {
@@ -54,6 +54,8 @@ body {
   margin: 0; background: var(--page); color: var(--ink);
   font: 15px/1.7 "Noto Serif SC", "Songti SC", "SimSun", serif;
 }
+/* 英文界面：拉丁字母用 Noto Serif，汉字仍用 Noto Serif SC */
+html[lang="en"] body { font-family: "Noto Serif", "Noto Serif SC", "Songti SC", "SimSun", serif; }
 a { color: var(--accent); }
 header.top {
   border-bottom: 1px solid var(--grid); background: var(--surface);
@@ -68,7 +70,7 @@ nav a {
   text-decoration: none; color: var(--ink-2); padding: 4px 10px; border-radius: 6px; font-size: 14px;
 }
 nav a.on { background: var(--surface-2); color: var(--ink); font-weight: 600; }
-#theme { background: none; border: 1px solid var(--grid); color: var(--ink-2); border-radius: 6px; padding: 3px 8px; cursor: pointer; font: inherit; font-size: 13px; }
+#theme, #lang { background: none; border: 1px solid var(--grid); color: var(--ink-2); border-radius: 6px; padding: 3px 8px; cursor: pointer; font: inherit; font-size: 13px; }
 main { padding: 24px 0 64px; }
 h1 { font-size: 26px; margin: 0 0 6px; }
 h2 { font-size: 19px; margin: 32px 0 10px; }
@@ -208,22 +210,24 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
 <body>
 <header class="top">
   <div class="wrap">
-    <div class="brand">神诞斋期版本对照<small>江南周期性持斋研究</small></div>
+    <div class="brand" data-en="Deity-Day Fasting Calendars<small>Periodic fasting in Jiangnan 江南</small>">神诞斋期版本对照<small>江南周期性持斋研究</small></div>
     <nav id="nav">
-      <a href="#overview" data-v="overview">概览</a>
-      <a href="#matrix" data-v="matrix">版本对照</a>
-      <a href="#calendar" data-v="calendar">斋期日历</a>
-      <a href="#ring" data-v="ring">环形历</a>
-      <a href="#gods" data-v="gods">神明档案</a>
-      <a href="#context" data-v="context">源流与框架</a>
-      <a href="#gaps" data-v="gaps">缺口</a>
+      <a href="#overview" data-v="overview" data-en="Overview">概览</a>
+      <a href="#matrix" data-v="matrix" data-en="Editions">版本对照</a>
+      <a href="#calendar" data-v="calendar" data-en="Calendar">斋期日历</a>
+      <a href="#ring" data-v="ring" data-en="Ring calendar">环形历</a>
+      <a href="#gods" data-v="gods" data-en="Deities">神明档案</a>
+      <a href="#context" data-v="context" data-en="Sources &amp; framework">源流与框架</a>
+      <a href="#gaps" data-v="gaps" data-en="Gaps">缺口</a>
     </nav>
-    <button id="theme" type="button" aria-label="切换深浅色">深浅色</button>
+    <button id="theme" type="button" aria-label="切换深浅色" data-en="Theme">深浅色</button>
+    <button id="lang" type="button" aria-label="Switch to English">EN</button>
   </div>
 </header>
 <main class="wrap" id="app"></main>
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
+<script src="i18n.js"></script>
 <script src="data.js"></script>
 <script src="ring-data.js"></script>
 <script src="ring.js"></script>
@@ -233,6 +237,12 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
 var D = window.ZHAI;
 var app = document.getElementById('app');
 var tip = document.getElementById('tip');
+
+// ---------- 语言 ----------
+var I = window.ZhaiI18n, L = I.L, N = I.N, NT = I.NT, C = I.C, DT = I.D;
+I.addPinyin(D.py, D.pyTitle);
+if (window.ZHAI_RING) I.addPinyin(window.ZHAI_RING.py, window.ZHAI_RING.pyTitle);
+document.getElementById('lang').onclick = function () { I.set(I.en() ? 'zh' : 'en'); footer(); route(); };
 
 // ---------- 主题 ----------
 var themeBtn = document.getElementById('theme');
@@ -252,8 +262,10 @@ var V = {}; D.versions.forEach(function (v) { V[v.id] = v; });
 var HAVE = D.versions.filter(function (v) { return v.n > 0; })
   .sort(function (a, b) { return order(a) - order(b); });
 function order(v) { return { W001: 1, W014: 2, W085: 3, W063: 4 }[v.id] || 9; }
-function vYear(v) { return v.year ? String(v.year) : (v.date || '年代未定'); }
+function vYear(v) { return v.year ? String(v.year) : (v.date ? C(v.date) : L('年代未定', 'undated')); }
 var MN = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+function monthName(m) { return I.en() ? I.ord(m) + ' month' : MN[m]; }
+function gName(id) { return G[id] ? G[id].name : id; }
 
 var byG = {};
 function bucket(id) { return byG[id] || (byG[id] = { cal: {}, nCal: 0, prac: [], sb: [], fs: [], cl: [] }); }
@@ -264,10 +276,13 @@ D.fengsu.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).fs.push(s)
 D.classics.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).cl.push(s); }); });
 var NOFAST = '仅日期巧合';
 function fastPrac(b) { return b.prac.filter(function (p) { return p.ev !== NOFAST; }); }
-function dateOf(c) { return [c.m, c.d].filter(Boolean).join('') || '（无日期）'; }
-function godLink(id, txt) { var g = G[id]; return '<a href="#g/' + id + '">' + esc(txt || (g ? g.name : id)) + '</a>'; }
+function dateOf(c) { return DT([c.m, c.d].filter(Boolean).join('')) || L('（无日期）', '(no date)'); }
+function dayOnly(d) { return I.en() ? DT(d).replace(/day /g, '') : d; }
+function godLink(id, txt) { return '<a href="#g/' + id + '">' + (txt ? esc(txt) : N(gName(id))) + '</a>'; }
 function vSw(id) { return '<span class="sw v v-' + id + '"></span>'; }
-function vName(v) { return esc(v.title) + (v.ed ? '<span class="muted small">（' + esc(v.ed) + '）</span>' : ''); }
+function vName(v) { return N(v.title) + (v.ed ? '<span class="muted small">（' + esc(v.ed) + '）</span>' : ''); }
+function aliases(s) { return I.en() ? s.split(/[、，,；;]/).map(function (a) { return N(a.trim()); }).join(', ') : esc(s); }
+function zhNote() { return I.en() ? ' <span class="muted small">[Chinese]</span>' : ''; }
 
 // ---------- 提示框 ----------
 function showTip(e, html) {
@@ -283,49 +298,57 @@ function hideTip() { tip.style.display = 'none'; }
 function viewOverview() {
   var have = HAVE.length, all = D.versions.length;
   var strong = D.practice.filter(function (p) { return p.ev !== NOFAST; }).length;
-  var h = '<h1>神明在斋期表各版本中的记载</h1>' +
-    '<p class="lede">以神明为单位，对照：①规范性文本（斋期表、善书斋名清单）各版本记了哪些神、哪天、要不要斋；②实践记录、《申报》、风俗志中这些神的斋是否真的有人守。数据来自「' + esc(D.source) + '」。</p>' +
+  var extra = D.deities.filter(function (g) { return /^X/.test(g.id); }).length;
+  var h = L('<h1>神明在斋期表各版本中的记载</h1>', '<h1>How deities appear across editions of fasting calendars</h1>') +
+    L('<p class="lede">以神明为单位，对照：①规范性文本（斋期表、善书斋名清单）各版本记了哪些神、哪天、要不要斋；②实践记录、《申报》、风俗志中这些神的斋是否真的有人守。数据来自「' + esc(D.source) + '」。</p>',
+      '<p class="lede">Organized by deity, the site compares (1) which gods, which days, and whether fasting is required in each edition of the prescriptive texts (fasting calendars and lists of named fasts in morality books), and (2) whether people actually kept these gods’ fasts, according to practice records, the <i>Shenbao</i> 申報 and records of local customs. Data: “' + esc(D.source) + '”.</p>') +
     '<div class="tiles">' +
-    tile(D.deities.filter(function (g) { return !/^X/.test(g.id); }).length, '神明（神明表）', '另有 ' + D.deities.filter(function (g) { return /^X/.test(g.id); }).length + ' 个只见于斋期表的神名') +
-    tile(have + ' / ' + all, '已取得的斋期文本', '其余 ' + (all - have) + ' 种待取得') +
-    tile(D.calendar.length, '斋期表条目', '「与前一版本相比」全部为「未比较」') +
-    tile(D.practice.length, '实践记录', '其中言及持斋 ' + strong + ' 条') +
-    tile(D.shenbao.length, '《申报》中有神名的篇目', '') +
+    tile(D.deities.length - extra, L('神明（神明表）', 'Deities (register)'), L('另有 ' + extra + ' 个只见于斋期表的神名', extra + ' more names appear only in calendars')) +
+    tile(have + ' / ' + all, L('已取得的斋期文本', 'Calendar texts obtained'), L('其余 ' + (all - have) + ' 种待取得', (all - have) + ' still to be obtained')) +
+    tile(D.calendar.length, L('斋期表条目', 'Calendar entries'), L('「与前一版本相比」全部为「未比较」', 'None yet compared with an earlier edition')) +
+    tile(D.practice.length, L('实践记录', 'Practice records'), L('其中言及持斋 ' + strong + ' 条', strong + ' mention fasting')) +
+    tile(D.shenbao.length, L('《申报》中有神名的篇目', '<i>Shenbao</i> 申報 articles naming a deity'), '') +
     '</div>';
 
-  h += '<h2>斋期文本的版本链</h2><p class="lede small">实心：已取得并录入；空心：文献表中已登记、尚未取得。点圆点看说明。年代不详的放在右侧。</p>' +
+  h += L('<h2>斋期文本的版本链</h2><p class="lede small">实心：已取得并录入；空心：文献表中已登记、尚未取得。点圆点看说明。年代不详的放在右侧。</p>',
+    '<h2>The chain of calendar editions</h2><p class="lede small">Filled: obtained and entered. Hollow: registered but not yet obtained. Click a dot for details; undated texts sit on the right.</p>') +
     '<div class="card" id="vtl"></div>';
 
-  h += '<h2>实践记录最多的神明</h2><div class="legend">' +
-    '<span><span class="sw e1"></span>明确</span><span><span class="sw e2"></span>可推断</span><span><span class="sw e3"></span>仅日期巧合（未言斋）</span></div>' +
+  h += L('<h2>实践记录最多的神明</h2>', '<h2>Deities with the most practice records</h2>') + '<div class="legend">' +
+    '<span><span class="sw e1"></span>' + C('明确') + '</span><span><span class="sw e2"></span>' + C('可推断') + '</span><span><span class="sw e3"></span>' + L('仅日期巧合（未言斋）', 'Date coincidence only (no fasting mentioned)') + '</span></div>' +
     '<div class="card" id="topbar"></div>';
   app.innerHTML = h;
   drawTimeline(document.getElementById('vtl'));
   drawTopBar(document.getElementById('topbar'));
 }
 function tile(n, l, s) { return '<div class="card tile"><div class="n">' + n + '</div><div class="l">' + l + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
+function vInfo(v) {
+  return '<b>' + N(v.title) + '</b> ' + esc(C(v.date) || '') + '<br>' + esc(v.ed || '') + (v.author ? ' · ' + esc(v.author) : '') + '<br>' + L('状态：', 'Status: ') + esc(C(v.status)) +
+    (v.n ? L('，录入 ' + v.n + ' 条', ', ' + v.n + ' entries') : '') + (v.note ? '<br><span class="muted">' + esc(v.note) + '</span>' + zhNote() : '');
+}
 
 function drawTimeline(el) {
   var vs = D.versions.slice().sort(function (a, b) { return (a.year || 9999) - (b.year || 9999); });
-  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, lab = Math.min(170, W * 0.38), H = vs.length * rowH + 30;
+  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, wide = I.en() && W >= 700;
+  var lab = I.en() ? (wide ? Math.min(330, W * 0.42) : Math.min(120, W * 0.32)) : Math.min(170, W * 0.38), H = vs.length * rowH + 30;
   var x0 = lab + 10, x1 = W - 70, lo = 1600, hi = 1940, xu = W - 30;
   var sx = function (yr) { return x0 + (yr - lo) / (hi - lo) * (x1 - x0); };
-  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="斋期文本版本时间线">';
+  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="' + L('斋期文本版本时间线', 'Timeline of calendar editions') + '">';
   for (var t = 1600; t <= 1940; t += (W < 500 ? 100 : 50)) s += '<line class="gridl" x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 22) + '"/><text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>';
-  s += '<text x="' + xu + '" y="' + (H - 6) + '" text-anchor="middle">未定</text>';
+  s += '<text x="' + xu + '" y="' + (H - 6) + '" text-anchor="middle">' + L('未定', 'n.d.') + '</text>';
   vs.forEach(function (v, i) {
     var y = i * rowH + 14, cx = v.year ? sx(v.year) : xu, got = v.n > 0;
+    var name = wide ? NT(v.title) : v.title;
     s += '<g class="v-' + v.id + '" data-v="' + v.id + '" style="cursor:pointer">' +
       '<rect x="0" y="' + (y - 11) + '" width="' + W + '" height="' + rowH + '" fill="transparent"/>' +
-      '<text x="' + lab + '" y="' + (y + 4) + '" text-anchor="end" style="font-size:12px;' + (got ? 'fill:var(--ink);font-weight:600' : '') + '">' + esc(v.title) + (got ? '（' + v.n + '条）' : '') + '</text>' +
+      '<text x="' + lab + '" y="' + (y + 4) + '" text-anchor="end" style="font-size:' + (wide ? 11.5 : 12) + 'px;' + (got ? 'fill:var(--ink);font-weight:600' : '') + '">' + esc(name) + (got ? L('（' + v.n + '条）', ' (' + v.n + ')') : '') + '</text>' +
       '<line class="gridl" x1="' + x0 + '" x2="' + cx + '" y1="' + y + '" y2="' + y + '" stroke-dasharray="2 3"/>' +
       '<circle cx="' + cx + '" cy="' + y + '" r="6" stroke-width="2" style="fill:' + (got ? 'var(--c,var(--ink-2))' : 'var(--surface)') + ';stroke:' + (got ? 'var(--surface)' : 'var(--muted)') + '"/></g>';
   });
   s += '</svg>';
   el.innerHTML = s + '<div id="vinfo" class="small" style="margin-top:6px;min-height:3em"></div>';
   el.querySelectorAll('g[data-v]').forEach(function (g) {
-    var v = V[g.getAttribute('data-v')];
-    var html = '<b>' + esc(v.title) + '</b> ' + esc(v.date || '') + '<br>' + esc(v.ed || '') + (v.author ? ' · ' + esc(v.author) : '') + '<br>状态：' + esc(v.status) + (v.n ? '，录入 ' + v.n + ' 条' : '') + (v.note ? '<br><span class="muted">' + esc(v.note) + '</span>' : '');
+    var html = vInfo(V[g.getAttribute('data-v')]);
     g.addEventListener('mousemove', function (e) { showTip(e, html); });
     g.addEventListener('mouseleave', hideTip);
     g.addEventListener('click', function () { document.getElementById('vinfo').innerHTML = html; });
@@ -338,16 +361,16 @@ function drawTopBar(el) {
     b.prac.forEach(function (p) { if (c[p.ev] != null) c[p.ev]++; });
     return { id: id, c: c, t: b.prac.length };
   }).filter(function (r) { return r.t > 0; }).sort(function (a, b) { return b.t - a.t; }).slice(0, 15);
-  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, lab = 90, H = rows.length * rowH + 24;
+  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, lab = I.en() ? Math.min(190, W * 0.45) : 90, H = rows.length * rowH + 24;
   var max = rows[0].t, sx = function (n) { return n / max * (W - lab - 40); };
   var keys = ['明确', '可推断', '仅日期巧合'], fills = ['var(--ev1)', 'var(--ev2)', 'var(--ev3)'];
-  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="实践记录最多的神明">';
+  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="' + L('实践记录最多的神明', 'Deities with the most practice records') + '">';
   rows.forEach(function (r, i) {
     var y = i * rowH + 4, x = lab;
-    s += '<text x="' + (lab - 8) + '" y="' + (y + 14) + '" text-anchor="end" style="fill:var(--ink);font-size:13px">' + esc(G[r.id] ? G[r.id].name : r.id) + '</text>';
+    s += '<text x="' + (lab - 8) + '" y="' + (y + 14) + '" text-anchor="end" style="fill:var(--ink);font-size:' + (I.en() ? 12 : 13) + 'px">' + esc(NT(gName(r.id))) + '</text>';
     keys.forEach(function (k, j) {
       var w = sx(r.c[k]); if (!w) return;
-      s += '<rect data-g="' + r.id + '" data-k="' + k + '" x="' + x + '" y="' + y + '" width="' + Math.max(w - 2, 1) + '" height="16" rx="3" style="fill:' + fills[j] + ';cursor:pointer"/>';
+      s += '<rect data-g="' + r.id + '" x="' + x + '" y="' + y + '" width="' + Math.max(w - 2, 1) + '" height="16" rx="3" style="fill:' + fills[j] + ';cursor:pointer"/>';
       x += w;
     });
     s += '<text x="' + (x + 4) + '" y="' + (y + 13) + '">' + r.t + '</text>';
@@ -357,7 +380,7 @@ function drawTopBar(el) {
   el.querySelectorAll('rect').forEach(function (rc) {
     var r = rows.filter(function (q) { return q.id === rc.getAttribute('data-g'); })[0];
     rc.addEventListener('mousemove', function (e) {
-      showTip(e, '<b>' + esc(G[r.id].name) + '</b><br>明确 ' + r.c['明确'] + ' · 可推断 ' + r.c['可推断'] + ' · 仅日期巧合 ' + r.c['仅日期巧合'] + '<br><span class="muted">点击看档案</span>');
+      showTip(e, '<b>' + N(gName(r.id)) + '</b><br>' + C('明确') + ' ' + r.c['明确'] + ' · ' + C('可推断') + ' ' + r.c['可推断'] + ' · ' + C('仅日期巧合') + ' ' + r.c['仅日期巧合'] + '<br><span class="muted">' + L('点击看档案', 'Click for profile') + '</span>');
     });
     rc.addEventListener('mouseleave', hideTip);
     rc.addEventListener('click', function () { hideTip(); location.hash = 'g/' + r.id; });
@@ -368,24 +391,25 @@ function drawTopBar(el) {
 var M = { q: '', type: '', only: 'any', sort: 'prac' };
 function viewMatrix() {
   var types = {}; D.deities.forEach(function (g) { types[g.type || '未分类'] = 1; });
-  var h = '<h1>版本对照</h1><p class="lede">每行一个神明，每列一个已取得的规范性文本。格中是该文本所记的日期与原文所标类型；空格表示该版本未收此神。右侧三列是叙事史料中的条数（实践记录括号内为言及持斋的条数）。点一行看神明档案。</p>' +
+  var h = L('<h1>版本对照</h1><p class="lede">每行一个神明，每列一个已取得的规范性文本。格中是该文本所记的日期与原文所标类型；空格表示该版本未收此神。右侧三列是叙事史料中的条数（实践记录括号内为言及持斋的条数）。点一行看神明档案。</p>',
+      '<h1>Editions compared</h1><p class="lede">Each row is a deity, each column a prescriptive text that has been obtained. A cell gives the date (lunar month/day) and the label used in the text; a dash means the edition does not list this deity. The three right-hand columns count narrative sources (in brackets: practice records that mention fasting). Click a row for the deity’s profile.</p>') +
     '<div class="controls">' +
-    '<input type="search" id="mq" placeholder="搜神名或异名" value="' + esc(M.q) + '">' +
-    '<select id="mt"><option value="">全部类型</option>' + Object.keys(types).map(function (t) { return '<option' + (M.type === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+    '<input type="search" id="mq" placeholder="' + L('搜神名或异名', 'Search name or alias (Chinese or pinyin)') + '" value="' + esc(M.q) + '">' +
+    '<select id="mt"><option value="">' + L('全部类型', 'All types') + '</option>' + Object.keys(types).map(function (t) { return '<option value="' + esc(t) + '"' + (M.type === t ? ' selected' : '') + '>' + esc(C(t)) + '</option>'; }).join('') + '</select>' +
     '<select id="mo">' +
-    [['any', '全部神明'], ['prac', '有持斋实践记录'], ['gap', '有持斋实践、但道藏本《玉匣記》未收'], ['nocal', '有持斋实践、但所有已取得版本都未收'], ['onlycal', '只见于规范文本、无任何叙事记录']]
-      .map(function (o) { return '<option value="' + o[0] + '"' + (M.only === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
+    [['any', '全部神明', 'All deities'], ['prac', '有持斋实践记录', 'With fasting practice records'], ['gap', '有持斋实践、但道藏本《玉匣記》未收', 'Fasting practice, but absent from the Daozang Yuxiaji'], ['nocal', '有持斋实践、但所有已取得版本都未收', 'Fasting practice, but absent from all obtained editions'], ['onlycal', '只见于规范文本、无任何叙事记录', 'Only in prescriptive texts, no narrative record']]
+      .map(function (o) { return '<option value="' + o[0] + '"' + (M.only === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') +
     '</select><span class="muted small" id="mcount"></span></div>' +
     '<div class="scroll"><table id="mtab"><thead><tr>' +
-    '<th class="sortable" data-s="name">神明</th><th>类型</th>' +
-    HAVE.map(function (v) { return '<th class="sortable v-' + v.id + '" data-s="' + v.id + '">' + vSw(v.id) + esc(v.title) + '<br><span class="muted small">' + esc(vYear(v)) + '</span></th>'; }).join('') +
-    '<th class="sortable" data-s="prac">实践</th><th class="sortable" data-s="sb">申报</th><th class="sortable" data-s="fs">风俗志</th></tr></thead><tbody></tbody></table></div>';
+    '<th class="sortable" data-s="name">' + L('神明', 'Deity') + '</th><th>' + L('类型', 'Type') + '</th>' +
+    HAVE.map(function (v) { return '<th class="sortable v-' + v.id + '" data-s="' + v.id + '">' + vSw(v.id) + N(v.title) + '<br><span class="muted small">' + esc(vYear(v)) + '</span></th>'; }).join('') +
+    '<th class="sortable" data-s="prac">' + L('实践', 'Practice') + '</th><th class="sortable" data-s="sb">' + L('申报', '<i>Shenbao</i>') + '</th><th class="sortable" data-s="fs">' + L('风俗志', 'Customs') + '</th></tr></thead><tbody></tbody></table></div>';
   app.innerHTML = h;
   var fill = function () {
-    var q = M.q.trim();
+    var q = M.q.trim().toLowerCase();
     var rows = D.deities.filter(function (g) {
       var b = byG[g.id] || bucket(g.id), fp = fastPrac(b).length;
-      if (q && (g.name + g.alias).indexOf(q) < 0) return false;
+      if (q && (g.name + g.alias + ' ' + I.py(g.name)).toLowerCase().indexOf(q) < 0) return false;
       if (M.type && (g.type || '未分类') !== M.type) return false;
       if (M.only === 'prac' && !fp) return false;
       if (M.only === 'gap' && !(fp && !b.cal.W001)) return false;
@@ -402,15 +426,16 @@ function viewMatrix() {
       return -((b.cal[M.sort] || []).length);
     };
     rows.sort(function (a, b) { var ka = key(a), kb = key(b); return ka < kb ? -1 : ka > kb ? 1 : (a.id < b.id ? -1 : 1); });
-    document.getElementById('mcount').textContent = rows.length + ' 个神明';
+    document.getElementById('mcount').textContent = L(rows.length + ' 个神明', rows.length + ' deities');
     document.querySelector('#mtab tbody').innerHTML = rows.map(function (g) {
       var b = byG[g.id], fp = fastPrac(b).length;
-      return '<tr class="row" data-g="' + g.id + '"><td><b>' + esc(g.name) + '</b>' + (fp && !b.cal.W001 ? '<br><span class="flag">道藏本未收</span>' : '') + '</td><td class="small muted">' + esc(g.type) + '</td>' +
+      return '<tr class="row" data-g="' + g.id + '"><td><b>' + N(g.name) + '</b>' + (fp && !b.cal.W001 ? '<br><span class="flag">' + L('道藏本未收', 'not in Daozang ed.') + '</span>' : '') + '</td><td class="small muted">' + esc(C(g.type)) + '</td>' +
         HAVE.map(function (v) {
           var cs = b.cal[v.id];
           if (!cs) return '<td class="cell-empty">—</td>';
           return '<td class="small"><div class="cell-v v-' + v.id + '">' + cs.map(function (c) {
-            return esc(c.m || c.d ? dateOf(c) : (c.zhai || '无日期')) + (c.label && c.label !== '（未标）' ? ' <span class="muted">' + esc(c.label.length > 10 ? c.label.slice(0, 10) + '…' : c.label) + '</span>' : '');
+            var lab = c.label && c.label !== '（未标）' ? (c.label.length > 10 ? esc(c.label.slice(0, 10)) + '…' : N(c.label)) : '';
+            return (c.m || c.d ? esc(dateOf(c)) : N(c.zhai) || L('无日期', 'no date')) + (lab ? ' <span class="muted">' + lab + '</span>' : '');
           }).join('<br>') + '</div></td>';
         }).join('') +
         '<td class="num">' + (b.prac.length ? b.prac.length + ' <span class="muted">(' + fp + ')</span>' : '<span class="cell-empty">0</span>') + '</td>' +
@@ -430,12 +455,15 @@ function viewMatrix() {
 var CAL = { weak: false };
 function viewCalendar() {
   var lanes = HAVE.map(function (v) { return { id: v.id, name: v.title, sub: vYear(v) }; });
-  lanes.push({ id: 'P', name: '实践记录', sub: '叙事史料' });
-  var h = '<h1>斋期日历</h1><p class="lede">按月排列各版本所记的神诞与斋日，最右一列是实践记录中的日期。把鼠标移到一个神名上，所有版本里同一个神都会高亮，可以看出同一神在不同版本中的日期是否一致、哪个版本有而哪个版本无。点击进入神明档案。</p>' +
-    '<div class="controls"><label><input type="checkbox" id="weak"' + (CAL.weak ? ' checked' : '') + '> 实践记录也显示「仅日期巧合」（未言斋）的条目（虚线）</label></div>' +
-    '<div class="legend">' + HAVE.map(function (v) { return '<span>' + vSw(v.id) + esc(v.title) + '</span>'; }).join('') + '<span><span class="sw" style="background:var(--ink-2)"></span>实践记录</span></div>' +
+  lanes.push({ id: 'P', name: '', sub: '' });
+  var h = L('<h1>斋期日历</h1><p class="lede">按月排列各版本所记的神诞与斋日，最右一列是实践记录中的日期。把鼠标移到一个神名上，所有版本里同一个神都会高亮，可以看出同一神在不同版本中的日期是否一致、哪个版本有而哪个版本无。点击进入神明档案。</p>',
+      '<h1>Fasting calendar</h1><p class="lede">Deity birthdays and fast days in each edition, arranged by lunar month; the right-hand column gives dates from practice records. Hover over a deity and the same deity lights up in every edition, showing whether its dates agree and which editions include or omit it. Click to open the deity’s profile.</p>') +
+    '<div class="controls"><label><input type="checkbox" id="weak"' + (CAL.weak ? ' checked' : '') + '> ' + L('实践记录也显示「仅日期巧合」（未言斋）的条目（虚线）', 'Also show practice records that only coincide with the date (no fasting mentioned; dotted)') + '</label></div>' +
+    '<div class="legend">' + HAVE.map(function (v) { return '<span>' + vSw(v.id) + N(v.title) + '</span>'; }).join('') + '<span><span class="sw" style="background:var(--ink-2)"></span>' + L('实践记录', 'Practice records') + '</span></div>' +
     '<div class="scroll"><div class="cal" style="--lanes:' + lanes.length + '">' +
-    '<div class="hd">月</div>' + lanes.map(function (l) { return '<div class="hd">' + (l.id !== 'P' ? vSw(l.id) : '') + esc(l.name) + ' <span class="muted small">' + esc(l.sub) + '</span></div>'; }).join('');
+    '<div class="hd">' + L('月', 'Month') + '</div>' + lanes.map(function (l) {
+      return '<div class="hd">' + (l.id !== 'P' ? vSw(l.id) + N(l.name) + ' <span class="muted small">' + esc(l.sub) + '</span>' : L('实践记录 <span class="muted small">叙事史料</span>', 'Practice records <span class="muted small">narrative sources</span>')) + '</div>';
+    }).join('');
   var cell = function (mn, l) {
     if (l.id === 'P') {
       var agg = {}, ord = [];
@@ -445,23 +473,23 @@ function viewCalendar() {
       });
       return ord.map(function (g) {
         var ps = agg[g], weak = ps.every(function (p) { return p.ev === NOFAST; });
-        var t = ps.map(function (p) { return p.id + ' ' + p.date + '｜' + p.period + '｜' + p.place + '｜' + p.ev; }).join('\n');
-        return '<span class="chip p' + (weak ? ' weak' : '') + '" data-g="' + g + '" data-t="' + esc(t) + '">' + esc(G[g] ? G[g].name : g) + (ps.length > 1 ? ' <span class="dd">×' + ps.length + '</span>' : '') + '</span>';
+        var t = ps.map(function (p) { return p.id + ' ' + DT(p.date) + '｜' + C(p.period) + '｜' + NT(p.place) + '｜' + C(p.ev); }).join('\n');
+        return '<span class="chip p' + (weak ? ' weak' : '') + '" data-g="' + g + '" data-t="' + esc(t) + '">' + N(gName(g)) + (ps.length > 1 ? ' <span class="dd">×' + ps.length + '</span>' : '') + '</span>';
       }).join('');
     }
     return D.calendar.filter(function (c) { return c.w === l.id && c.mn === mn; }).map(function (c) {
-      var nm = c.g ? (G[c.g] ? G[c.g].name : c.g) : (c.label || c.zhai || '节令');
-      return '<span class="chip v-' + c.w + '"' + (c.g ? ' data-g="' + c.g + '"' : '') + ' data-t="' + esc(c.id + ' ' + dateOf(c) + '｜' + (c.label || '') + (c.req ? '｜' + c.req : '')) + '"><span class="dd">' + esc(String(c.d || '').replace(/^初/, '初')) + '</span>' + esc(nm) + '</span>';
+      var nm = c.g ? N(gName(c.g)) : N(c.label || c.zhai || '节令');
+      return '<span class="chip v-' + c.w + '"' + (c.g ? ' data-g="' + c.g + '"' : '') + ' data-t="' + esc(c.id + ' ' + dateOf(c) + '｜' + NT(c.label || '') + (c.req ? '｜' + NT(c.req) : '')) + '"><span class="dd">' + esc(dayOnly(c.d || '')) + '</span>' + nm + '</span>';
     }).join('');
   };
   for (var mn = 1; mn <= 12; mn++) {
-    h += '<div class="mo">' + MN[mn] + '</div>' + lanes.map(function (l) { return '<div>' + cell(mn, l) + '</div>'; }).join('');
+    h += '<div class="mo">' + monthName(mn) + '</div>' + lanes.map(function (l) { return '<div>' + cell(mn, l) + '</div>'; }).join('');
   }
-  h += '<div class="mo small">每月／不定</div>' + lanes.map(function (l) {
-    if (l.id === 'P') return '<div class="small muted">' + D.practice.filter(function (p) { return !p.mn && p.g && (CAL.weak || p.ev !== NOFAST); }).length + ' 条无法按月归入</div>';
+  h += '<div class="mo small">' + L('每月／不定', 'Monthly / unfixed') + '</div>' + lanes.map(function (l) {
+    if (l.id === 'P') { var n = D.practice.filter(function (p) { return !p.mn && p.g && (CAL.weak || p.ev !== NOFAST); }).length; return '<div class="small muted">' + L(n + ' 条无法按月归入', n + ' records cannot be assigned to a month') + '</div>'; }
     return '<div>' + D.calendar.filter(function (c) { return c.w === l.id && !c.mn; }).map(function (c) {
-      var nm = c.g ? (G[c.g] ? G[c.g].name : c.g) : (c.zhai || c.label);
-      return '<span class="chip v-' + c.w + '"' + (c.g ? ' data-g="' + c.g + '"' : '') + ' data-t="' + esc(c.id + ' ' + (c.m || '') + (c.d || '') + '｜' + (c.zhai || '') + '｜' + (c.label || '')) + '">' + esc(nm) + '</span>';
+      var nm = c.g ? N(gName(c.g)) : N(c.zhai || c.label);
+      return '<span class="chip v-' + c.w + '"' + (c.g ? ' data-g="' + c.g + '"' : '') + ' data-t="' + esc(c.id + ' ' + DT((c.m || '') + (c.d || '')) + '｜' + NT(c.zhai || '') + '｜' + (c.label || '')) + '">' + nm + '</span>';
     }).join('') + '</div>';
   }).join('');
   h += '</div></div>';
@@ -485,11 +513,12 @@ function viewCalendar() {
 function viewGods() {
   var groups = {};
   D.deities.forEach(function (g) { (groups[g.type || '未分类'] = groups[g.type || '未分类'] || []).push(g); });
-  var h = '<h1>神明档案</h1><p class="lede">点神名看该神在各版本中的记载、经典核查和全部叙事记录。名后数字：斋期表条目数 / 实践记录数。</p>';
+  var h = L('<h1>神明档案</h1><p class="lede">点神名看该神在各版本中的记载、经典核查和全部叙事记录。名后数字：斋期表条目数 / 实践记录数。</p>',
+    '<h1>Deity profiles</h1><p class="lede">Click a name for the deity’s entries in each edition, scripture checks and all narrative records. Numbers after each name: calendar entries / practice records.</p>');
   Object.keys(groups).forEach(function (t) {
-    h += '<h2>' + esc(t) + '</h2><div class="godlist">' + groups[t].map(function (g) {
+    h += '<h2>' + esc(C(t)) + '</h2><div class="godlist">' + groups[t].map(function (g) {
       var b = byG[g.id] || bucket(g.id);
-      return '<a href="#g/' + g.id + '">' + esc(g.name) + ' <span>' + b.nCal + ' / ' + b.prac.length + '</span></a>';
+      return '<a href="#g/' + g.id + '">' + N(g.name) + ' <span>' + b.nCal + ' / ' + b.prac.length + '</span></a>';
     }).join('') + '</div>';
   });
   app.innerHTML = h;
@@ -497,54 +526,54 @@ function viewGods() {
 
 // ---------- 视图：单个神明 ----------
 function viewGod(id) {
-  var g = G[id]; if (!g) { app.innerHTML = '<p>找不到 ' + esc(id) + '</p>'; return; }
+  var g = G[id]; if (!g) { app.innerHTML = '<p>' + L('找不到 ', 'Not found: ') + esc(id) + '</p>'; return; }
   var b = byG[id] || bucket(id), fp = fastPrac(b);
-  var h = '<p class="small"><a href="#gods">← 全部神明</a></p><div class="prof-head"><h1>' + esc(g.name) + '</h1><span class="muted">' + esc(id) + ' · ' + esc(g.type) + '</span></div>' +
-    '<dl class="kv">' + (g.alias ? '<dt>异名</dt><dd>' + esc(g.alias) + '</dd>' : '') +
-    (g.dates ? '<dt>主要日期</dt><dd>' + esc(g.dates) + (g.dateSrc ? ' <span class="muted small">（' + esc(g.dateSrc) + '）</span>' : '') + '</dd>' : '') +
-    (g.note ? '<dt>备注</dt><dd>' + esc(g.note) + '</dd>' : '') + '</dl>';
+  var h = '<p class="small"><a href="#gods">' + L('← 全部神明', '← All deities') + '</a></p><div class="prof-head"><h1>' + N(g.name) + '</h1><span class="muted">' + esc(id) + ' · ' + esc(C(g.type)) + '</span></div>' +
+    '<dl class="kv">' + (g.alias ? '<dt>' + L('异名', 'Aliases') + '</dt><dd>' + aliases(g.alias) + '</dd>' : '') +
+    (g.dates ? '<dt>' + L('主要日期', 'Main dates') + '</dt><dd>' + esc(DT(g.dates)) + (g.dateSrc ? ' <span class="muted small">（' + esc(g.dateSrc) + '）</span>' : '') + '</dd>' : '') +
+    (g.note ? '<dt>' + L('备注', 'Notes') + '</dt><dd>' + esc(g.note) + zhNote() + '</dd>' : '') + '</dl>';
 
-  h += '<h2>各版本所载</h2><div class="scroll"><table><thead><tr><th>版本</th><th>日期</th><th>原文所标</th><th>编码</th><th>节制要求</th><th>原文</th></tr></thead><tbody>';
+  h += '<h2>' + L('各版本所载', 'Entries in each edition') + '</h2><div class="scroll"><table><thead><tr><th>' + L('版本', 'Edition') + '</th><th>' + L('日期', 'Date') + '</th><th>' + L('原文所标', 'Label in text') + '</th><th>' + L('编码', 'Code') + '</th><th>' + L('节制要求', 'Abstinence required') + '</th><th>' + L('原文', 'Original text') + '</th></tr></thead><tbody>';
   HAVE.forEach(function (v) {
     var cs = b.cal[v.id];
-    if (!cs) { h += '<tr><td class="v-' + v.id + '">' + vSw(v.id) + vName(v) + '</td><td colspan="5" class="cell-empty">未收</td></tr>'; return; }
+    if (!cs) { h += '<tr><td class="v-' + v.id + '">' + vSw(v.id) + vName(v) + '</td><td colspan="5" class="cell-empty">' + L('未收', 'not listed') + '</td></tr>'; return; }
     cs.forEach(function (c, i) {
       h += '<tr>' + (i === 0 ? '<td rowspan="' + cs.length + '" class="v-' + v.id + '">' + vSw(v.id) + vName(v) + '<br><span class="muted small">' + esc(vYear(v)) + '</span></td>' : '') +
-        '<td>' + esc(dateOf(c)) + '<br><span class="muted small">' + c.id + '</span></td><td>' + esc(c.label) + (c.zhai ? '<br><span class="muted small">' + esc(c.zhai) + '</span>' : '') + '</td><td>' + esc(c.kind) + '</td><td>' + esc(c.req || '—') + '</td><td class="small">' + esc(c.text) + (c.note ? '<div class="muted">' + esc(c.note) + '</div>' : '') + '</td></tr>';
+        '<td>' + esc(dateOf(c)) + '<br><span class="muted small">' + c.id + '</span></td><td>' + N(c.label) + (c.zhai ? '<br><span class="muted small">' + N(c.zhai) + '</span>' : '') + '</td><td>' + esc(C(c.kind)) + '</td><td>' + (c.req ? N(c.req) : '—') + '</td><td class="small">' + esc(c.text) + (c.note ? '<div class="muted">' + esc(c.note) + '</div>' : '') + '</td></tr>';
     });
   });
   var missing = D.versions.filter(function (v) { return !v.n; });
-  h += '</tbody></table></div><p class="small muted">尚未取得、无法对照的版本：' + missing.map(function (v) { return esc(v.title) + '（' + esc(vYear(v)) + '）'; }).join('、') + '</p>';
+  h += '</tbody></table></div><p class="small muted">' + L('尚未取得、无法对照的版本：', 'Editions not yet obtained, so not compared: ') + missing.map(function (v) { return N(v.title) + '（' + esc(vYear(v)) + '）'; }).join(L('、', '; ')) + '</p>';
 
   if (b.cl.length) {
-    h += '<h2>经典核查</h2><div class="card">' + b.cl.map(function (c) {
-      return '<div class="rec"><b>' + esc(c.jing) + '</b> <span class="muted small">' + esc(c.ed) + '</span><div class="meta">有无具体斋日规定：' + esc(c.has) + '</div>' + (c.ex ? '<div class="q">' + esc(c.ex) + '</div>' : '') + (c.sig ? '<div class="nt">' + esc(c.sig) + '</div>' : '') + '</div>';
+    h += '<h2>' + L('经典核查', 'Scripture check') + '</h2><div class="card">' + b.cl.map(function (c) {
+      return '<div class="rec"><b>' + N(c.jing) + '</b> <span class="muted small">' + esc(c.ed) + '</span><div class="meta">' + L('有无具体斋日规定：', 'Specific fast days prescribed: ') + esc(C(c.has)) + '</div>' + (c.ex ? '<div class="q">' + esc(c.ex) + '</div>' : '') + (c.sig ? '<div class="nt">' + esc(c.sig) + zhNote() + '</div>' : '') + '</div>';
     }).join('') + '</div>';
   }
 
   var dated = b.prac.filter(function (p) { return +p.year; }).length + b.sb.length;
-  if (dated) h += '<h2>叙事史料的年代分布</h2><div class="legend"><span><span class="sw" style="background:var(--ev1)"></span>实践记录·言及持斋</span><span><span class="sw" style="background:var(--surface);border:2px solid var(--ev1)"></span>实践记录·仅日期巧合</span><span><span class="sw" style="background:var(--v2)"></span>《申报》</span></div><div class="card" id="strip"></div>';
+  if (dated) h += '<h2>' + L('叙事史料的年代分布', 'Narrative sources over time') + '</h2><div class="legend"><span><span class="sw" style="background:var(--ev1)"></span>' + L('实践记录·言及持斋', 'Practice record · mentions fasting') + '</span><span><span class="sw" style="background:var(--surface);border:2px solid var(--ev1)"></span>' + L('实践记录·仅日期巧合', 'Practice record · date coincidence only') + '</span><span><span class="sw" style="background:var(--v2)"></span>' + L('《申报》', '<i>Shenbao</i>') + '</span></div><div class="card" id="strip"></div>';
 
-  h += '<h2>实践记录 <span class="muted small">' + b.prac.length + ' 条，言及持斋 ' + fp.length + ' 条</span></h2>';
+  h += '<h2>' + L('实践记录', 'Practice records') + ' <span class="muted small">' + L(b.prac.length + ' 条，言及持斋 ' + fp.length + ' 条', b.prac.length + ' records, ' + fp.length + ' mention fasting') + '</span></h2>';
   if (b.prac.length) {
     var ps = b.prac.slice().sort(function (a, c) { return (+a.year || 9999) - (+c.year || 9999); });
     h += '<div class="card">' + ps.map(function (p) {
-      return '<div class="rec"><b>' + p.id + '</b> ' + esc(p.when || '') + ' · ' + esc(p.place) + (p.pref ? '（' + esc(p.pref) + '）' : '') +
-        ' <span class="tag' + (p.ev === '明确' ? ' strong' : '') + '">' + esc(p.ev) + '</span>' +
-        '<div class="meta">' + esc(p.wt) + (p.loc ? ' · ' + esc(p.loc) : '') + ' · ' + esc(p.genre) + '｜斋名：' + esc(p.zhai || '—') + '｜日期：' + esc(p.date || '—') + '｜形式：' + esc(p.form || '—') + '</div>' +
-        '<div class="meta">D ' + esc(p.D) + ' · A ' + esc(p.A) + ' · C ' + esc(p.C) + ' · B ' + esc(p.B) + (p.who ? '｜持斋者：' + esc(p.who) : '') + (p.cal ? '｜对应斋期表：' + esc(p.cal) : '') + '</div>' +
-        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + esc(p.note) + '</div>' : '') + '</div>';
+      return '<div class="rec"><b>' + p.id + '</b> ' + esc(p.when || '') + ' · ' + N(p.place) + (p.pref ? '（' + N(p.pref) + '）' : '') +
+        ' <span class="tag' + (p.ev === '明确' ? ' strong' : '') + '">' + esc(C(p.ev)) + '</span>' +
+        '<div class="meta">' + N(p.wt) + (p.loc ? ' · ' + esc(p.loc) : '') + ' · ' + esc(C(p.genre)) + L('｜斋名：', ' | Fast: ') + (p.zhai ? N(p.zhai) : '—') + L('｜日期：', ' | Date: ') + esc(DT(p.date) || '—') + L('｜形式：', ' | Form: ') + esc(C(p.form) || '—') + '</div>' +
+        '<div class="meta">D ' + esc(C(p.D)) + ' · A ' + esc(C(p.A)) + ' · C ' + esc(C(p.C)) + ' · B ' + esc(C(p.B)) + (p.who ? L('｜持斋者：', ' | Faster: ') + N(p.who) : '') + (p.cal ? L('｜对应斋期表：', ' | Calendar entry: ') + esc(p.cal) : '') + '</div>' +
+        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + esc(p.note) + zhNote() + '</div>' : '') + '</div>';
     }).join('') + '</div>';
-  } else h += '<p class="muted">无。</p>';
+  } else h += '<p class="muted">' + L('无。', 'None.') + '</p>';
 
-  h += '<div class="grid2"><div><h2>《申报》 <span class="muted small">' + b.sb.length + ' 篇</span></h2>';
+  h += '<div class="grid2"><div><h2>' + L('《申报》', '<i>Shenbao</i> 申報') + ' <span class="muted small">' + L(b.sb.length + ' 篇', b.sb.length + ' articles') + '</span></h2>';
   h += b.sb.length ? '<div class="card">' + b.sb.slice().sort(function (a, c) { return a.date < c.date ? -1 : 1; }).map(function (s) {
-    return '<div class="rec"><b>' + esc(s.date) + '</b> ' + esc(s.title) + ' <span class="tag">相关度 ' + esc(s.rel || '—') + '</span><div class="meta">' + esc(s.place) + '｜' + esc(s.kind) + (s.rec ? '｜已录入 ' + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + '</div></div>';
-  }).join('') + '</div>' : '<p class="muted">无。</p>';
-  h += '</div><div><h2>风俗志 <span class="muted small">' + b.fs.length + ' 处</span></h2>';
+    return '<div class="rec"><b>' + esc(s.date) + '</b> ' + N(s.title) + ' <span class="tag">' + L('相关度 ', 'Relevance: ') + esc(C(s.rel) || '—') + '</span><div class="meta">' + N(s.place) + '｜' + esc(s.kind) + (s.rec ? L('｜已录入 ', ' | Entered as ') + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + zhNote() + '</div></div>';
+  }).join('') + '</div>' : '<p class="muted">' + L('无。', 'None.') + '</p>';
+  h += '</div><div><h2>' + L('风俗志', 'Records of customs') + ' <span class="muted small">' + L(b.fs.length + ' 处', b.fs.length + ' passages') + '</span></h2>';
   h += b.fs.length ? '<div class="card">' + b.fs.map(function (s) {
-    return '<div class="rec"><b>' + esc(s.book) + '</b> ' + esc(s.item) + ' <span class="tag">' + esc(s.tag) + '</span><div class="meta">' + esc(s.when) + '｜' + esc(s.place) + '｜' + esc(s.date) + (s.rec ? '｜已录入 ' + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + '</div></div>';
-  }).join('') + '</div>' : '<p class="muted">无。</p>';
+    return '<div class="rec"><b>' + N(s.book) + '</b> ' + esc(s.item) + ' <span class="tag">' + esc(C(s.tag)) + '</span><div class="meta">' + esc(s.when) + '｜' + N(s.place) + '｜' + esc(DT(s.date)) + (s.rec ? L('｜已录入 ', ' | Entered as ') + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + zhNote() + '</div></div>';
+  }).join('') + '</div>' : '<p class="muted">' + L('无。', 'None.') + '</p>';
   h += '</div></div>';
   app.innerHTML = h;
   var st = document.getElementById('strip'); if (st) drawStrip(st, b);
@@ -553,12 +582,12 @@ function viewGod(id) {
 function drawStrip(el, b) {
   var W = Math.max(el.clientWidth - 32, 280), H = 96, x0 = 16, x1 = W - 16, lo = 1500, hi = 1950;
   var sx = function (y) { return x0 + (y - lo) / (hi - lo) * (x1 - x0); };
-  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="年代分布">';
+  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="' + L('年代分布', 'Distribution over time') + '">';
   for (var t = 1500; t <= 1950; t += 50) s += '<line class="gridl" x1="' + sx(t) + '" x2="' + sx(t) + '" y1="6" y2="72"/><text x="' + sx(t) + '" y="88" text-anchor="middle">' + t + '</text>';
-  s += '<text x="' + x0 + '" y="22" style="font-size:10px">实践</text><text x="' + x0 + '" y="56" style="font-size:10px">申报</text>';
+  s += '<text x="' + x0 + '" y="22" style="font-size:10px">' + L('实践', 'Practice') + '</text><text x="' + x0 + '" y="56" style="font-size:10px">' + L('申报', 'Shenbao') + '</text>';
   var pts = [];
-  b.prac.forEach(function (p) { var y = +p.year; if (y >= lo && y <= hi) pts.push({ x: sx(y), y: 30, weak: p.ev === NOFAST, t: p.id + ' ' + p.year + '｜' + p.place + '｜' + p.ev + '｜' + p.wt }); });
-  b.sb.forEach(function (r) { var y = +String(r.date).slice(0, 4); if (y) pts.push({ x: sx(y), y: 62, sb: 1, t: r.date + '｜' + r.title + '｜' + r.place }); });
+  b.prac.forEach(function (p) { var y = +p.year; if (y >= lo && y <= hi) pts.push({ x: sx(y), y: 30, weak: p.ev === NOFAST, t: p.id + ' ' + p.year + '｜' + NT(p.place) + '｜' + C(p.ev) + '｜' + NT(p.wt) }); });
+  b.sb.forEach(function (r) { var y = +String(r.date).slice(0, 4); if (y) pts.push({ x: sx(y), y: 62, sb: 1, t: r.date + '｜' + NT(r.title) + '｜' + NT(r.place) }); });
   pts.forEach(function (p, i) {
     var jit = ((i * 37) % 9) - 4;
     s += '<circle data-i="' + i + '" cx="' + p.x + '" cy="' + (p.y + jit) + '" r="5" stroke-width="2" style="' +
@@ -581,70 +610,80 @@ function viewGaps() {
   var notInW001 = fastG.filter(function (id) { return !byG[id].cal.W001; });
   var notAny = fastG.filter(function (id) { return !byG[id].nCal; });
   var w001only = Object.keys(byG).filter(function (id) { var b = byG[id]; return b.cal.W001 && !fastPrac(b).length; });
+  var w001 = D.calendar.filter(function (c) { return c.w === 'W001'; }).length;
   var w001NoReq = D.calendar.filter(function (c) { return c.w === 'W001' && !c.req; }).length;
   var missing = D.versions.filter(function (v) { return !v.n; });
+  var unlinked = D.practice.filter(function (p) { return p.cal === '' && p.ev !== NOFAST; }).length;
   var li = function (n, t, list) { return '<li><span class="cnt">' + n + '</span> ' + t + (list ? '<div class="small">' + list + '</div>' : '') + '</li>'; };
-  var links = function (ids) { return ids.map(function (id) { return godLink(id) + '<span class="muted">(' + fastPrac(byG[id]).length + ')</span>'; }).join('、'); };
-  var h = '<h1>缺口</h1><p class="lede">以下各项由数据库自动统计，随数据更新。它们是「神明内容版本研究」下一步最直接的工作对象。</p><div class="card"><ul class="gap">' +
-    li(noCmp + ' / ' + D.calendar.length, '条斋期表条目的「与前一版本相比」仍为「未比较」。版本比较这一栏尚未启用。') +
-    li(linked + ' / ' + D.practice.length, '条实践记录填了「对应斋期表条目ID」。实践与规范文本之间的链接几乎还没建立。') +
-    li(w001NoReq + ' / ' + D.calendar.filter(function (c) { return c.w === 'W001'; }).length, '条道藏本《玉匣記》条目没有节制要求：1607 年本是神诞表，大多不说要斋。何时、在哪个版本里神诞日变成了斋日，是版本研究的核心问题。') +
-    li(notInW001.length, '个神明有持斋实践记录，但道藏本《玉匣記》未收（括号内为言及持斋的实践条数）：', links(notInW001)) +
-    li(notAny.length, '个神明有持斋实践记录，但目前所有已取得版本都未收：', links(notAny)) +
-    li(w001only.length, '个神明见于道藏本《玉匣記》，却没有任何言及持斋的实践记录（按「负面证据」处理）。', w001only.slice(0, 60).map(function (id) { return godLink(id); }).join('、')) +
-    li(missing.length, '种斋期文本已登记、未取得：', missing.map(function (v) { return esc(v.title) + '（' + esc(vYear(v)) + '）'; }).join('、')) +
-    li(D.practice.filter(function (p) { return p.cal === '' && p.ev !== NOFAST; }).length, '条言及持斋的实践记录尚未与任何斋期表条目对应。') +
+  var links = function (ids) { return ids.map(function (id) { return godLink(id) + '<span class="muted">(' + fastPrac(byG[id]).length + ')</span>'; }).join(L('、', ', ')); };
+  var YX = L('道藏本《玉匣記》', 'the Daozang <i>Yuxiaji</i> 玉匣記');
+  var h = L('<h1>缺口</h1><p class="lede">以下各项由数据库自动统计，随数据更新。它们是「神明内容版本研究」下一步最直接的工作对象。</p>',
+      '<h1>Gaps</h1><p class="lede">Counted automatically from the database and updated with it. These are the most direct next tasks for the study of deities across editions.</p>') + '<div class="card"><ul class="gap">' +
+    li(noCmp + ' / ' + D.calendar.length, L('条斋期表条目的「与前一版本相比」仍为「未比较」。版本比较这一栏尚未启用。', 'calendar entries are still marked “not compared” with an earlier edition. Edition comparison has not started.')) +
+    li(linked + ' / ' + D.practice.length, L('条实践记录填了「对应斋期表条目ID」。实践与规范文本之间的链接几乎还没建立。', 'practice records are linked to a calendar entry. Links between practice and prescriptive texts are barely established.')) +
+    li(w001NoReq + ' / ' + w001, L('条道藏本《玉匣記》条目没有节制要求：1607 年本是神诞表，大多不说要斋。何时、在哪个版本里神诞日变成了斋日，是版本研究的核心问题。',
+      'entries in ' + YX + ' state no abstinence: the 1607 text is a table of birthdays and mostly does not ask for fasting. When, and in which edition, deity birthdays became fast days is the core question of the edition study.')) +
+    li(notInW001.length, L('个神明有持斋实践记录，但道藏本《玉匣記》未收（括号内为言及持斋的实践条数）：', 'deities have fasting practice records but are absent from ' + YX + ' (in brackets: practice records mentioning fasting):'), links(notInW001)) +
+    li(notAny.length, L('个神明有持斋实践记录，但目前所有已取得版本都未收：', 'deities have fasting practice records but appear in none of the obtained editions:'), links(notAny)) +
+    li(w001only.length, L('个神明见于道藏本《玉匣記》，却没有任何言及持斋的实践记录（按「负面证据」处理）。', 'deities appear in ' + YX + ' but have no practice record mentioning fasting (treated as negative evidence).'), w001only.slice(0, 60).map(function (id) { return godLink(id); }).join(L('、', ', '))) +
+    li(missing.length, L('种斋期文本已登记、未取得：', 'calendar texts are registered but not yet obtained:'), missing.map(function (v) { return N(v.title) + '（' + esc(vYear(v)) + '）'; }).join(L('、', '; '))) +
+    li(unlinked, L('条言及持斋的实践记录尚未与任何斋期表条目对应。', 'practice records that mention fasting are not yet linked to any calendar entry.')) +
     '</ul></div>';
   app.innerHTML = h;
 }
 
 // ---------- 源流与框架（静态示意图） ----------
 function viewContext() {
+  var E = I.en();
+  // 书名：中文界面用《》，英文界面用「斜体拼音 汉字」
+  var B = function (zh, py) { return E ? '<i>' + py + '</i> ' + zh : '《' + zh + '》'; };
+  var SL = B('事林廣記', 'Shilin guangji');
   // 每条泳道：五个时期（汉魏六朝、唐、宋、元、明）各一格；in = 入线类型 s 实线 / d 虚线；out = 进入清代通书的线
   var lanes = [
-    { n: '① 干支择日', s: '诸神在天、地府、人间', out: 's', c: [
+    { n: L('① 干支择日', '① Ganzhi day selection'), s: L('诸神在天、地府、人间', 'Gods in heaven, the underworld and the human world'), out: 's', c: [
       null,
-      { t: '守庚申', s: '三尸上天奏人罪过' },
+      { t: L('守庚申', 'Keeping gengshen 守庚申'), s: L('三尸上天奏人罪过', 'The Three Corpses report sins to heaven') },
       null,
-      { t: '《事林廣記》', s: '甲子、庚申、本命日', y: 1, i: 'd' },
-      { t: '道藏本《許真君玉匣記》', s: '六十甲子诸神去向', i: 'd' }] },
-    { n: '② 月日降日循环', s: '具名神祇定期下降', out: 'd', c: [
+      { t: SL, s: L('甲子、庚申、本命日', 'jiazi, gengshen and benming days'), y: 1, i: 'd' },
+      { t: L('道藏本《許真君玉匣記》', 'Daozang ed. ' + B('許真君玉匣記', 'Xu zhenjun yuxiaji')), s: L('六十甲子诸神去向', 'Whereabouts of the gods on the sixty jiazi days'), i: 'd' }] },
+    { n: L('② 月日降日循环', '② Monthly descent-day cycles'), s: L('具名神祇定期下降', 'Named deities descend on fixed days'), out: 'd', c: [
       null, null,
-      { t: '道教吉辰历', s: '《朝修吉辰章》等，待考', q: 1 },
-      { t: '《事林廣記》逐月圣降', s: '每月固定降日循环', y: 1, i: 'd' },
+      { t: L('道教吉辰历', 'Daoist calendars of auspicious days'), s: L('《朝修吉辰章》等，待考', B('朝修吉辰章', 'Chaoxiu jichen zhang') + ' etc.; to be examined'), q: 1 },
+      { t: L('《事林廣記》逐月圣降', SL + ': monthly descents'), s: L('每月固定降日循环', 'Fixed monthly cycle of descent days'), y: 1, i: 'd' },
       null] },
-    { n: '③ 升仙、降现事件', s: '仙传中有日期的事件', out: 'd', note: '有日期的事件转为日历条目', c: [
-      { t: '《列仙傳》王子乔<br>汉武故事 西王母降', s: '七月七日' },
+    { n: L('③ 升仙、降现事件', '③ Ascension and manifestation events'), s: L('仙传中有日期的事件', 'Dated events in hagiographies'), out: 'd', note: L('有日期的事件转为日历条目', 'Dated events become calendar entries'), c: [
+      { t: L('《列仙傳》王子乔<br>汉武故事 西王母降', B('列仙傳', 'Liexian zhuan') + ': Wang Ziqiao 王子喬<br>' + B('漢武故事', 'Han Wu gushi') + ': descent of Xiwangmu 西王母'), s: L('七月七日', '7th day of the 7th month') },
       null, null,
-      { t: '《事林廣記》', s: '真人升仙、降现日', y: 1, i: 's' },
+      { t: SL, s: L('真人升仙、降现日', 'Days when Perfected ascend or appear'), y: 1, i: 's' },
       null] },
-    { n: '④ 神诞', s: '诞日作为纪念类别', out: 's', c: [
+    { n: L('④ 神诞', '④ Deity birthdays'), s: L('诞日作为纪念类别', 'Birthdays as a commemorative category'), out: 's', c: [
       null,
-      { t: '佛诞、帝王诞节', s: '老君降圣节（二月十五）' },
-      { t: '汴京、临安笔记', s: '地方神生日与社会', i: 'd' },
-      { t: '《事林廣記》', s: '约 46 日记有诞日', y: 1, i: 's' },
+      { t: L('佛诞、帝王诞节', 'Buddha’s birthday; imperial birthday festivals'), s: L('老君降圣节（二月十五）', 'Laojun jiangsheng jie 老君降聖節 (2/15)') },
+      { t: L('汴京、临安笔记', 'Biji on Bianjing 汴京 and Lin’an 臨安'), s: L('地方神生日与社会', 'Local gods’ birthdays and society'), i: 'd' },
+      { t: SL, s: L('约 46 日记有诞日', 'Birthdays recorded on about 46 days'), y: 1, i: 's' },
       null] },
-    { n: '⑤ 国家节日、地方神', s: '宋代礼制与封祀', s2: '假设：封祀→信仰兴起→收录', out: 'd', c: [
+    { n: L('⑤ 国家节日、地方神', '⑤ State festivals and local gods'), s: L('宋代礼制与封祀', 'Song ritual system and canonization'), s2: L('假设：封祀→信仰兴起→收录', 'Hypothesis: canonization → rise of a cult → inclusion'), out: 'd', c: [
       null, null,
-      { t: '天书、圣祖降节', s: '神祠封爵：侯、公、王、妃' },
-      { t: '《事林廣記》', s: '收宋代节日与封号', y: 1, i: 's' },
+      { t: L('天书、圣祖降节', 'Tianshu 天書 and Shengzu jiang 聖祖降 festivals'), s: L('神祠封爵：侯、公、王、妃', 'Titles for shrines: marquis, duke, king, consort') },
+      { t: SL, s: L('收宋代节日与封号', 'Includes Song festivals and titles'), y: 1, i: 's' },
       null] },
-    { n: '⑥ 斋期', s: '佛道斋戒传统', s2: '十斋日与逐月降日循环只重合十五、廿九两日', out: 's', c: [
-      { t: '六斋日', s: '汉译佛典、四天王巡察' },
-      { t: '敦煌十斋日', s: '三长月、十斋日入律', i: 's' },
-      { t: '《雲笈七籤》', s: '十直、三元、五腊', i: 'd' },
-      { t: '《事林廣記》', s: '三元、五腊、小欑斋日', y: 1, i: 's' },
+    { n: L('⑥ 斋期', '⑥ Fasting periods'), s: L('佛道斋戒传统', 'Buddhist and Daoist fasting traditions'), s2: L('十斋日与逐月降日循环只重合十五、廿九两日', 'The ten fast days coincide with the monthly descent cycle only on the 15th and 29th'), out: 's', c: [
+      { t: L('六斋日', 'Six fast days (liuzhai ri 六齋日)'), s: L('汉译佛典、四天王巡察', 'Chinese Buddhist translations; inspection by the Four Heavenly Kings') },
+      { t: L('敦煌十斋日', 'Ten fast days at Dunhuang 敦煌'), s: L('三长月、十斋日入律', 'Three long fast months and ten fast days enter the precepts'), i: 's' },
+      { t: B('雲笈七籤', 'Yunji qiqian'), s: L('十直、三元、五腊', 'Ten zhi 十直 days, three Primes 三元, five la 五臘'), i: 'd' },
+      { t: SL, s: L('三元、五腊、小欑斋日', 'Three Primes, five la, xiaozan 小欑 fast days'), y: 1, i: 's' },
       null] }
   ];
-  var periods = ['汉魏六朝', '唐', '宋', '元', '明'];
-  var g = '<div class="ph"></div>' + periods.map(function (p) { return '<div class="ph' + (p === '元' ? ' y' : '') + '">' + p + '</div>'; }).join('') + '<div class="ph"></div><div class="ph">清</div>';
-  g += '<div class="qing" style="grid-row: 2 / span ' + lanes.length + '"><b>清代通书系统<br>《玉匣記》增广本</b><br>干支择日<br>＋ 诸神圣诞、下降<br>＋ 准提十斋<br>＋ 三元五腊<br><span class="s">多个组成部分合编</span></div>';
-  lanes.forEach(function (L) {
-    g += '<div class="lane"><b>' + L.n + '</b>' + L.s + (L.s2 ? '<span style="color:var(--accent)">' + L.s2 + '</span>' : '') + '</div>';
-    var first = L.c.findIndex(function (x) { return x; });
+  var periods = E ? ['Han–Six Dynasties', 'Tang', 'Song', 'Yuan', 'Ming'] : ['汉魏六朝', '唐', '宋', '元', '明'];
+  var g = '<div class="ph"></div>' + periods.map(function (p, i) { return '<div class="ph' + (i === 3 ? ' y' : '') + '">' + p + '</div>'; }).join('') + '<div class="ph"></div><div class="ph">' + L('清', 'Qing') + '</div>';
+  g += '<div class="qing" style="grid-row: 2 / span ' + lanes.length + '">' + L('<b>清代通书系统<br>《玉匣記》增广本</b><br>干支择日<br>＋ 诸神圣诞、下降<br>＋ 准提十斋<br>＋ 三元五腊<br><span class="s">多个组成部分合编</span>',
+    '<b>Qing almanac system<br>expanded editions of the <i>Yuxiaji</i> 玉匣記</b><br>ganzhi day selection<br>+ deity birthdays and descents<br>+ Zhunti 準提 ten fasts<br>+ three Primes, five la<br><span class="s">compiled from several components</span>') + '</div>';
+  lanes.forEach(function (L2) {
+    g += '<div class="lane"><b>' + L2.n + '</b>' + L2.s + (L2.s2 ? '<span style="color:var(--accent)">' + L2.s2 + '</span>' : '') + '</div>';
+    var first = L2.c.findIndex(function (x) { return x; });
     var i = 0, noteDone = false;
     while (i < 5) {
-      var x = L.c[i];
+      var x = L2.c[i];
       if (x) {
         g += '<div class="cell">' + (x.i ? '<div class="st' + (x.i === 'd' ? ' d' : '') + '"></div>' : '') +
           '<div class="bx' + (x.y ? ' y' : '') + (x.q ? ' q' : '') + '"><b>' + x.t + '</b>' + x.s + '</div></div>';
@@ -652,44 +691,48 @@ function viewContext() {
       } else if (i < first) {
         g += '<div class="cell"></div>'; i++;
       } else {
-        var j = i; while (j < 5 && !L.c[j]) j++;
-        var ty = j < 5 ? L.c[j].i : L.out;
-        var note = (L.note && !noteDone && j < 5) ? '<div class="note">' + L.note + '</div>' : '';
+        var j = i; while (j < 5 && !L2.c[j]) j++;
+        var ty = j < 5 ? L2.c[j].i : L2.out;
+        var note = (L2.note && !noteDone && j < 5) ? '<div class="note">' + L2.note + '</div>' : '';
         if (note) noteDone = true;
         g += '<div class="cell" style="grid-column: span ' + (j - i) + '"><div class="ln' + (ty === 'd' ? ' d' : '') + '"></div>' + note + '</div>';
         i = j;
       }
     }
-    g += '<div class="cell"><div class="st' + (L.out === 'd' ? ' d' : '') + '"></div></div>';
+    g += '<div class="cell"><div class="st' + (L2.out === 'd' ? ' d' : '') + '"></div></div>';
   });
   var dim = function (c, t, s, s2) { return '<div class="dim" style="--c:' + c + '"><b>' + t + '</b>' + s + (s2 ? '<div class="s">' + s2 + '</div>' : '') + '</div>'; };
-  var lab = function (c, t, s, u) { return '<div class="lab" style="--c:' + c + '"><b>' + t + '</b>' + s + '<span>主要单位：' + u + '</span></div>'; };
-  var h = '<h1>源流与框架</h1>' +
-    '<p class="lede">两张工作示意图，依目前讨论过的材料整理，用于组织论证，不是定论。《事林廣記》底本暂定元至顺刊本，待核；道藏本《許真君玉匣記》只据其结构概述，尚未逐条核对原文。</p>' +
-    '<h2>一、《玉匣記》知识体系的多源脉络</h2>' +
-    '<p class="small muted" style="margin-top:0">六个组成部分各有来源，在元代类书与清代通书中汇合。</p>' +
-    '<p class="small muted swipe" style="margin:0 0 6px">在手机上可左右滑动查看全图</p>' +
+  var lab = function (c, t, s, u) { return '<div class="lab" style="--c:' + c + '"><b>' + t + '</b>' + s + '<span>' + L('主要单位：', 'Main unit: ') + u + '</span></div>'; };
+  var YX = B('玉匣記', 'Yuxiaji');
+  var h = L('<h1>源流与框架</h1>', '<h1>Sources and framework</h1>') +
+    L('<p class="lede">两张工作示意图，依目前讨论过的材料整理，用于组织论证，不是定论。《事林廣記》底本暂定元至顺刊本，待核；道藏本《許真君玉匣記》只据其结构概述，尚未逐条核对原文。</p>',
+      '<p class="lede">Two working diagrams based on the materials discussed so far. They organize the argument and are not conclusions. The base text of the ' + SL + ' is provisionally the Yuan Zhishun 至順 edition, still to be verified; the Daozang ' + B('許真君玉匣記', 'Xu zhenjun yuxiaji') + ' is summarized from its structure only and has not been checked entry by entry.</p>') +
+    '<h2>' + L('一、《玉匣記》知识体系的多源脉络', '1. The many sources of the ' + YX + ' system of knowledge') + '</h2>' +
+    '<p class="small muted" style="margin-top:0">' + L('六个组成部分各有来源，在元代类书与清代通书中汇合。', 'Six components, each with its own origin, converge in a Yuan encyclopedia and in Qing almanacs.') + '</p>' +
+    '<p class="small muted swipe" style="margin:0 0 6px">' + L('在手机上可左右滑动查看全图', 'On a phone, swipe sideways to see the whole diagram') + '</p>' +
     '<div class="scroll"><div class="flow">' + g + '</div></div>' +
-    '<div class="lg"><span><i></i>有文本对应或直接见证</span><span><i class="d"></i>推测或待核</span><span><i class="bxq"></i>来源待考</span><span><i class="bxy"></i>元代汇合点</span></div>' +
-    '<h2>二、斋历文本的「三层一轴」分类框架</h2>' +
-    '<p class="small muted" style="margin-top:0">每个维度描述同一对象的不同层次，各自独立记录，不合成单一分类。</p>' +
+    '<div class="lg"><span><i></i>' + L('有文本对应或直接见证', 'Textual correspondence or direct witness') + '</span><span><i class="d"></i>' + L('推测或待核', 'Conjectural or to be verified') + '</span><span><i class="bxq"></i>' + L('来源待考', 'Source to be identified') + '</span><span><i class="bxy"></i>' + L('元代汇合点', 'Yuan convergence point') + '</span></div>' +
+    '<h2>' + L('二、斋历文本的「三层一轴」分类框架', '2. A “three layers, one axis” framework for classifying fasting-calendar texts') + '</h2>' +
+    '<p class="small muted" style="margin-top:0">' + L('每个维度描述同一对象的不同层次，各自独立记录，不合成单一分类。', 'Each dimension describes a different level of the same object and is recorded separately, not merged into a single classification.') + '</p>' +
     '<div class="fw">' +
-      lab('var(--v1)', '第一层　内容层', '这份知识是什么', '条目') +
-      dim('var(--v1)', '时间编排', '月日型、干支型、混合型') +
-      dim('var(--v1)', '条目构成', '诞日、降日、升仙、斋期各占多少') +
-      lab('var(--v4)', '第二层　载体层', '放在哪里，由谁制作', '书、版本') +
-      dim('var(--v4)', '载体文类', '通书、类书、善书、宝卷、神灵全书、山志、课诵本') +
-      dim('var(--v4)', '生产与流通', '坊刻、宫观寺院、善堂、抄本、官刻') +
-      lab('var(--accent)', '第三层　使用层', '拿来做什么，给谁用', '组成部分') +
-      dim('var(--accent)', '功能', '择日查阅、持斋发愿、科仪执行、劝善宣讲') +
-      dim('var(--accent)', '预设使用者', '一般信众（general）、宗教专业人士（expertise）', '原 general / expertise 区分移到这一层') +
-      '<div class="ax"><b class="t">传承轴</b><span class="s">知识从哪里来</span><br><b>传本谱系</b>共同的异文与错误、承袭关系<br><br><b>贯穿三层</b>内容、载体、用途都可能在传承中改变<br><br><span class="s">例：同一份降日表从道教日历进入类书，再进入通书，内容大致不变，载体与使用者改变。</span></div>' +
+      lab('var(--v1)', L('第一层　内容层', 'Layer 1 · Content'), L('这份知识是什么', 'What this knowledge is'), L('条目', 'entries')) +
+      dim('var(--v1)', L('时间编排', 'Temporal arrangement'), L('月日型、干支型、混合型', 'month-and-day, ganzhi, or mixed')) +
+      dim('var(--v1)', L('条目构成', 'Composition of entries'), L('诞日、降日、升仙、斋期各占多少', 'shares of birthdays, descent days, ascensions and fasts')) +
+      lab('var(--v4)', L('第二层　载体层', 'Layer 2 · Carrier'), L('放在哪里，由谁制作', 'Where it is placed, and who made it'), L('书、版本', 'books, editions')) +
+      dim('var(--v4)', L('载体文类', 'Genre of carrier'), L('通书、类书、善书、宝卷、神灵全书、山志、课诵本', 'almanacs (tongshu 通書), encyclopedias (leishu 類書), morality books (shanshu 善書), precious scrolls (baojuan 寶卷), compendia of deities, mountain gazetteers, liturgical recitation books')) +
+      dim('var(--v4)', L('生产与流通', 'Production and circulation'), L('坊刻、宫观寺院、善堂、抄本、官刻', 'commercial printers, temples and monasteries, charitable halls, manuscripts, official printing')) +
+      lab('var(--accent)', L('第三层　使用层', 'Layer 3 · Use'), L('拿来做什么，给谁用', 'What it is used for, and by whom'), L('组成部分', 'components')) +
+      dim('var(--accent)', L('功能', 'Function'), L('择日查阅、持斋发愿、科仪执行、劝善宣讲', 'consulting for day selection, vowing to fast, performing liturgy, preaching morality')) +
+      dim('var(--accent)', L('预设使用者', 'Intended users'), L('一般信众（general）、宗教专业人士（expertise）', 'ordinary believers (general), religious specialists (expertise)'), L('原 general / expertise 区分移到这一层', 'the earlier general / expertise distinction moves to this layer')) +
+      L('<div class="ax"><b class="t">传承轴</b><span class="s">知识从哪里来</span><br><b>传本谱系</b>共同的异文与错误、承袭关系<br><br><b>贯穿三层</b>内容、载体、用途都可能在传承中改变<br><br><span class="s">例：同一份降日表从道教日历进入类书，再进入通书，内容大致不变，载体与使用者改变。</span></div>',
+        '<div class="ax"><b class="t">Axis of transmission</b><span class="s">Where the knowledge comes from</span><br><b>Textual lineage</b>shared variants and errors; relations of descent<br><br><b>Across all three layers</b>content, carrier and use may all change in transmission<br><br><span class="s">Example: the same table of descent days passes from a Daoist calendar into an encyclopedia and then into an almanac; the content stays largely the same while the carrier and users change.</span></div>') +
     '</div>' +
-    '<div class="units"><div class="lab0">分析单位<div class="small muted" style="font-weight:400">属性各落在不同单位</div></div>' +
-      '<div class="u"><b>条目</b>某日某神某事<br>→ 诞、降、升仙等</div><span class="arr">归入 →</span>' +
-      '<div class="u"><b>组成部分</b>书中一张表或一节<br>→ 时间编排、功能、使用者</div><span class="arr">归入 →</span>' +
-      '<div class="u"><b>书、版本</b>整部书<br>→ 文类、刊刻者、年代</div></div>' +
-    '<div class="card" style="margin-top:18px;font-size:14px"><b>跨层对应＝可检验的假设</b>　例一：生产主体（载体层）与条目构成（内容层）是否对应，如「宫观刊本多记降日」。例二：同一谱系中内容不变、使用者改变，如《事林廣記》把专业日历转入通识类书。</div>';
+    '<div class="units"><div class="lab0">' + L('分析单位', 'Units of analysis') + '<div class="small muted" style="font-weight:400">' + L('属性各落在不同单位', 'each attribute belongs to a different unit') + '</div></div>' +
+      L('<div class="u"><b>条目</b>某日某神某事<br>→ 诞、降、升仙等</div><span class="arr">归入 →</span>', '<div class="u"><b>Entry</b>a deity and an event on a given day<br>→ birthday, descent, ascension, etc.</div><span class="arr">belongs to →</span>') +
+      L('<div class="u"><b>组成部分</b>书中一张表或一节<br>→ 时间编排、功能、使用者</div><span class="arr">归入 →</span>', '<div class="u"><b>Component</b>a table or section in a book<br>→ temporal arrangement, function, users</div><span class="arr">belongs to →</span>') +
+      L('<div class="u"><b>书、版本</b>整部书<br>→ 文类、刊刻者、年代</div></div>', '<div class="u"><b>Book, edition</b>the whole book<br>→ genre, printer, date</div></div>') +
+    L('<div class="card" style="margin-top:18px;font-size:14px"><b>跨层对应＝可检验的假设</b>　例一：生产主体（载体层）与条目构成（内容层）是否对应，如「宫观刊本多记降日」。例二：同一谱系中内容不变、使用者改变，如《事林廣記》把专业日历转入通识类书。</div>',
+      '<div class="card" style="margin-top:18px;font-size:14px"><b>Cross-layer correspondences = testable hypotheses.</b> Example 1: do producers (carrier layer) correspond to the composition of entries (content layer), e.g. “temple editions record more descent days”? Example 2: within one lineage the content stays the same while the users change, e.g. the ' + SL + ' moving a specialist calendar into a general-knowledge encyclopedia.</div>');
   app.innerHTML = h;
 }
 
@@ -712,7 +755,13 @@ function route() {
 }
 window.addEventListener('hashchange', route);
 var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { var v = location.hash; if (!v || v === '#overview' || /^#g\//.test(v)) route(); }, 200); });
-document.getElementById('foot').innerHTML = '数据来源：' + esc(D.source) + '。' + (D.noQuotes ? '公开版：实践记录、《申报》、风俗志及识典古籍所收斋期文本的原文摘录未收入，只列编号、摘要与编码。' : '') + '「已核对原书」目前全部为「否」：原文摘录多据电子文本或资料库全文，引用前请核原书。';
+function footer() {
+  document.getElementById('foot').innerHTML = L('数据来源：' + esc(D.source) + '。' + (D.noQuotes ? '公开版：实践记录、《申报》、风俗志及识典古籍所收斋期文本的原文摘录未收入，只列编号、摘要与编码。' : '') + '「已核对原书」目前全部为「否」：原文摘录多据电子文本或资料库全文，引用前请核原书。',
+    'Data: ' + esc(D.source) + '. ' + (D.noQuotes ? 'Public version: quotations from practice records, the <i>Shenbao</i>, records of customs and calendar texts read in the Shidian guji 識典古籍 database are omitted; only IDs, summaries and codes are given. ' : '') +
+    'No entry has yet been checked against the original book; quotations mostly follow electronic texts or database full text, so verify before citing. Proper names are given in pinyin with Chinese characters (pinyin generated automatically). Dates are lunar month/day. Research notes and summaries remain in Chinese.');
+}
+I.apply();
+footer();
 route();
 })();
 </script>

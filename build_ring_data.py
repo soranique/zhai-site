@@ -26,6 +26,8 @@ import re
 
 import openpyxl
 
+import pinyin_util
+
 
 def clean(v):
     return '' if v is None else str(v).strip()
@@ -160,6 +162,7 @@ def main():
     ap.add_argument('--sheet', help='版本对比工作簿中的页名；不填则按环形历源表读取第一个工作表')
     ap.add_argument('--nature-from', help='用版本页时，从这个环形历源表按原表行号补「性質」')
     ap.add_argument('--edition', default='待确认')
+    ap.add_argument('--edition-en', default='', help='英文界面显示的版本名（书名写成「拼音 汉字」）')
     ap.add_argument('--no-notes', action='store_true', help='清空「附錄」（公开版用）')
     ap.add_argument('-o', '--out', default='ring-data.js')
     a = ap.parse_args()
@@ -177,6 +180,7 @@ def main():
 
     meta = {
         'edition': a.edition,
+        'editionEn': a.edition_en,
         'sourceFile': source,
         'generated': datetime.date.today().isoformat(),
         'count': len(entries),
@@ -187,10 +191,18 @@ def main():
         'fastDays10': [1, 8, 14, 15, 18, 23, 24, 28, 29, 30],
         'notesOmitted': a.no_notes,
     }
+    # 英文版用的拼音：神圣日名称（及去掉「誕」「降」等后的神名，供「一神多日」用）、出处书名
+    strip_ev = re.compile(r'(誕辰|誕|成道|下降|降|朝真|得道|飛昇|出家|成佛|諱辰|降神)$')
+    names = []
+    for e in entries:
+        names += [(e['name'], 'name'), (re.sub(r'^各戶', '', strip_ev.sub('', e['name'])), 'name')]
+    py = pinyin_util.build_map(names)
+    py_title = pinyin_util.build_map([(e['src'], 'title') for e in entries])
+
     with open(a.out, 'w', encoding='utf-8') as f:
         f.write('// 由 build_ring_data.py 自动生成，请勿手改\n')
         f.write('window.ZHAI_RING = ')
-        json.dump({'meta': meta, 'entries': entries}, f, ensure_ascii=False, separators=(',', ':'))
+        json.dump({'meta': meta, 'entries': entries, 'py': py, 'pyTitle': py_title}, f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
     print('写出 %d 条到 %s' % (len(entries), a.out))
     for n, name, s in skipped:

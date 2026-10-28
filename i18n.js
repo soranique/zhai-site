@@ -53,7 +53,11 @@ var CODES = {
   '斋僧': 'Feeding monks', '斋醮（僧道设醮）': 'Jiao rite by clergy', '月斋（非神诞）': 'Monthly fast (not a birthday)', '斋期饮食': 'Fasting-period food',
   '封斋开荤（斋期起讫）': 'Sealing and opening the fast', '规范性论述（斋）': 'Prescriptive discussion of zhai', '生命礼仪斋供': 'Life-cycle vegetarian offering',
   '丧葬中的素': 'Vegetarian food in funerals', '神诞节俗（未言斋）': 'Birthday festival (no fasting mentioned)', '进香（非神诞，未言斋）': 'Pilgrimage (not a birthday, no fasting)',
-  '素食店业': 'Vegetarian food trade', '词义噪音（素事等）': 'Lexical noise', '是': 'Yes', '否': 'No'
+  '素食店业': 'Vegetarian food trade',
+  // 诸本对照
+  '正文': 'Main table', '表后附录': 'Appendix after the table', '专项日表': 'Separate day list',
+  '道藏': 'Daoist Canon', '單行本': 'Separate edition', '單行本（通書）': 'Separate edition (almanac)', '通書': 'Almanac (tongshu)', '通书': 'Almanac (tongshu)',
+  '通書（寫本）': 'Almanac (manuscript)', '通書（鉛印本）': 'Almanac (letterpress)', '日用類書': 'Daily-use encyclopedia', '善書': 'Morality book', '附刻（魯班經）': 'Appended to the Lu Ban jing 魯班經', '词义噪音（素事等）': 'Lexical noise', '是': 'Yes', '否': 'No'
 };
 
 var MON = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12, '冬': 11, '腊': 12, '臘': 12 };

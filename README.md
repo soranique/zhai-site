@@ -11,6 +11,13 @@
 - **神明档案**：单个神明在各版本中的条目、经典核查、实践记录、《申报》与风俗志
 - **缺口**：自动统计的待做事项
 
+右上角「EN／中文」按钮切换中英文界面，选择会记在浏览器里；网址加 `?lang=en` 可直接打开英文版（如 `https://soranique.github.io/zhai-site/?lang=en#ring`）。英文版的规则：
+
+- 人名、神名、地名、书名不翻译，写成「拼音 汉字」，书名拼音为斜体（如 *Yuxiaji* 玉匣記、Guanyin 观音）。拼音由程序自动生成，难免有分词或多音字错误，发现后在 `pinyin_util.py` 的 `FIX` 里补一条再重新生成数据即可。
+- 编码取值（证据强度、时段、D/A/C/B 等）给出英文；农历日期写成「月/日」（如 6/24）。
+- 研究笔记、摘要、原文引文保持中文。
+- 界面文字在 `index.html`、`ring.js` 里以 `L('中文', 'English')` 成对书写；编码的英文在 `i18n.js` 的 `CODES`。
+
 下一步研究方向见 [研究方向.md](研究方向.md)。
 
 ## 更新数据
@@ -18,14 +25,15 @@
 网站数据都在 `data.js` 里，由 Excel 数据库自动生成。数据库更新后：
 
 1. 在 Excel 或 WPS 里打开数据库并保存一次（这样公式格子才有值）。
-2. 运行：`python3 build_data.py 持斋研究数据库.xlsx --no-quotes`（`--no-quotes` 去掉原文摘录，公开网站用这个）（需要先装 `openpyxl`：`pip install openpyxl`）。
+2. 运行：`python3 build_data.py 持斋研究数据库.xlsx --no-quotes`（`--no-quotes` 去掉原文摘录，公开网站用这个）（需要先装：`pip install openpyxl pypinyin opencc-python-reimplemented jieba`；后三个用于英文版的拼音，没装也能运行，只是英文版不显示拼音）。
 3. 把新生成的 `data.js` 上传到这个仓库，替换旧文件。
 
 环形历的数据单独放在 `ring-data.js`（编号是另一套四位数神明编号，与 `data.js` 的 G001 等不对应）。目前取自「玉匣記版本对比」工作簿中的《同善錄》正心致福齋期一页，「性質」按原表行号从环形历源表补上，公开版清空「附錄」：
 
 ```
 python3 build_ring_data.py 玉匣記版本对比.xlsx --sheet "1821-1861暫定_道光咸豐_同善錄正心致福齋期_待填" \
-  --nature-from ring_source.xlsx --edition "《同善錄》正心致福齋期（道光咸豐间，1821–1861，暂定；刊者待填）" --no-notes
+  --nature-from ring_source.xlsx --edition "《同善錄》正心致福齋期（道光咸豐间，1821–1861，暂定；刊者待填）" \
+  --edition-en "<i>Tongshan lu</i> 同善錄, Zhengxin zhifu zhaiqi 正心致福齋期 (Daoguang 道光–Xianfeng 咸豐 era, 1821–1861, provisional; publisher unknown)" --no-notes
 ```
 
 不会运行程序也没关系：把新的 Excel 交给 Claude，说「更新网站数据」即可。

@@ -44,10 +44,6 @@ def sheet_rows(wb, name):
     return out
 
 
-# 公开版只保留开放文本（Kanripo 道藏本、CBETA）的斋期表原文
-OPEN_TEXT = {'W001', 'W014'}
-
-
 def main(path, no_quotes=False):
     wb = openpyxl.load_workbook(path, data_only=True)
 
@@ -66,30 +62,9 @@ def main(path, no_quotes=False):
         'dates': g['主要日期（农历）'], 'dateSrc': g['日期出处'], 'note': g['备注'],
     } for g in gods]
 
-    # 斋期表里没有神明ID、但有神名的条目：用 X 开头的临时编号归组（不写回数据库）
-    extra = {}
-
-    def god_key(gid, name):
-        if gid:
-            return gid
-        if not name:
-            return ''
-        if name not in extra:
-            extra[name] = 'X%02d' % (len(extra) + 1)
-            deities.append({'id': extra[name], 'name': name, 'alias': '', 'type': '未建档',
-                            'dates': '', 'dateSrc': '', 'note': '神明表中尚无此条，只见于斋期表'})
-        return extra[name]
-
-    calendar = []
-    for c in cal:
-        calendar.append({
-            'id': c['条目ID'], 'w': c['文献ID'], 'loc': c['卷叶'], 'm': c['月'], 'd': c['日'],
-            'mn': month_no(c['月']), 'g': god_key(c['神明ID'], c['神明']), 'zhai': c['斋名'],
-            'label': c['原文所标类型'], 'kind': c['编码日期类型'], 'req': c['节制要求'],
-            'cmp': c['与前一版本相比'], 'text': c['原文'], 'note': c['备注'],
-        })
-
-    used_w = {c['w'] for c in calendar}
+    # 斋历条目改以「玉匣記版本对比」工作簿为唯一来源（见 build_editions.py）；
+    # 本数据库「斋期表条目」已并入工作簿，这里不再输出。cal 只用来认出哪些文献是斋历。
+    used_w = {c['文献ID'] for c in cal}
     versions = []
     for wid, t in texts.items():
         if wid in used_w or t.get('含斋期表') == '是' or t.get('史料类型') == '斋期表':
@@ -98,7 +73,6 @@ def main(path, no_quotes=False):
                 'id': wid, 'title': t['题名'], 'ed': t['版本'], 'author': t['编者/作者'],
                 'date': t['成书/刊刻时间'], 'year': int(yr.group()) if yr else None,
                 'status': t['获取状态'], 'note': t['备注'],
-                'n': sum(1 for c in calendar if c['w'] == wid),
             })
     versions.sort(key=lambda v: (v['year'] or 9999, v['id']))
 
@@ -161,9 +135,6 @@ def main(path, no_quotes=False):
                        'ex': r['相关摘录'], 'sig': r['对本研究的意义']})
 
     if no_quotes:
-        for c in calendar:
-            if c['w'] not in OPEN_TEXT:
-                c['text'] = ''
         for r in practice + sb + fs:
             r['text'] = ''
 
@@ -174,12 +145,6 @@ def main(path, no_quotes=False):
         names += [(a.strip(), 'name') for a in re.split(r'[、，,；;]', g['alias']) if a.strip()]
     for v in versions:
         titles.append((v['title'], 'title'))
-    for c in calendar:
-        names += [(c['zhai'], 'term')]
-        if c['label'] and len(c['label']) <= 4 and c['w'] == 'W001':  # 道藏本的「聖誕」「成佛」等用语
-            names.append((c['label'], 'term'))
-        if c['req'] and len(c['req']) <= 4:
-            names.append((c['req'], 'term'))
     for p in practice:
         titles.append((p['wt'], 'title'))
         names += [(p['place'], 'name'), (p['pref'], 'name'), (p['who'], 'person'), (p['zhai'], 'term')]
@@ -196,7 +161,7 @@ def main(path, no_quotes=False):
     if not pinyin_util.AVAILABLE:
         print('（未安装 pypinyin / opencc-python-reimplemented，英文版将只显示汉字）')
 
-    data = {'deities': deities, 'versions': versions, 'calendar': calendar, 'practice': practice,
+    data = {'deities': deities, 'versions': versions, 'practice': practice,
             'py': py, 'pyTitle': py_title,
             'shenbao': sb, 'fengsu': fs, 'classics': cl,
             'source': path.split('/')[-1], 'noQuotes': no_quotes}
@@ -204,8 +169,8 @@ def main(path, no_quotes=False):
         f.write('// 由 build_data.py 自动生成，请勿手改\nwindow.ZHAI = ')
         json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
-    print('神明 %d、版本 %d、斋期表条目 %d、实践记录 %d、申报 %d、风俗志 %d' % (
-        len(deities), len(versions), len(calendar), len(practice), len(sb), len(fs)))
+    print('神明 %d、斋历文献 %d、实践记录 %d、申报 %d、风俗志 %d' % (
+        len(deities), len(versions), len(practice), len(sb), len(fs)))
 
 
 if __name__ == '__main__':

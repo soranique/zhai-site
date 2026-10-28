@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ring.css">
 <style>
 :root {
   color-scheme: light;
@@ -212,6 +213,7 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
       <a href="#overview" data-v="overview">概览</a>
       <a href="#matrix" data-v="matrix">版本对照</a>
       <a href="#calendar" data-v="calendar">斋期日历</a>
+      <a href="#ring" data-v="ring">环形历</a>
       <a href="#gods" data-v="gods">神明档案</a>
       <a href="#context" data-v="context">源流与框架</a>
       <a href="#gaps" data-v="gaps">缺口</a>
@@ -223,6 +225,8 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="data.js"></script>
+<script src="ring-data.js"></script>
+<script src="ring.js"></script>
 <script>
 (function () {
 'use strict';
@@ -692,6 +696,7 @@ function viewContext() {
 // ---------- 路由 ----------
 function route() {
   hideTip();
+  if (window.ZhaiRing) ZhaiRing.hideTip();
   var hsh = location.hash.replace(/^#/, '') || 'overview';
   var v = hsh.split('/')[0];
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === (v === 'g' ? 'gods' : v)); });
@@ -701,6 +706,7 @@ function route() {
   else if (v === 'gods') viewGods();
   else if (v === 'gaps') viewGaps();
   else if (v === 'context') viewContext();
+  else if (v === 'ring') { app.innerHTML = ''; ZhaiRing.mount(app, window.ZHAI_RING); }
   else viewOverview();
   window.scrollTo(0, 0);
 }

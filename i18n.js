@@ -21,6 +21,9 @@ function addPinyin(map, titles) {
 var CODES = {
   // 证据强度
   '明确': 'Explicit', '可推断': 'Inferable', '仅日期巧合': 'Date coincidence only',
+  // 实践记录与斋历条目的对应关系（研究者核定）
+  '贴合': 'Fit', '存在偏差': 'With deviation', '存在偏差（无对应条目）': 'Deviation (no matching entry)', '不对应': 'No match',
+  '待查': 'To check', '待确认删除': 'Deletion to confirm',
   // 时段
   '晚明': 'Late Ming', '清代': 'Qing', '晚清民国': 'Late Qing & Republic', '明中期': 'Mid-Ming', '清': 'Qing', '民国': 'Republic', '明末': 'Late Ming', '明萬曆': 'Ming, Wanli 萬曆 era', '明万历': 'Ming, Wanli 萬曆 era',
   // 神明类型

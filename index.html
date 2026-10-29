@@ -136,6 +136,33 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fitd td:first-child { border-left: 3px solid var(--grid); }
 .fday { display: inline-block; margin-right: 10px; white-space: nowrap; }
 .rec.jump { background: var(--hl); transition: background 1.5s; }
+/* ---- 流通地图 ---- */
+.spread { --sea:#dfe8ee; --land:#f8f6f0; --coast:#aeab9f; --f1:#2a78d6; --f2:#eb6834; --f3:#1baf7a; --f5:#7a5bc4; --f6:#b0802a; --f0:#898781; --doc:var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; --f1:#5b9ae6; --f2:#f08a5d; --f3:#3cc996; --f5:#a58ce0; --f6:#d4a54d; } }
+:root[data-theme="dark"] .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; --f1:#5b9ae6; --f2:#f08a5d; --f3:#3cc996; --f5:#a58ce0; --f6:#d4a54d; }
+.spread .sgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .spread .sgrid { grid-template-columns: 1fr; } }
+.spread svg.smap { width: 100%; height: auto; display: block; border-radius: 8px; }
+.spread .sea { fill: var(--sea); } .spread .land { fill: var(--land); stroke: var(--coast); stroke-width: .7; }
+.spread .grat { fill: none; stroke: var(--grid); stroke-width: .5; stroke-dasharray: 2 3; }
+.spread .ibox { fill: var(--sea); stroke: var(--ink-2); stroke-width: 1; } .spread .ireg { fill: none; stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 2; } .spread .ititle { font-size: 12px; fill: var(--ink-2); }
+.spread .sedge { fill: none; stroke-width: 2.2; cursor: pointer; }
+.spread .sedge.inf { stroke-dasharray: 2 4; stroke-width: 2; } .spread .sedge.fam { stroke-dasharray: 7 5; }
+.spread .sedge:hover, .spread .sedge.hl { stroke-width: 4; }
+.spread .hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; }
+.spread .spt { cursor: pointer; } .spread .spt text { font-size: 13px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
+.spread .spt .print { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; } .spread .spt .attr { fill: var(--surface); stroke: var(--accent); stroke-width: 2; } .spread .spt .acq { fill: var(--ink); stroke: var(--surface); stroke-width: 1.5; }
+.spread .dim { opacity: .15; }
+.spread .yr { font-size: 10.5px; fill: var(--ink-2); paint-order: stroke; stroke: var(--page); stroke-width: 3px; }
+.spread .slg { display: grid; grid-template-columns: 34px 1fr; gap: 4px 8px; align-items: center; font-size: 13px; margin-bottom: 10px; }
+.spread .slg svg, .spread .sflt svg { width: 34px; height: 16px; flex: none; }
+.spread .sflt label { display: flex; gap: 6px; align-items: center; font-size: 13px; margin: 3px 0; cursor: pointer; }
+.spread .ssw { display: inline-block; width: 22px; height: 0; border-top: 3px dashed; vertical-align: middle; }
+.spread ul.sev { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+.spread ul.sev li { padding: 6px 0; border-top: 1px solid var(--grid); cursor: pointer; }
+.spread ul.sev li:hover { background: var(--surface-2); }
+.spread .st { font-size: 11px; border: 1px solid var(--axis); border-radius: 4px; padding: 0 4px; margin-left: 4px; color: var(--ink-2); white-space: nowrap; }
+
 .chip .dd { color: var(--muted); margin-right: 3px; }
 /* profile */
 .prof-head { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
@@ -254,6 +281,7 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
       <a href="#calendar" data-v="calendar" data-en="Calendar">斋期日历</a>
       <a href="#fit" data-v="fit" data-en="Practice × calendar">实践与斋历</a>
       <a href="#ring" data-v="ring" data-en="Ring calendar">环形历</a>
+      <a href="#spread" data-v="spread" data-en="Circulation map">流通地图</a>
       <a href="#gods" data-v="gods" data-en="Deities">神明档案</a>
       <a href="#context" data-v="context" data-en="Sources &amp; framework">源流与框架</a>
       <a href="#gaps" data-v="gaps" data-en="Gaps">缺口</a>
@@ -266,8 +294,9 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="i18n.js?v=6ad45e7c"></script>
-<script src="data.js?v=7757cddb"></script>
-<script src="editions-data.js?v=e61648c3"></script>
+<script src="data.js?v=08ee0934"></script>
+<script src="editions-data.js?v=339d8f47"></script>
+<script src="spread-data.js?v=002f7724"></script>
 <script src="ring.js?v=18077e5a"></script>
 <script>
 (function () {
@@ -686,6 +715,117 @@ function viewFit() {
   document.getElementById('fnone').onclick = function () { FIT.open = {}; fill(); };
   document.getElementById('fq').oninput = function (e) { FIT.q = e.target.value.trim(); fill(); };
   document.getElementById('frel').onchange = function (e) { FIT.rel = e.target.value; fill(); };
+}
+
+
+// ---------- 视图：流通地图（数据见 spread-data.js，资料源 tools/spread/spread_sources.json） ----------
+var SP = { on: { doc: true, inf: true, f1: true, f2: true, f3: true, f5: true, f6: true, f0: true }, modern: false };
+function viewSpread() {
+  var M = window.ZHAI_SPREAD;
+  if (!M) { app.innerHTML = '<p>' + L('缺少 spread-data.js。', 'spread-data.js is missing.') + '</p>'; return; }
+  var PL = {}; M.places.forEach(function (p) { PL[p.id] = p; });
+  var pn = function (p) { return I.en() ? esc(p.en) + ' ' + esc(p.name) : esc(p.name); };
+  var FAMEN = { f1: 'Preface by Wang Xiang 王相 (1684)', f2: 'Revised by Zhu Shuolin 朱説霖', f3: 'Wenrui tang 文瑞堂 in the block centre', f5: 'Source of the Daozang text', f6: 'Other preface in place of Wang Xiang’s (dream-book type)', f0: 'Same title at the head of the text; relation to be studied' };
+  var STEN = { '据三浦': 'after Miura', '三浦推测': 'Miura’s conjecture', '推定': 'inferred', '序文所称': 'stated in preface', '署名': 'attribution', '待比对': 'to compare', '待考': 'to study' };
+  var famName = function (k) { return I.en() ? FAMEN[k] : M.fam[k][0]; };
+  var color = function (e) { return e.t === 'fam' ? M.fam[e.f][1] : 'var(--doc)'; };
+  var edgeOn = function (e) { return (e.t === 'fam' ? SP.on[e.f] : SP.on[e.t]) && (!e.modern || SP.modern); };
+  var arrow = function (e) { return e.t !== 'fam' || e.dir ? ' → ' : ' — '; };
+  var line = function (st, dash, w, ar) { return '<svg viewBox="0 0 34 16"><line x1="2" y1="8" x2="' + (ar ? 26 : 32) + '" y2="8" stroke="' + st + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>' + (ar ? '<path d="M25,3 L33,8 L25,13 z" fill="' + st + '"/>' : '') + '</svg>'; };
+  var h = L('<h1>流通地图</h1><p class="lede">《玉匣記》的刊刻地与流通示意。据版本对比工作簿已录的版本与三浦國雄〈通書『玉匣記』初探〉（2002）的著录（工作簿「版本著录_三浦2002」页、数据库文献 W168–W181）整理。地图显示的是<b>现存本子在哪里刊刻、在哪里被抄写或购得</b>，以及<b>哪些版本因共用序文、校者署名或版心而可归为一个家族</b>；不等于斋期条目内容的承传。三浦著录的本子均未目验。底图只画海岸线，不画政区界线。鼠标移到地点或连线上看依据。</p>',
+      '<h1>Circulation map</h1><p class="lede">Where editions of the <i>Yuxiaji</i> 玉匣記 were printed and how copies moved, compiled from the editions in the comparison workbook and from Miura Kunio’s 三浦國雄 survey (2002; workbook sheet 版本著录_三浦2002, database texts W168–W181). The map shows <b>where surviving copies were printed, copied or acquired</b>, and <b>which editions form families through a shared preface, reviser’s name or block-centre label</b>; it does not show the transmission of calendar entries. Editions known only from Miura have not been examined. The base map shows coastlines only, without political boundaries. Hover over a place or line for the evidence.</p>') +
+    '<div class="spread"><div class="sgrid"><div class="card" id="smap"></div><div>' +
+    '<div class="card"><h2 style="margin-top:0">' + L('图例', 'Legend') + '</h2><div class="slg">' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--accent)"/></svg><span>' + L('刊刻地（资料明载）', 'Place of printing (stated)') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/></svg><span>' + L('署名地或暂定刊刻地', 'Place in an attribution, or provisional place of printing') + '</span>' +
+      '<svg viewBox="0 0 34 16"><rect x="12" y="3" width="10" height="10" transform="rotate(45 17 8)" fill="var(--ink)"/></svg><span>' + L('抄写、购得或收藏地（个本证据）', 'Place of copying, purchase or holding (copy-level evidence)') + '</span>' +
+      line('var(--doc)', '', 2.2, 1) + '<span>' + L('个本记录：购书墨书、同版实物', 'Copy-level record: purchase inscription, surviving copy') + '</span>' +
+      line('var(--doc)', '2 4', 2, 1) + '<span>' + L('个本记录，但一端为推定', 'Copy-level record, one end inferred') + '</span>' +
+      line('var(--f1)', '7 5', 2.2, 1) + '<span>' + L('版本家族（共用序文、校者署名、版心），箭头按年代先后；无箭头为方向不定', 'Edition family (shared preface, reviser, block-centre label); arrows follow chronology, no arrow = direction unknown') + '</span></div>' +
+    '<h2>' + L('筛选', 'Filter') + '</h2><div class="sflt" id="sflt">' +
+      '<label><input type="checkbox" data-k="doc"' + (SP.on.doc ? ' checked' : '') + '> ' + line('var(--doc)', '', 2.2, 1) + ' ' + L('个本记录', 'Copy-level record') + '</label>' +
+      '<label><input type="checkbox" data-k="inf"' + (SP.on.inf ? ' checked' : '') + '> ' + line('var(--doc)', '2 4', 2, 1) + ' ' + L('个本记录（一端推定）', 'Copy-level record (one end inferred)') + '</label>' +
+      Object.keys(M.fam).map(function (k) { return '<label><input type="checkbox" data-k="' + k + '"' + (SP.on[k] ? ' checked' : '') + '> <span class="ssw" style="border-color:' + M.fam[k][1] + '"></span> ' + famName(k) + '</label>'; }).join('') +
+      '<label class="small" style="margin-top:6px"><input type="checkbox" id="smod"' + (SP.modern ? ' checked' : '') + '> ' + L('显示 1949 年以后的版本（台湾、北京、武當山）', 'Show editions after 1949 (Taiwan, Beijing, Wudangshan)') + '</label></div></div>' +
+    '<div class="card" style="margin-top:12px"><h2 style="margin-top:0">' + L('连线的依据', 'Evidence for each line') + '</h2><ul class="sev" id="sev"></ul></div>' +
+    '<div class="card" style="margin-top:12px"><h2 style="margin-top:0">' + L('刊刻地不明，未上图', 'Place of printing unknown (not mapped)') + '</h2><ul class="small" style="padding-left:18px;margin:0">' + M.unk.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
+    '</div></div></div>';
+  app.innerHTML = h;
+  function curve(e, ins) {
+    var A = PL[e.a], B = PL[e.b], a = ins ? { x: A.ix, y: A.iy } : A, b = ins ? { x: B.ix, y: B.iy } : B, dx = b.x - a.x, dy = b.y - a.y, Ln = Math.sqrt(dx * dx + dy * dy) || 1;
+    var k = (e.off ? -0.3 : 0.16) * Ln, mx = (a.x + b.x) / 2 - dy / Ln * k, my = (a.y + b.y) / 2 + dx / Ln * k;
+    var sh = function (p, q, r) { var ux = q[0] - p[0], uy = q[1] - p[1], l = Math.sqrt(ux * ux + uy * uy); return [p[0] + ux / l * r, p[1] + uy / l * r]; };
+    var s0 = sh([a.x, a.y], [mx, my], 8), t0 = sh([b.x, b.y], [mx, my], 9);
+    return { d: 'M' + s0[0].toFixed(1) + ',' + s0[1].toFixed(1) + ' Q' + mx.toFixed(1) + ',' + my.toFixed(1) + ' ' + t0[0].toFixed(1) + ',' + t0[1].toFixed(1), mx: mx, my: my };
+  }
+  function edgeTip(e) {
+    var kind = e.t === 'doc' ? L('个本记录', 'Copy-level record') : e.t === 'inf' ? L('个本记录（一端推定）', 'Copy-level record (one end inferred)') : L('版本家族：', 'Edition family: ') + famName(e.f);
+    return '<b>' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</b>' + (e.y ? ' <span class="muted">' + esc(e.y) + '</span>' : '') + '<div class="muted small">' + kind + '<span class="st">' + esc(I.en() ? (STEN[e.st] || e.st) : e.st) + '</span></div><div>' + esc(e.d) + zhNote() + '</div><div class="muted small">' + L('出处：', 'Source: ') + esc(e.src) + '</div>';
+  }
+  function hl(id) {
+    app.querySelectorAll('#smap g[data-e]').forEach(function (g) { var e = M.edges[+g.getAttribute('data-e')]; g.classList.toggle('dim', !!id && e.a !== id && e.b !== id); });
+    app.querySelectorAll('#smap g.spt').forEach(function (g) { var p = g.getAttribute('data-p'); g.classList.toggle('dim', !!id && p !== id && !M.edges.some(function (e) { return edgeOn(e) && ((e.a === id && e.b === p) || (e.b === id && e.a === p)); })); });
+  }
+  function draw() {
+    var W = M.W, H = M.H, R = M.inset.reg, B = M.inset.box;
+    var s = '<svg class="smap" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + L('玉匣記刊刻地与流通示意图', 'Map of Yuxiaji printing places and circulation') + '"><defs>';
+    ['doc', 'f1', 'f2', 'f3', 'f5', 'f6', 'f0'].forEach(function (k) { s += '<marker id="sar-' + k + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" fill="' + (k === 'doc' ? 'var(--doc)' : M.fam[k][1]) + '"/></marker>'; });
+    s += '</defs><rect class="sea" width="' + W + '" height="' + H + '"/><path class="grat" d="' + M.grat + '"/><path class="land" d="' + M.land + '"/>';
+    s += '<path class="ireg" d="M' + R.map(function (c) { return c.join(','); }).join(' L') + ' Z"/>';
+    var edges = function (ins) {
+      M.edges.forEach(function (e, i) {
+        if (!edgeOn(e)) return;
+        if (ins !== !!(PL[e.a].jn && PL[e.b].jn)) return;   // 江南城市之间的连线只画在放大图里
+        var c = curve(e, ins), mk = e.t === 'fam' ? (e.dir ? 'sar-' + e.f : '') : 'sar-doc';
+        s += '<g data-e="' + i + '"><path class="hit" d="' + c.d + '"/><path class="sedge ' + e.t + '" d="' + c.d + '" style="stroke:' + color(e) + '"' + (mk ? ' marker-end="url(#' + mk + ')"' : '') + '/>' +
+          (e.y && !(PL[e.a].jn || PL[e.b].jn) ? '<text class="yr" x="' + c.mx.toFixed(1) + '" y="' + (c.my - 4).toFixed(1) + '" text-anchor="middle">' + esc(e.y) + '</text>' : '') + '</g>';
+      });
+    };
+    var pts = function (ins) {
+      M.places.forEach(function (p) {
+        if (p.modern && !SP.modern) return;
+        if (ins && !p.jn) return;
+        var x = ins ? p.ix : p.x, y = ins ? p.iy : p.y, l = (ins ? M.ilbl[p.id] : M.lbl[p.id]) || [10, 4, 'start'], r = ins ? 1 : (p.jn ? 0.7 : 1);
+        var sym = p.kind === 'acq' ? '<rect class="acq" x="' + (x - 5.5 * r) + '" y="' + (y - 5.5 * r) + '" width="' + 11 * r + '" height="' + 11 * r + '" transform="rotate(45 ' + x + ' ' + y + ')"/>' : '<circle class="' + p.kind + '" cx="' + x + '" cy="' + y + '" r="' + (p.kind === 'print' ? 6.5 : 5.5) * r + '"/>';
+        var nm = I.en() ? p.en : p.name;
+        s += '<g class="spt" data-p="' + p.id + '">' + sym + (!ins && p.jn ? '' : '<text x="' + (x + l[0]) + '" y="' + (y + l[1]) + '" text-anchor="' + (I.en() && l[2] === 'end' ? 'end' : l[2]) + '">' + esc(nm) + '</text>') + '</g>';
+      });
+    };
+    edges(false); pts(false);
+    s += '<text class="ititle" x="' + (R[1][0] + 6) + '" y="' + (R[1][1] + 14) + '">' + L('江南（见放大图）', 'Jiangnan (see inset)') + '</text>';
+    s += '<rect class="ibox" x="' + B[0][0] + '" y="' + B[0][1] + '" width="' + (B[1][0] - B[0][0]) + '" height="' + (B[1][1] - B[0][1]) + '" rx="6"/><path class="land" d="' + M.inset.land + '"/><text class="ititle" x="' + (B[0][0] + 10) + '" y="' + (B[0][1] + 17) + '">' + L('江南放大图', 'Jiangnan inset') + '</text>';
+    edges(true); pts(true);
+    s += '</svg>';
+    var mc = document.getElementById('smap'); mc.innerHTML = s;
+    mc.querySelectorAll('g[data-e]').forEach(function (g) {
+      var e = M.edges[+g.getAttribute('data-e')];
+      g.addEventListener('mousemove', function (ev) { showTip(ev, edgeTip(e)); });
+      g.addEventListener('mouseleave', hideTip);
+    });
+    mc.querySelectorAll('g.spt').forEach(function (g) {
+      var id = g.getAttribute('data-p'), inf = M.info[id] || [];
+      g.addEventListener('mousemove', function (ev) {
+        showTip(ev, '<b>' + pn(PL[id]) + '</b> <span class="muted">' + esc(inf[0] || '') + '</span><ul style="margin:4px 0 0;padding-left:16px">' + inf.slice(1).filter(function (x) { return SP.modern || x.indexOf('［1949 后］') < 0; }).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' + zhNote());
+        hl(id);
+      });
+      g.addEventListener('mouseleave', function () { hideTip(); hl(null); });
+    });
+    document.getElementById('sev').innerHTML = M.edges.map(function (e, i) {
+      if (!edgeOn(e)) return '';
+      return '<li data-i="' + i + '"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + color(e) + ';margin-right:6px"></span><b>' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</b> ' + (e.y ? '<span class="muted">' + esc(e.y) + '</span>' : '') + '<span class="st">' + esc(I.en() ? (STEN[e.st] || e.st) : e.st) + '</span><div class="small">' + esc(e.d) + '</div></li>';
+    }).join('');
+    app.querySelectorAll('#sev li').forEach(function (li) {
+      var i = li.getAttribute('data-i');
+      li.onmouseenter = function () { var g = app.querySelector('#smap g[data-e="' + i + '"] .sedge'); if (g) g.classList.add('hl'); };
+      li.onmouseleave = function () { app.querySelectorAll('#smap .sedge.hl').forEach(function (x) { x.classList.remove('hl'); }); };
+    });
+  }
+  document.getElementById('sflt').addEventListener('change', function (e) {
+    if (e.target.id === 'smod') SP.modern = e.target.checked;
+    else { var k = e.target.getAttribute('data-k'); if (k) SP.on[k] = e.target.checked; }
+    draw();
+  });
+  draw();
 }
 
 // ---------- 视图：神明列表 ----------
@@ -1120,6 +1260,7 @@ function route() {
   else if (v === 'gaps') viewGaps();
   else if (v === 'context') viewContext();
   else if (v === 'ring') viewRing(hsh.split('/')[1]);
+  else if (v === 'spread') viewSpread();
   else viewOverview();
   window.scrollTo(0, 0);
 }

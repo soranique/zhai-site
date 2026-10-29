@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """从「持斋研究数据库.xlsx」生成网站数据 data.js。
 
+神明 ID 自 2026-10-29 起为 ZS###（原 G###，号码不变），以免与研究者自己的神明编码 G####（如 G0303）混淆。
+实践记录的「对应斋期表条目ID」「对应关系」（贴合／存在偏差／不对应／待查…）「对应说明」连接到斋历条目。
+
 用法：python3 build_data.py 持斋研究数据库.xlsx
       python3 build_data.py 持斋研究数据库.xlsx --no-quotes   （公开版：去掉原文摘录）
 （Excel 需在 Excel/WPS 里保存过一次，公式格子才有值。）
@@ -87,7 +90,8 @@ def main(path, no_quotes=False):
             'jn': p['狭义江南'], 'g': p['神明ID'], 'zhai': p['斋名'], 'date': p['日期（农历）'],
             'mn': month_no(p['日期（农历）']), 'form': p['形式'], 'D': p['D 承诺途径'],
             'A': p['A 在场方式'], 'C': p['C 知识来源'], 'B': p['B 关系形态'],
-            'ev': p['证据强度'], 'cal': p['对应斋期表条目ID'], 'text': p['原文摘录'],
+            'ev': p['证据强度'], 'cal': p['对应斋期表条目ID'], 'rel': p.get('对应关系', ''),
+            'relNote': p.get('对应说明', ''), 'text': p['原文摘录'],
             'note': p['备注'],
         })
 
@@ -97,8 +101,8 @@ def main(path, no_quotes=False):
         names = [g['标准名']] + [a for a in re.split(r'[、，,；;]', g['异名']) if len(a) >= 2]
         for n in names:
             alias_map.append((n, g['神明ID']))
-    alias_map += [('释迦', 'G018'), ('佛（释迦）', 'G018'), ('斗', 'G003'), ('雷', 'G005'),
-                  ('九王', 'G004'), ('文昌', 'G028')]
+    alias_map += [('释迦', 'ZS018'), ('佛（释迦）', 'ZS018'), ('斗', 'ZS003'), ('雷', 'ZS005'),
+                  ('九王', 'ZS004'), ('文昌', 'ZS028')]
     alias_map.sort(key=lambda x: -len(x[0]))
 
     def match_gods(s):

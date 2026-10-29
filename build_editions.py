@@ -8,8 +8,9 @@
 - 跨版本对齐用工作簿自己的「建議規範名（對比用）」，不与持斋研究数据库的 G 编号合并
 - 不输出「神明认定备注」「总表核对」（内部批注）
 - 资料来源含「識典／识典」的版本（授权数据库）不输出原文，只给日期、神名、编码
-- 神明总表的「G编号」（已核）或「G编号（候选·待核）」把规范名接到持斋研究数据库的 G 编号；
-  「性質」一并输出（目前网站未用）
+- 神明总表的「斋库神明ID（ZS）」（已核）或「斋库神明ID（候选·待核）」把规范名接到持斋研究数据库的神明 ID
+  （2026-10-29 起由 G### 改为 ZS###，号码不变；旧栏名「G编号」「G编号（候选·待核）」仍可读）；
+  「性質」「神明编码（G####）」（研究者自己的神明编码，与斋库神明 ID 是两套）一并输出
 """
 import argparse
 import json
@@ -65,7 +66,7 @@ def main():
     a = ap.parse_args()
     wb = openpyxl.load_workbook(a.xlsx, data_only=True)
 
-    # 神明总表：规范名 → [G 编号, 是否待核, 性質]
+    # 神明总表：规范名 → [斋库神明 ID（ZS###，多个用 / 或 + 连接）, 是否待核, 性質, 神明编码（G####）]
     norms = {}
     tot = wb['神明总表']
     head = [clean(h) for h in next(tot.iter_rows(max_row=1, values_only=True))]
@@ -74,11 +75,13 @@ def main():
         k = clean(row[0])
         if not k:
             continue
-        conf = clean(row[hc['G编号']]) if 'G编号' in hc else ''
-        cand = clean(row[hc['G编号（候选·待核）']]) if 'G编号（候选·待核）' in hc else ''
-        nat = clean(row[hc['性質']]) if '性質' in hc else ''
-        if conf or cand or nat:
-            norms[k] = [conf or cand, not conf and bool(cand), nat]
+        pick = lambda *names: next((clean(row[hc[n]]) for n in names if n in hc), '')
+        conf = pick('斋库神明ID（ZS）', 'G编号')
+        cand = pick('斋库神明ID（候选·待核）', 'G编号（候选·待核）')
+        nat = pick('性質')
+        gcode = pick('神明编码（G####）')
+        if conf or cand or nat or gcode:
+            norms[k] = [conf or cand, not conf and bool(cand), nat, gcode]
 
     versions, entries, cmap = [], [], {}
     for r in wb['版本目录'].iter_rows(min_row=2, values_only=True):
@@ -139,7 +142,7 @@ def main():
                   f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
     undated = sum(1 for e in entries if not e['m'])
-    print('版本 %d、条目 %d（无法按月日排的 %d 条）、规范名 %d；接到 G 编号的规范名 %d（待核 %d）；C 编号对照 %d' % (
+    print('版本 %d、条目 %d（无法按月日排的 %d 条）、规范名 %d；接到斋库神明 ID 的规范名 %d（待核 %d）；C 编号对照 %d' % (
         len(versions), len(entries), undated, len({e['k'] for e in entries if e['k']}),
         sum(1 for v in norms.values() if v[0]), sum(1 for v in norms.values() if v[1]), len(cmap)))
 

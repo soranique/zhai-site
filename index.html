@@ -223,6 +223,19 @@ table.edm th.edc .vt { writing-mode: vertical-rl; font-size: 12px; max-height: 1
 table.edm td.edc { text-align: center; padding: 5px 3px; min-width: 44px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 table.edm .ox { background: var(--surface-2); }
 table.edm td.dv { color: var(--accent); font-weight: 600; }
+.fheat-wrap { overflow-x: auto; }
+.fheat { display: grid; grid-template-columns: 44px repeat(30, minmax(18px, 1fr)); gap: 2px; min-width: 640px; font-size: 11px; margin: 8px 0 6px; }
+.fh-d { text-align: center; color: var(--muted); font-size: 10px; }
+.fh-m { color: var(--ink-2); align-self: center; white-space: nowrap; }
+.fh-c { height: 22px; border-radius: 3px; background: var(--surface-2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; box-sizing: border-box; }
+.fh-c.l1 { background: color-mix(in srgb, var(--accent) 22%, var(--surface-2)); }
+.fh-c.l2 { background: color-mix(in srgb, var(--accent) 45%, var(--surface-2)); }
+.fh-c.l3 { background: color-mix(in srgb, var(--accent) 72%, var(--surface-2)); }
+.fh-c.l4 { background: var(--accent); }
+.fh-c.pr { background: transparent; border: 1px solid var(--muted); }
+.fh-c.on { outline: 2px solid var(--ink); outline-offset: 1px; }
+.fh-c:hover { outline: 1.5px solid var(--ink-2); }
+.fheat-key .fh-sw { display: inline-block; width: 16px; height: 12px; vertical-align: -2px; margin-right: 2px; cursor: default; }
 table.edm .xn { font-size: 10px; color: var(--muted); margin-left: 1px; }
 table.edm .edn { position: sticky; left: 0; background: var(--surface); z-index: 1; min-width: 130px; max-width: 220px; }
 table.edm thead .edn { z-index: 2; background: var(--surface-2); }
@@ -664,7 +677,34 @@ function viewCalendar() {
 }
 
 // ---------- 视图：实践与斋历 ----------
-var FIT = { q: '', rel: '', open: {} };
+var FIT = { q: '', rel: '', open: {}, unit: 'rec', pres: 'half', day: 0 };
+// 月日热力图：实践记录按所对斋历条目的农历月日落格；「规定」按已获完整文本的版本（见证，1882/1891 算一个）统计
+var FIT_PRES = null;
+function fitPres() {
+  if (FIT_PRES) return FIT_PRES;
+  var K = window.ZHAI_KIN, inc = K && K.incl ? K.incl : [], ws = {}, day = {}, dq = {};
+  ED.entries.forEach(function (e) {
+    var v = ED.versions[e.v], no = +v.no;
+    if (inc.indexOf(no) < 0 || !e.m || !e.d || e.p !== '正文') return;
+    var w = no === 9 ? 8 : no, k = e.m * 100 + e.d; ws[w] = 1;
+    (day[k] = day[k] || {})[w] = 1;
+    if (e.q) (dq[k] = dq[k] || {})[w] = 1;
+  });
+  FIT_PRES = { W: Object.keys(ws).length, day: day, dq: dq };
+  return FIT_PRES;
+}
+var FIT_MN = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
+function FIT_DN(d) { var n = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']; return d <= 10 ? '初' + n[d] : d < 20 ? '十' + n[d - 10] : d === 20 ? '二十' : d < 30 ? '廿' + n[d - 20] : '三十'; }
+function fitDayOf(p) { var e = EBYID[pCal(p)]; return e && e.m && e.d && e.d <= 30 ? e.m * 100 + e.d : 0; }
+function fitHeatHTML() {
+  var sel = function (id, cur, opts) { return '<select id="' + id + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>'; };
+  return '<h2>' + L('月日热力图', 'Lunar-day heat map') + '</h2><p class="lede small">' +
+    L('每格是一个农历日（十二个月 × 三十日），按实践记录所对斋历条目的月日落格；色越深，对上这一天的实践越多。计数单位可换成「不同文献」或「不同地点」，用来区分是多处多书都有记载，还是某一种材料贡献了多条。<b>描边空格</b>是斋历规定了、但没有实践记录对上的日子；「规定」的标准可选，只统计已获完整文本的 15 个见证（1882、1891 两本算一个），只计正文条目。颜色深浅反映的是存世并被收集的记录多少，不等于实际持斋的人数。点格子只看这一天的实践，再点一次取消。',
+      'Each cell is a lunar day (12 months × 30 days); practice records fall on the month and day of the calendar entry they match, and darker means more. The unit can be switched to distinct sources or distinct places, to tell whether a day is attested in many places and books or by many records from one source. <b>Outlined empty cells</b> are days the calendars prescribe but no practice record matches; choose what counts as prescribed. Only the 15 witnesses with a complete text (1882 and 1891 count as one) and main-table entries are counted. Shading reflects how many records survive and were collected, not how many people fasted. Click a cell to show only that day’s practice; click again to clear.') + '</p>' +
+    '<div class="controls">' + L('计数：', 'Count: ') + sel('funit', FIT.unit, [['rec', '实践记录数', 'practice records'], ['src', '不同文献数', 'distinct sources'], ['loc', '不同地点数', 'distinct places']]) +
+    L('　描边（规定但无实践）：', '　Outline (prescribed, no practice): ') + sel('fpres', FIT.pres, [['half', '过半见证列出该日', 'listed by over half the witnesses'], ['any', '至少一个见证列出', 'listed by at least one witness'], ['q', '有明确持斋／戒要求', 'with an explicit abstinence requirement'], ['off', '不描边', 'no outline']]) +
+    '<span class="muted small" id="fhs"></span></div><div class="fheat-wrap"><div class="fheat" id="fheat"></div></div><div class="fheat-key small muted" id="fhk"></div>';
+}
 // 分组：有神明的按神明；没有神明的（经斋名找到）按所对条目的规范名
 function fitKey(p) { var e = EBYID[pCal(p)]; return p.g || ('k:' + (e.k || p.zhai || '—')); }
 function fitName(k) { return k.indexOf('k:') === 0 ? k.slice(2) : gName(k); }
@@ -677,8 +717,8 @@ function viewFit() {
     '<div class="tiles">' + tile(Object.keys(keys).length, L('神明／斋', 'Deities / fasts'), L('有实践对上斋历', 'with practice matched to a calendar')) +
     tile(nFit, L('贴合', 'Fit'), L('实践与斋历条目一致', 'practice and calendar entry agree')) +
     tile(nDev, L('存在偏差', 'With deviation'), L('对得上，但有出入', 'corresponding, but differing')) +
-    tile(nNo, L('不对应', 'No match'), L('斋历未载的实践（研究者判定）', 'practice absent from the calendars (researcher’s judgement)')) + '</div>' +
-    '<div class="controls"><input type="search" id="fq" placeholder="' + L('搜索神名、斋名、文献、地点、记录ID', 'Search deity, fast, source, place, record ID') + '" value="' + esc(FIT.q) + '">' +
+    tile(nNo, L('不对应', 'No match'), L('斋历未载的实践（研究者判定）', 'practice absent from the calendars (researcher’s judgement)')) + '</div>' + fitHeatHTML() +
+    '<h2>' + L('按神明', 'By deity') + '</h2><div class="controls"><input type="search" id="fq" placeholder="' + L('搜索神名、斋名、文献、地点、记录ID', 'Search deity, fast, source, place, record ID') + '" value="' + esc(FIT.q) + '">' +
     '<select id="frel"><option value="">' + L('全部', 'All') + '</option><option value="' + REL_FIT + '"' + (FIT.rel === REL_FIT ? ' selected' : '') + '>' + L('贴合', 'Fit') + '</option><option value="' + REL_DEV + '"' + (FIT.rel === REL_DEV ? ' selected' : '') + '>' + L('存在偏差', 'With deviation') + '</option></select>' +
     '<button type="button" id="fall">' + L('全部展开', 'Expand all') + '</button><button type="button" id="fnone">' + L('全部收起', 'Collapse all') + '</button>' +
     '<span class="muted small" id="fc"></span></div>' +
@@ -695,6 +735,7 @@ function viewFit() {
     var ps = LINKED.filter(function (p) {
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return false;
       if (FIT.rel === REL_DEV && !isDev(p)) return false;
+      if (FIT.day && fitDayOf(p) !== FIT.day) return false;
       if (!q) return true;
       var e = EBYID[pCal(p)];
       return [p.id, p.zhai, p.wt, p.place, p.date, fitName(fitKey(p)), I.py(fitName(fitKey(p))), e.k, e.t, e.g, ED.versions[e.v].short].join(' ').toLowerCase().indexOf(q) >= 0;
@@ -702,7 +743,10 @@ function viewFit() {
     var grp = {}, order = [];
     ps.forEach(function (p) { var k = fitKey(p); if (!grp[k]) { grp[k] = []; order.push(k); } grp[k].push(p); });
     order.sort(function (a, b) { return grp[b].length - grp[a].length || (fitName(a) < fitName(b) ? -1 : 1); });
-    document.getElementById('fc').textContent = L(order.length + ' 组，' + ps.length + ' / ' + LINKED.length + ' 条', order.length + ' groups, ' + ps.length + ' / ' + LINKED.length + ' records');
+    document.getElementById('fc').innerHTML = esc(L(order.length + ' 组，' + ps.length + ' / ' + LINKED.length + ' 条', order.length + ' groups, ' + ps.length + ' / ' + LINKED.length + ' records')) +
+      (FIT.day ? ' <button type="button" id="fday">' + L('只看 ', 'Only ') + esc(I.en() ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : FIT_MN[Math.floor(FIT.day / 100)] + '月' + FIT_DN(FIT.day % 100)) + ' ✕</button>' : '');
+    var fd = document.getElementById('fday'); if (fd) fd.onclick = function () { FIT.day = 0; heat(); fill(); };
+    heat();
     document.getElementById('fb').innerHTML = order.map(function (k) {
       var rs = grp[k].slice().sort(function (a, b) { return (+a.year || 9999) - (+b.year || 9999); });
       var nd = rs.filter(isDev).length, nf = rs.length - nd;
@@ -725,7 +769,52 @@ function viewFit() {
         (open ? rs.map(detail).join('') : '');
     }).join('');
   };
+  var heat = function () {
+    var P = fitPres(), cnt = {}, set = {}, names = {}, max = 0;
+    LINKED.forEach(function (p) {
+      if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return;
+      if (FIT.rel === REL_DEV && !isDev(p)) return;
+      var k = fitDayOf(p); if (!k) return;
+      var u = FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id;
+      (set[k] = set[k] || {})[u] = 1;
+      (names[k] = names[k] || {})[fitName(fitKey(p))] = 1;
+    });
+    Object.keys(set).forEach(function (k) { cnt[k] = Object.keys(set[k]).length; if (cnt[k] > max) max = cnt[k]; });
+    var pres = function (k) {
+      if (FIT.pres === 'off') return false;
+      if (FIT.pres === 'q') return !!P.dq[k];
+      var n = P.day[k] ? Object.keys(P.day[k]).length : 0;
+      return FIT.pres === 'any' ? n > 0 : n * 2 > P.W;
+    };
+    var lv = function (n) { return !n ? 0 : max <= 4 ? Math.min(n, 4) : n <= max * 0.12 ? 1 : n <= max * 0.3 ? 2 : n <= max * 0.6 ? 3 : 4; };
+    var h = '<div></div>', np = 0, nPres = 0;
+    for (var d = 1; d <= 30; d++) h += '<div class="fh-d">' + (d === 1 || d % 5 === 0 ? (I.en() ? d : FIT_DN(d)) : '') + '</div>';
+    for (var m = 1; m <= 12; m++) {
+      h += '<div class="fh-m">' + (I.en() ? m : FIT_MN[m] + '月') + '</div>';
+      for (d = 1; d <= 30; d++) {
+        var k = m * 100 + d, n = cnt[k] || 0, pr = !n && pres(k);
+        if (n) np++; if (pres(k)) nPres++;
+        h += '<div class="fh-c l' + lv(n) + (pr ? ' pr' : '') + (FIT.day === k ? ' on' : '') + '" data-k="' + k + '">' + (n && lv(n) >= 3 ? n : '') + '</div>';
+      }
+    }
+    var el = document.getElementById('fheat'); el.innerHTML = h;
+    el.onmousemove = function (e) {
+      var c = e.target.closest('.fh-c'); if (!c) { hideTip(); return; }
+      var k = +c.getAttribute('data-k'), n = cnt[k] || 0, w = P.day[k] ? Object.keys(P.day[k]).length : 0;
+      var u = { rec: L('条实践记录', ' practice records'), src: L('种文献', ' distinct sources'), loc: L('个地点', ' distinct places') }[FIT.unit];
+      showTip(e, '<b>' + esc(I.en() ? Math.floor(k / 100) + '/' + k % 100 : FIT_MN[Math.floor(k / 100)] + '月' + FIT_DN(k % 100)) + '</b><br>' +
+        (n ? n + u + '<br>' + Object.keys(names[k]).map(function (x) { return N(x); }).join(L('、', ', ')) : L('无实践记录对上', 'no practice matched')) +
+        '<br><span class="muted">' + L('斋历：' + w + ' / ' + P.W + ' 个见证列出该日' + (P.dq[k] ? '；' + Object.keys(P.dq[k]).length + ' 个有持斋／戒要求' : ''), 'Calendars: listed by ' + w + ' of ' + P.W + ' witnesses' + (P.dq[k] ? '; ' + Object.keys(P.dq[k]).length + ' with abstinence requirement' : '')) + '</span>');
+    };
+    el.onmouseleave = hideTip;
+    el.onclick = function (e) { var c = e.target.closest('.fh-c'); if (!c) return; var k = +c.getAttribute('data-k'); FIT.day = FIT.day === k ? 0 : k; fill(); };
+    document.getElementById('fhs').textContent = L('有实践的日子 ' + np + '；规定的日子 ' + nPres + (FIT.pres === 'off' ? '' : '（其中无实践 ' + (nPres - Object.keys(cnt).filter(function (k) { return pres(+k); }).length) + '）'), np + ' days with practice; ' + nPres + ' prescribed days' + (FIT.pres === 'off' ? '' : ' (' + (nPres - Object.keys(cnt).filter(function (k) { return pres(+k); }).length) + ' without practice)'));
+    document.getElementById('fhk').innerHTML = L('色阶（', 'Scale (') + { rec: L('记录数', 'records'), src: L('文献数', 'sources'), loc: L('地点数', 'places') }[FIT.unit] + L('，最多 ', ', max ') + max + L('）：', '): ') +
+      [1, 2, 3, 4].map(function (i) { return '<span class="fh-c l' + i + ' fh-sw"></span>'; }).join('') + L('　少 → 多　', '　few → many　') + '<span class="fh-c pr fh-sw"></span> ' + L('规定但无实践', 'prescribed, no practice');
+  };
   fill();
+  document.getElementById('funit').onchange = function (e) { FIT.unit = e.target.value; heat(); };
+  document.getElementById('fpres').onchange = function (e) { FIT.pres = e.target.value; heat(); };
   document.getElementById('fb').onclick = function (ev) {
     if (ev.target.closest('a')) return;
     var tr = ev.target.closest('tr.fitg'); if (!tr) return;

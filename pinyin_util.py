@@ -79,7 +79,7 @@ FIX = {
     '下元': 'Xiayuan', '解厄': "Jie'e", '水官': 'Shuiguan', '门丞户尉': 'Mencheng Huwei', '户尉': 'Huwei', '门神': 'Menshen',
     '和合': 'Hehe', '曾真人': 'Zeng Zhenren', '汪华': 'Wang Hua', '掠剩': 'Lüesheng', '道明和尚': 'Daoming Heshang',
     '冲和': 'Chonghe', '上圣': 'Shangsheng', '高真': 'Gaozhen', '妙行': 'Miaoxing', '七宿': 'Qixiu', '列宿': 'Liexiu',
-    '七宿星': 'Qixiu xing', '和靖': 'Hejing', '尹大和': 'Yin Dahe', '尹太和': 'Yin Taihe', '行瘟': 'Xingwen',
+    '七宿星': 'Qixiu xing', '和靖': 'Hejing', '尹大和': 'Yin Dahe', '尹太和': 'Yin Taihe', '行瘟': 'Xingwen', '长文真人': 'Changwen Zhenren',
 }
 # 官署、职司的前后缀：分词后若粘在别的字上就拆开（嶽府管…案主者、地府掌…獄主者、…州府）
 SPLIT_SUFFIX = ('主者', '之神', '州府')

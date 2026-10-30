@@ -10,6 +10,7 @@
 - 少数日期：某神（同一日期类型）见于 3 个以上见证、某日期见于该神半数以下的见证者；
   同一本中同类日期超过 3 个者（如逐月下降）不判。同版本（WIT）合为一个见证
 - 「共有的少数日期」：两本都作、而多数本子不作的日期
+- 另输出 minor（少数日期的条目ID）与 common（各神各日期类型的通行日期），「诸本对照」据此标红
 """
 import json
 import re
@@ -84,6 +85,7 @@ def main(path):
     wb = openpyxl.load_workbook(path, read_only=True)
     vers = {r[0]: r[1] for r in wb['版本目录'].iter_rows(min_row=2, values_only=True) if r[1]}
     E = defaultdict(lambda: defaultdict(set))   # (规范名, 类型) → 版本 → {(月, 日)}
+    EID = defaultdict(list)                     # (规范名, 类型, 版本, 月, 日) → [条目ID]
     for no in INCL:
         for r in wb[vers[no]].iter_rows(min_row=2, values_only=True):
             if not r[15] or not r[16] or r[9] not in (None, '正文'):
@@ -92,24 +94,38 @@ def main(path):
             if md:
                 for d in md[1]:
                     E[(r[15], r[6] or '其他')][no].add((md[0], d))
+                    EID[(r[15], r[6] or '其他', no, md[0], d)].append(r[16])
     S = {v: set() for v in INCL}
     for (k, ty), byv in E.items():
         for v, ds in byv.items():
             S[v] |= {(k, ty, m, d) for m, d in ds}
     wit = lambda v: WIT.get(v, v)
     MINOR = defaultdict(set)
+    minor_e = {}      # 条目ID → [异文类型, 少数/独有, 持此日期的见证数, 该神见证数, 通行日期]
+    common = {}       # 规范名 → {类型: '通行日期（见证数/总数）' 或 '多日期神' 或 '见证不足'}
     for (k, ty), byv in E.items():
         ws = {wit(v) for v in byv}
-        if len(ws) < 3 or max(len(ds) for ds in byv.values()) > 3:
+        if len(ws) < 3:
+            common.setdefault(k, {})[ty] = '见证少于 3 个，不判'
+            continue
+        if max(len(ds) for ds in byv.values()) > 3:
+            common.setdefault(k, {})[ty] = '多日期神，不判'
             continue
         sup = defaultdict(set)
         for v, ds in byv.items():
             for md in ds:
                 sup[md].add(wit(v))
+        com = sorted((md for md in sup if len(sup[md]) / len(ws) >= 0.5), key=lambda x: (-len(sup[x]), x))
+        ctext = '、'.join('%s%s（%d/%d）' % (MN[m], DN[d - 1], len(sup[(m, d)]), len(ws)) for m, d in com)
+        common.setdefault(k, {})[ty] = ctext or '无通行日期'
+        cm = {m for m, _ in com}
         for v, ds in byv.items():
             for md in ds:
                 if len(sup[md]) / len(ws) < 0.5:
                     MINOR[v].add((k, ty, md))
+                    for eid in EID[(k, ty, v, md[0], md[1])]:
+                        minor_e[eid] = [('同月异日' if md[0] in cm else '异月') if com else '无通行日期',
+                                        '独有' if len(sup[md]) == 1 else '少数', len(sup[md]), len(ws), ctext]
     pairs = []
     for a, b in combinations(INCL, 2):
         i, u = len(S[a] & S[b]), len(S[a] | S[b])
@@ -130,12 +146,13 @@ def main(path):
         if BASE in (p['a'], p['b']):
             ret[p['b'] if p['a'] == BASE else p['a']] = p['ca'] if p['a'] == BASE else p['cb']
     excl = ['%s（编号%d）：%s' % (vers[k].split('_')[0] + ' ' + vers[k].split('_')[2], k, why) for k, why in EXCL.items() if k in vers]
-    out = dict(source=path.split('/')[-1], nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl)
+    out = dict(source=path.split('/')[-1], nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
+               incl=INCL, minor=minor_e, common=common)
     with open('kinship-data.js', 'w', encoding='utf-8') as f:
         f.write('// 由 build_kinship.py 自动生成，请勿手改\nwindow.ZHAI_KIN = ')
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
-    print('版本 %d、版本对 %d；少数日期 %d 处' % (len(nodes), len(pairs), sum(len(x) for x in MINOR.values())))
+    print('版本 %d、版本对 %d；少数日期 %d 处（条目 %d 条）' % (len(nodes), len(pairs), sum(len(x) for x in MINOR.values()), len(minor_e)))
 
 
 if __name__ == '__main__':

@@ -42,6 +42,7 @@ WORDS = set('''
 苏州 杭州 嘉兴 湖州 松江 常州 镇江 江宁 应天 太仓 常熟 吴江 昆山 元和 长洲 吴县 平湖 海宁 南浔 震泽 盛泽 上海 南汇 嘉定
 宝山 青浦 金山 华亭 娄县 无锡 金匮 江阴 宜兴 溧阳 丹徒 丹阳 金坛 仁和 钱塘 海盐 桐乡 石门 秀水 乌程 归安 德清 武康 长兴
 徽州 休宁 歙县 婺源 汉阳 洞庭 崇明 富阳 绍兴 宁波 慈溪
+南斗 六司 太上 主者 之神 使者 府君 道君 大道君 北阴 天帝 先师 至圣
 诞 诞辰 降 生日 府城 县城 乡镇 五祖 自订 年谱 日记 文集 全集 诗集 杂记 丛书 县志 府志 镇志 宗论 必读 灵验 纪略 岁时 风俗
 '''.split())
 
@@ -70,7 +71,19 @@ FIX = {
     '张仙': 'Zhang Xian', '朱太尉': 'Zhu Taiwei', '葛仙翁': 'Ge Xianweng', '萨祖师': 'Sa Zushi', '汪公': 'Wang Gong',
     '辛天君': 'Xin Tianjun', '关王': 'Guan Wang', '万历': 'Wanli', '乐园': 'Leyuan', '长洲': 'Changzhou', '长兴': 'Changxing', '石门': 'Shimen', '吴县': 'Wuxian',
     '常熟人家': 'Changshu renjia', '吴江人家': 'Wujiang renjia', '长生': 'changsheng',
+    # 2026-10-29 拼音核对：统一分词与多音字
+    '主者': 'Zhuzhe', '之神': 'Zhishen', '南斗': 'Nandou', '六司': 'Liusi', '太上': 'Taishang',
+    '至圣先师': 'Zhisheng Xianshi', '道君': 'Daojun', '大道君': 'Da Daojun', '北阴': 'Beiyin', '天帝': 'Tiandi',
+    '都元帅': 'Du Yuanshuai', '都水': 'Dushui', '都佥押': 'Du Qianya', '都城隍': 'Du Chenghuang', '都督': 'Dudu',
+    '长素': 'changsu', '智藏': 'Zhizang', '徐来勒': 'Xu Laile', '太姥': 'Taimu', '天姥': 'Tianmu', '浔州': 'Xunzhou', '血湖': 'Xuehu', '索命': 'Suoming', '善报': 'Shanbao',
+    '下元': 'Xiayuan', '解厄': "Jie'e", '水官': 'Shuiguan', '门丞户尉': 'Mencheng Huwei', '户尉': 'Huwei', '门神': 'Menshen',
+    '和合': 'Hehe', '曾真人': 'Zeng Zhenren', '汪华': 'Wang Hua', '掠剩': 'Lüesheng', '道明和尚': 'Daoming Heshang',
+    '冲和': 'Chonghe', '上圣': 'Shangsheng', '高真': 'Gaozhen', '妙行': 'Miaoxing', '七宿': 'Qixiu', '列宿': 'Liexiu',
+    '七宿星': 'Qixiu xing', '和靖': 'Hejing', '尹大和': 'Yin Dahe', '尹太和': 'Yin Taihe', '行瘟': 'Xingwen', '长文真人': 'Changwen Zhenren',
 }
+# 官署、职司的前后缀：分词后若粘在别的字上就拆开（嶽府管…案主者、地府掌…獄主者、…州府）
+SPLIT_SUFFIX = ('主者', '之神', '州府')
+SPLIT_PREFIX = ('管', '掌')
 # 词典里有、但会把神名拆错的词
 BLOCK = {'佛诞', '神诞', '圣诞', '真人诞'}
 
@@ -91,6 +104,9 @@ def _init():
         for w in list(WORDS) + list(_FIX):
             if len(w) > 1:
                 jieba.add_word(w, freq=200000)
+        for w in ('案主', '狱主', '主者', '府管', '府掌'):
+            jieba.del_word(w)
+        jieba.add_word('主者', freq=500000)
 
 
 def _segments(s):
@@ -106,13 +122,38 @@ def _segments(s):
                 break
     if jieba:
         out = []
+        prev = ''
         for w in jieba.cut(s, HMM=True):
+            pieces = [w]
             # 「宝胜佛诞」：把结尾的「诞」「降」分开
             if len(w) > 1 and w[-1] in '诞降' and w not in _FIX:
-                out += [(w[:-1], True), (w[-1], True)]
+                pieces = [w[:-1], w[-1]]
+            res = []
+            for x in pieces:
+                # 「府」「都」之后的「管」「掌」是动词，单独成词
+                if len(x) > 1 and x[0] in SPLIT_PREFIX and (prev.endswith('府') or prev.endswith('都')) and x not in _FIX:
+                    res += [x[0]]; x = x[1:]
+                for suf in SPLIT_SUFFIX:
+                    if len(x) > len(suf) and x.endswith(suf) and x not in _FIX:
+                        head = x[:-len(suf)]
+                        if suf == '州府':
+                            res += [head + '州', '府']
+                        else:
+                            res += [head, suf]
+                        break
+                else:
+                    res.append(x)
+                prev = res[-1]
+            out += [(x, True) for x in res if x]
+        # 「…案」「…獄」接「主者」时，「案」「獄」单独成词（避免「命案」「报案」「河狱」粘连）
+        fixed = []
+        for j, (x, kn) in enumerate(out):
+            nxt = out[j + 1][0] if j + 1 < len(out) else ''
+            if nxt == '主者' and len(x) > 1 and x[-1] in '案狱' and x not in _FIX:
+                fixed += [(x[:-1], True), (x[-1], True)]
             else:
-                out.append((w, True))
-        return out
+                fixed.append((x, kn))
+        return fixed
     # 连续的单字（未登录）两两合成一词；剩一个就并入前一组
     merged, run = [], []
 

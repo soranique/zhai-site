@@ -195,7 +195,9 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .godlist { columns: 4 160px; font-size: 14px; }
 .godlist a { display: block; text-decoration: none; color: var(--ink); padding: 1px 0; }
 .godlist a span { color: var(--muted); font-size: 12px; }
-svg text { fill: var(--ink-2); font-size: 11px; font-family: inherit; }
+/* 环形历（.zr）自己在 svg 属性上定字号与颜色，不受这条通用规则影响 */
+svg text:not(.zr *) { fill: var(--ink-2); font-size: 11px; font-family: inherit; }
+.zr svg text { font-family: inherit; }
 svg .axis { stroke: var(--axis); }
 svg .gridl { stroke: var(--grid); }
 .tip {
@@ -311,9 +313,9 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="i18n.js?v=6ad45e7c"></script>
-<script src="data.js?v=08ee0934"></script>
-<script src="editions-data.js?v=339d8f47"></script>
-<script src="kinship-data.js?v=18ceeffc"></script>
+<script src="data.js?v=e0efbbad"></script>
+<script src="editions-data.js?v=eef9566f"></script>
+<script src="kinship-data.js?v=7ef0b46f"></script>
 <script src="spread-data.js?v=002f7724"></script>
 <script src="ring.js?v=18077e5a"></script>
 <script>
@@ -1218,15 +1220,21 @@ function edIndex() {
     if (e.m && e.d) r.first = Math.min(r.first, e.m * 100 + e.d);
   });
   Object.keys(rows).forEach(function (k) {
-    var r = rows[k], cnt = {};
+    var r = rows[k];
     r.nv = Object.keys(r.by).length;
     r.yx = Object.keys(r.by).some(function (v) { return ED.versions[v].yuxia; });
-    // 各版本「第一个日期」中最常见的一个，作为比较的基准
-    Object.keys(r.by).forEach(function (v) { var e = r.by[v].filter(function (x) { return x.m && x.d; })[0]; if (e) { var md = e.m + '/' + e.d; cnt[md] = (cnt[md] || 0) + 1; } });
-    r.mode = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; })[0] || '';
   });
   EDX = { order: order, rows: rows, list: Object.keys(rows).map(function (k) { return rows[k]; }) };
   return EDX;
+}
+// 少数日期：与「版本亲疏」「日期异文」同一算法（build_kinship.py 输出 minor / common）
+function edMinor(e) { var K = window.ZHAI_KIN; return K && K.minor && K.minor[e.id]; }
+function edJudged(v) { var K = window.ZHAI_KIN; return !!(K && K.incl && K.incl.indexOf(+v.no) >= 0); }
+function edMinorNote(e) {
+  var m = edMinor(e); if (!m) return '';
+  var ty = { '同月异日': ['同月异日', 'same month, other day'], '异月': ['异月', 'other month'], '无通行日期': ['无通行日期', 'no prevailing date'] }[m[0]] || [m[0], m[0]];
+  return '<div class="small" style="color:var(--accent)">' + L((m[1] === '独有' ? '独有日期' : '少数日期') + '（' + m[2] + '/' + m[3] + ' 个见证）· ' + ty[0] + (m[4] ? '；通行：' + esc(m[4]) : ''),
+    (m[1] === '独有' ? 'Unique date' : 'Minority date') + ' (' + m[2] + '/' + m[3] + ' witnesses) · ' + ty[1] + (m[4] ? '; prevailing: ' + esc(m[4]) : '')) + '</div>';
 }
 function edDate(e) { return e.m && e.d ? (I.en() ? e.m + '/' + e.d : esc(e.mo + e.dy)) : esc(DT((e.mo || '') + (e.dy || '')) || '—'); }
 function edV(v, long) { return (long ? N(v.short) : esc(v.short)) + (v.pub && v.pub !== '待填' ? ' <span class="muted small">' + esc(v.pub) + '</span>' : ''); }
@@ -1237,7 +1245,7 @@ function viewEditions() {
   if (!X) { app.innerHTML = '<p>' + L('缺少 editions-data.js。', 'editions-data.js is missing.') + '</p>'; return; }
   var multi = X.list.filter(function (r) { return r.nv >= 2; }).length;
   var h = L('<h1>诸本对照</h1><p class="lede">「玉匣記及其他斋历：版本横向对比」工作簿中已录入的全部版本，逐条对照。各版本的神名照录原文；跨版本对齐用工作簿自己的「建議規範名（對比用）」；与持斋研究数据库神明 ID（ZS001 等；2026-10-29 前写作 G001）的对应写在工作簿「神明总表」的「斋库神明ID（ZS）」栏，尚未核对者为程序按名称给出的候选（待核）。「神明编码」（G0303 等）是另一套编号，即研究者自己的神明编码。斋历条目下的「实践：P…」是对上这一条的实践记录。</p>',
-      '<h1>Collated editions</h1><p class="lede">Every edition entered in the workbook “<i>Yuxiaji</i> 玉匣記 and other fasting calendars: comparison across editions”, collated entry by entry. Deity names are transcribed as written in each edition; rows are aligned by the workbook’s own suggested normalized name (jianyi guifan ming 建議規範名). Links to the deity IDs (G001 etc.) of the fasting database are recorded in the G number column of the workbook’s deity table; unverified ones are name-based candidates (to verify).</p>') +
+      '<h1>Collated editions</h1><p class="lede">Every edition entered in the workbook “<i>Yuxiaji</i> 玉匣記 and other fasting calendars: comparison across editions”, collated entry by entry. Deity names are transcribed as written in each edition; rows are aligned by the workbook’s own suggested normalized name (jianyi guifan ming 建議規範名). Links to the deity IDs of the fasting database (ZS001 etc.; written G001 before 2026-10-29) are recorded in the database ID (ZS) column of the workbook’s deity table; unverified ones are name-based candidates (to verify). The deity code (G0303 etc.) is a separate numbering, the researcher’s own deity codes. “Practice: P…” under a calendar entry links the practice records matched to it.</p>') +
     '<div class="tiles">' + tile(ED.versions.length, L('版本', 'editions'), L('其中《玉匣記》系统 ' + ED.versions.filter(function (v) { return v.yuxia; }).length + ' 种', ED.versions.filter(function (v) { return v.yuxia; }).length + ' in the <i>Yuxiaji</i> line')) +
     tile(ED.entries.length, L('条目', 'entries'), '') + tile(X.list.length, L('规范名', 'normalized names'), L('见于两个以上版本的 ' + multi + ' 个', multi + ' appear in two or more editions')) + '</div>';
   h += '<h2>' + L('版本目录', 'Catalogue of editions') + '</h2><div class="scroll"><table><thead><tr><th>' + L('年代', 'Date') + '</th><th>' + L('书名', 'Title') + '</th><th>' + L('文本类型', 'Type') + '</th><th class="num">' + L('条目', 'Entries') + '</th><th class="num">' + L('神名', 'Names') + '</th><th class="num">' + L('有持斋要求', 'Abstinence req.') + '</th><th>' + L('资料来源', 'Source') + '</th></tr></thead><tbody>' +
@@ -1246,8 +1254,8 @@ function viewEditions() {
       es.forEach(function (e) { if (e.k) nm[e.k] = 1; });
       return '<tr class="row" data-ev="' + v.i + '"><td>' + edWhen(v) + (v.era ? '<br><span class="muted small">' + esc(v.era) + '</span>' : '') + '</td><td><b>' + N(v.short) + '</b>' + (v.yuxia ? '' : ' <span class="tag">' + L('非玉匣記系统', 'not Yuxiaji line') + '</span>') + '<br><span class="muted small">' + esc(v.title) + '</span></td><td class="small">' + esc(C(v.type)) + '</td><td class="num">' + es.length + '</td><td class="num">' + Object.keys(nm).length + '</td><td class="num">' + es.filter(function (e) { return e.q; }).length + '</td><td class="small muted">' + esc(v.src.length > 90 ? v.src.slice(0, 90) + '…' : v.src) + '</td></tr>';
     }).join('') + '</tbody></table></div><p class="small muted">' + L('点一行看该版本的全部条目。', 'Click a row for all entries of that edition.') + '</p>';
-  h += '<h2>' + L('神明 × 版本', 'Deities × editions') + '</h2><p class="lede small">' + L('格中是该神在该版本中的第一个日期（农历），×n 表示该版本有 n 条，○ 表示有条目但日期不是具体月日（如「每月」「六十甲子日」）。<span style="color:var(--accent)">红字</span>表示与各版本最常见的日期不同。灰底的列是《玉匣記》系统以外的文本。点一行看各版本的原文。',
-      'Each cell gives the first (lunar) date of the deity in that edition; ×n means n entries in that edition; ○ means an entry whose date is not a specific month and day (e.g. “every month”, the sixty jiazi days). <span style="color:var(--accent)">Red</span> marks a date that differs from the most common date across editions. Shaded columns are texts outside the <i>Yuxiaji</i> line. Click a row for the original entries.') + '</p>' +
+  h += '<h2>' + L('神明 × 版本', 'Deities × editions') + '</h2><p class="lede small">' + L('格中是该神在该版本中的第一个日期（农历），×n 表示该版本有 n 条，○ 表示有条目但日期不是具体月日（如「每月」「六十甲子日」）。<span style="color:var(--accent)">红字</span>表示该格含「少数日期」：在已获完整文本的版本中，持此日期的不到该神见证的一半（该神须见于 ≥3 个见证；1882、1891 两本算一个见证；一本内同类日期超过 3 个的多日期神不判），与「<a href="#kin">版本亲疏</a>」及工作簿「日期异文」页同一算法；格中只显示第一个日期，红字可能来自同一格的其他条目，悬停可见。未纳入比较的版本不标红。灰底的列是《玉匣記》系统以外的文本。点一行看各版本的原文。',
+      'Each cell gives the first (lunar) date of the deity in that edition; ×n means n entries in that edition; ○ means an entry whose date is not a specific month and day (e.g. “every month”, the sixty jiazi days). <span style="color:var(--accent)">Red</span> marks a cell containing a “minority date”: among the editions with a complete text, fewer than half of the deity’s witnesses give that date (the deity must appear in ≥3 witnesses; the 1882 and 1891 editions count as one witness; deities with more than 3 dates of one type in an edition are not judged). This is the same rule as on the <a href="#kin">Edition kinship</a> page and the workbook sheet 日期异文. Only the first date is shown, so the red may come from another entry in the cell (see hover). Editions outside the comparison are never marked. Shaded columns are texts outside the <i>Yuxiaji</i> line. Click a row for the original entries.') + '</p>' +
     '<div class="controls"><input type="search" id="eq" placeholder="' + L('搜神名（汉字或拼音）', 'Search name (Chinese or pinyin)') + '" value="' + esc(EDF.q) + '">' +
     '<select id="emin">' + [['1', '全部', 'all'], ['2', '见于 ≥2 个版本', 'in ≥2 editions'], ['5', '见于 ≥5 个版本', 'in ≥5 editions'], ['10', '见于 ≥10 个版本', 'in ≥10 editions']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.min === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<select id="efam">' + [['all', '全部文本', 'all texts'], ['yx', '只看《玉匣記》系统', 'Yuxiaji line only']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.fam === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
@@ -1274,8 +1282,8 @@ function viewEditions() {
         var es = r.by[v.i];
         if (!es) return '<td class="edc' + (v.yuxia ? '' : ' ox') + ' cell-empty">·</td>';
         var e = es.filter(function (x) { return x.m && x.d; })[0], md = e ? e.m + '/' + e.d : '';
-        var diff = md && r.mode && md !== r.mode;
-        return '<td class="edc' + (v.yuxia ? '' : ' ox') + (diff ? ' dv' : '') + '" title="' + esc(es.map(function (x) { return (x.mo + x.dy) + ' ' + x.t; }).join('\n')) + '">' + (md || '○') + (es.length > 1 ? '<span class="xn">×' + es.length + '</span>' : '') + '</td>';
+        var diff = edJudged(v) && es.some(edMinor);
+        return '<td class="edc' + (v.yuxia ? '' : ' ox') + (diff ? ' dv' : '') + '" title="' + esc(es.map(function (x) { var m = edMinor(x); return (x.mo + x.dy) + ' ' + x.t + (m ? L('  〔' + m[1] + '日期 ' + m[2] + '/' + m[3] + '〕', '  [' + (m[1] === '独有' ? 'unique' : 'minority') + ' ' + m[2] + '/' + m[3] + ']') : ''); }).join('\n')) + '">' + (md || '○') + (es.length > 1 ? '<span class="xn">×' + es.length + '</span>' : '') + '</td>';
       }).join('') + '</tr>';
     }).join('');
     document.getElementById('edm').innerHTML = head + '<tbody>' + body + '</tbody>';
@@ -1293,15 +1301,21 @@ function viewEditions() {
 }
 function edEntryRow(e, withV) {
   var v = ED.versions[e.v];
-  return '<tr>' + (withV ? '' : '') + '<td>' + edDate(e) + '</td><td>' + esc(e.t) + (e.g && e.g !== e.k ? '<div class="muted small">' + L('神名照录：', 'Name as written: ') + N(e.g) + '</div>' : '') + pLinks(e) + '</td><td>' + (e.l ? N(e.l) : '—') + '</td><td>' + esc(C(e.c) || '—') + '</td><td>' + esc(e.q || '—') + '</td><td class="small muted">' + esc(C(e.p)) + (e.pg ? '<br>' + esc(e.pg) : '') + '</td></tr>';
+  return '<tr>' + (withV ? '' : '') + '<td>' + edDate(e) + edMinorNote(e) + '</td><td>' + esc(e.t) + (e.g && e.g !== e.k ? '<div class="muted small">' + L('神名照录：', 'Name as written: ') + N(e.g) + '</div>' : '') + pLinks(e) + '</td><td>' + (e.l ? N(e.l) : '—') + '</td><td>' + esc(C(e.c) || '—') + '</td><td>' + esc(e.q || '—') + '</td><td class="small muted">' + esc(C(e.p)) + (e.pg ? '<br>' + esc(e.pg) : '') + '</td></tr>';
 }
 var ED_HEAD = function () { return '<th>' + L('日期', 'Date') + '</th><th>' + L('原文', 'Original text') + '</th><th>' + L('原文所标', 'Label') + '</th><th>' + L('编码', 'Code') + '</th><th>' + L('持斋／戒／修持要求', 'Abstinence / precepts') + '</th><th>' + L('位置', 'Position') + '</th>'; };
+function edCommon(k) {
+  var K = window.ZHAI_KIN, c = K && K.common && K.common[k];
+  if (!c) return '';
+  return '<dt>' + L('通行日期', 'Prevailing date') + '</dt><dd>' + Object.keys(c).map(function (ty) { return '<span class="muted small">' + esc(C(ty)) + '</span> ' + esc(I.en() ? ({ '见证少于 3 个，不判': 'fewer than 3 witnesses, not judged', '多日期神，不判': 'many dates, not judged', '无通行日期': 'no prevailing date' }[c[ty]] || DT(c[ty])) : c[ty]); }).join('<br>') +
+    '<div class="muted small">' + L('持此日期的见证占一半以上（见证 = 已获完整文本的版本，1882、1891 算一个）；括号内为持此日期的见证数 / 该神见证数。', 'Dates given by at least half of the witnesses (editions with a complete text; 1882 and 1891 count as one); in brackets: witnesses with the date / witnesses of the deity.') + '</div></dd>';
+}
 function viewEdGod(k) {
   var X = edIndex(), r = X && X.rows[k];
   if (!r) { app.innerHTML = '<p>' + L('找不到 ', 'Not found: ') + esc(k) + '</p>'; return; }
   var al = Object.keys(r.alias);
-  var h = '<p class="small"><a href="#editions">' + L('← 诸本对照', '← Collated editions') + '</a></p><div class="prof-head"><h1>' + N(k) + '</h1><span class="muted">' + L('见于 ' + r.nv + ' / ' + ED.versions.length + ' 个版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions') + (r.mode ? L('；最常见日期 ', '; most common date ') + r.mode : '') + '</span></div>' +
-    '<dl class="kv">' + (al.length ? '<dt>' + L('各本写法', 'As written') + '</dt><dd>' + al.map(function (a) { return N(a); }).join(L('、', ', ')) + '</dd>' : '') +
+  var h = '<p class="small"><a href="#editions">' + L('← 诸本对照', '← Collated editions') + '</a></p><div class="prof-head"><h1>' + N(k) + '</h1><span class="muted">' + L('见于 ' + r.nv + ' / ' + ED.versions.length + ' 个版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions') + '</span></div>' +
+    '<dl class="kv">' + edCommon(k) + (al.length ? '<dt>' + L('各本写法', 'As written') + '</dt><dd>' + al.map(function (a) { return N(a); }).join(L('、', ', ')) + '</dd>' : '') +
     (normCode(k) ? '<dt>' + L('神明编码', 'Deity code') + '</dt><dd>' + esc(normCode(k)) + '</dd>' : '') +
     (normGs(k).filter(function (g) { return G[g]; }).length ? '<dt>' + L('神明档案', 'Deity profile') + '</dt><dd>' + normGs(k).filter(function (g) { return G[g]; }).map(function (g) { return godLink(g) + ' <span class="muted small">' + g + '</span>'; }).join(L('、', ', ')) + (normPending(k) ? ' <span class="flag">' + L('按名称对应，待核', 'matched by name, to verify') + '</span>' : '') + '</dd>' : '') + '</dl>' +
     '<div class="scroll"><table><thead><tr><th>' + L('版本', 'Edition') + '</th>' + ED_HEAD() + '</tr></thead><tbody>';

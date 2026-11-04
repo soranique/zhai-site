@@ -619,6 +619,6 @@ window.ZHAI_FR = {
   "No.: ": "N° : ",
   "In: ": "Dans : ",
   "Prevailing date: ": "Date usuelle : ",
-  "🔗 Copy link": "🔗 Copier le lien",
-  "▶ Present": "▶ Présenter"
+  "Copy link": "Copier le lien",
+  "▶︎ Present": "▶︎ Présenter"
 };

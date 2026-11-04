@@ -30,6 +30,10 @@ var TR_EN = { T: ['Daoist', 'azurite'], B: ['Buddhist', 'gamboge'], L: ['Local',
 // 着色方案：nat＝性質（道、佛、地方、儒），kind＝编码日期类型（纪念、成就、巡察、节令、其他）
 // kind 方案沿用同一组颜色与代码 T B L C Q U，只换名称
 var SCHEME = 'nat';
+// 网站传入的选项：focus = { names: [规范名…], label } 只突出这位神；onDay(m, d) 点放大月份中的某一天时调用
+var OPT = {};
+function focusOn() { return !!(OPT.focus && OPT.focus.names && OPT.focus.names.length); }
+function isFocus(r) { return focusOn() && OPT.focus.names.indexOf(r.god) >= 0; }
 var KIND_ZH = { T: '纪念', B: '成就', L: '巡察', C: '节令', Q: '其他', U: '未标' };
 var KIND_EN = { T: 'Commemoration', B: 'Attainment', L: 'Inspection', C: 'Seasonal festival', Q: 'Other', U: 'Unmarked' };
 var KIND_CODE = { '纪念': 'T', '成就': 'B', '巡察': 'L', '节令': 'C', '其他': 'Q' };
@@ -175,8 +179,11 @@ function disc(root, D) {
       b.setAttribute('aria-pressed', k === 'none' ? noneOn() : k === 'all' ? allOn() : !!on[k]);
     });
     Object.keys(cells).forEach(function (k) { cells[k].setAttribute('fill', on.fast && D.TEN.indexOf(k % 100) >= 0 ? 'var(--zr-fast)' : 'var(--zr-cell)'); });
-    slices.forEach(function (o) { o.el.style.opacity = t.indexOf(o.t) >= 0 ? 1 : 0; });
-    rngEls.forEach(function (e, i) { e.setAttribute('opacity', visible(D.ranges[i], t) ? 1 : 0); });
+    var F = focusOn();
+    slices.forEach(function (o) { var v = t.indexOf(o.t) >= 0; o.el.style.opacity = !v ? 0 : !F || isFocus(o.r) ? 1 : 0.1; });
+    rngEls.forEach(function (e, i) { var v = visible(D.ranges[i], t); e.setAttribute('opacity', !v ? 0 : !F || isFocus(D.ranges[i]) ? 1 : 0.1); });
+    // 聚焦神明所在的格子加描边
+    Object.keys(cells).forEach(function (k) { var on = F && (D.byDay[k] || []).some(isFocus); cells[k].setAttribute('stroke', on ? 'var(--zr-ink)' : 'none'); cells[k].setAttribute('stroke-width', on ? 1.2 : 0); });
     if (!sel) {
       var shown = D.all.filter(function (r) { return visible(r, t); }).length;
       var idle = !t.length;
@@ -208,6 +215,18 @@ function disc(root, D) {
         }).join('') + '</ul><p class="zr-hint">' + L('移到某一格看当日详情；点盘外或按 Esc 返回全年。', 'Hover over a cell for that day; click outside the disc or press Esc to return.') + '</p>' + legend();
       return;
     }
+    if (!sel && focusOn()) {
+      var fd = Object.keys(D.byDay).map(Number).filter(function (k) { return D.byDay[k].some(isFocus); }).sort(function (a, b) { return a - b; });
+      var fr = D.ranges.filter(isFocus);
+      panel.innerHTML = '<div class="zr-eyebrow">' + L('聚焦：', 'Focused: ') + esc(OPT.focus.label || '') + '</div>' +
+        (fd.length || fr.length ? '<ul>' + fd.map(function (k) {
+          var l = D.byDay[k].filter(isFocus), m = Math.floor(k / 100), d = k % 100;
+          return '<li><i class="zr-sw" style="background:var(--zr-gold)"></i><div><div class="zr-nm"><a href="javascript:void 0" class="zr-day" data-m="' + m + '" data-d="' + d + '">' + lunarLong(m, d) + '</a></div><div class="zr-sub">' + l.map(function (r) { return NH(r.name); }).join(L('、', '; ')) + '</div></div></li>';
+        }).join('') + fr.map(item).join('') + '</ul>' : '<p class="zr-hint">' + L('本版本没有这位神的条目。', 'This edition has no entry for this deity.') + '</p>') +
+        '<p class="zr-hint">' + L('点日期打开「这一天」，对照各版本与实践记录。', 'Click a date to open “this day”, comparing editions and practice.') + '</p>' + legend();
+      panel.querySelectorAll('.zr-day').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); if (OPT.onDay) OPT.onDay(+a.getAttribute('data-m'), +a.getAttribute('data-d')); }; });
+      return;
+    }
     if (!sel) {
       var top = Object.keys(D.byDay).map(function (k) { return [+k, D.byDay[k]]; }).sort(function (a, b) { return b[1].length - a[1].length; }).slice(0, 4);
       panel.innerHTML = '<div class="zr-eyebrow">' + L('最拥挤的日子', 'The most crowded days') + '</div><ul>' + top.map(function (t) {
@@ -218,7 +237,9 @@ function disc(root, D) {
     var m = Math.floor(sel / 100), d = sel % 100, list = D.byDay[sel] || [];
     var inR = D.ranges.filter(function (r) { var a = rangeOf(r), s = a[0], e = a[1] || a[0]; return m === s[0] && d >= s[1] && d <= e[1]; });
     panel.innerHTML = '<div><div class="zr-pd">' + lunarLong(m, d) + '</div><div class="zr-pmeta">' + nEntries(list.length) + (D.TEN.indexOf(d) >= 0 ? ' · ' + TEN_LAB() : '') + '</div></div>' +
-      (list.length || inR.length ? '<ul>' + list.map(item).join('') + inR.map(item).join('') + '</ul>' : '<p class="zr-hint">' + L('此日没有条目。', 'No entries on this day.') + '</p>') + legend();
+      (list.length || inR.length ? '<ul>' + list.map(item).join('') + inR.map(item).join('') + '</ul>' : '<p class="zr-hint">' + L('此日没有条目。', 'No entries on this day.') + '</p>') +
+      (OPT.onDay ? '<p><button type="button" class="zr-openday">' + L('打开「这一天」：各版本对照实践记录', 'Open “this day”: editions beside practice') + '</button></p>' : '') + legend();
+    var ob = panel.querySelector('.zr-openday'); if (ob) ob.onclick = function () { OPT.onDay(m, d); };
   }
   // 屏幕坐标 → 历盘上的月、日（放大后 viewBox 改变，用 CTM 换算）
   function locate(ev) {
@@ -307,7 +328,7 @@ function disc(root, D) {
   svg.addEventListener('click', function (ev) {
     var m = locate(ev).m;
     if (!zoom) { if (m) zoomTo(m); return; }
-    if (m === zoom) pick(ev); else if (m) zoomTo(m); else zoomOut();
+    if (m === zoom) { pick(ev); var l = locate(ev); if (l.d && OPT.onDay) OPT.onDay(m, l.d); } else if (m) zoomTo(m); else zoomOut();
   });
   apply(); renderPanel();
 }
@@ -494,6 +515,7 @@ window.ZhaiRing = {
     data = data || window.ZHAI_RING;
     if (!data || !data.entries) { el.innerHTML = '<p>' + L('环形历数据未载入。', 'Ring calendar data not loaded.') + '</p>'; return; }
     SCHEME = (data.meta && data.meta.scheme) || 'nat';
+    OPT = opt;
     var D = prepare(data);
     var root = document.createElement('div'); root.className = 'zr';
     if (opt.title !== false) {
@@ -504,6 +526,7 @@ window.ZhaiRing = {
       head.innerHTML = '<div><h1>' + esc(opt.title || L('斋期神谱环形历', 'Ring calendar of sacred days')) + '</h1><p class="zr-lede">' + L('一个版本的全部神圣日，排成一个农历年。', 'All the sacred days of one edition, laid out as a lunar year.') + (data.meta && data.meta.editionHtml ? ' ' + data.meta.editionHtml : EN() && ed ? ' ' + (data.meta.editionEn || NH(ed)) : '') + '</p></div>' +
         '<div class="zr-stats"><div><b>' + D.all.length + '</b><span>' + L('条目', 'entries') + '</span></div><div><b>' + days + '</b><span>' + L('个神圣日', 'sacred days') + '</span></div><div><b>' + Object.keys(gods).length + '</b><span>' + L('位神明', 'deities') + '</span></div><div><b>' + (days ? Math.round(on / days * 100) : 0) + '%</b><span>' + L('神圣日落在十斋日', 'of sacred days fall on the ten fast days') + '</span></div></div>';
       if (opt.headExtra) head.appendChild(opt.headExtra);
+      if (opt.focus && opt.focus.note) { var fn = document.createElement('div'); fn.innerHTML = opt.focus.note; head.appendChild(fn.firstChild); }
       root.appendChild(head);
     }
     el.appendChild(root);

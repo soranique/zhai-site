@@ -155,6 +155,7 @@ var I = {
       if (!el.hasAttribute('data-zh')) el.setAttribute('data-zh', el.innerHTML);
       el.innerHTML = lang === 'zh' ? el.getAttribute('data-zh') : T(el.getAttribute('data-en'));
     });
+    document.querySelectorAll('.top .hbtn:not(#menu), #theme').forEach(function (el) { var t = el.textContent.replace(/^[^\w\u4e00-\u9fff]+/, ''); el.title = t; el.setAttribute('aria-label', t); });
     document.querySelectorAll('#langs [data-lang]').forEach(function (b) { var on = b.getAttribute('data-lang') === lang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.title = { zh: '神诞斋期版本对照', en: 'Deity-Day Fasting Calendars', fr: 'Calendriers de jeûne des fêtes divines' }[lang];
   }

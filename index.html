@@ -175,7 +175,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
 .kin .nd { cursor: pointer; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .kin .eg.dim { opacity: .12; }
-.kin .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; } @media (max-width: 900px) { .kin .kgrid { grid-template-columns: 1fr; } }
+.kin .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; } @media (max-width: 900px) { .kin .kgrid { grid-template-columns: minmax(0, 1fr); } }
 .kin table.hm { border-collapse: collapse; font-size: 11.5px; width: auto; } .kin table.hm th { font-weight: 400; color: var(--ink-2); padding: 2px 4px; white-space: nowrap; background: none; position: static; } .kin table.hm th.r { text-align: right; }
 .kin table.hm td { width: 34px; height: 24px; text-align: center; border: 1px solid var(--page); padding: 0; } .kin table.hm th.c2 { font-size: 10.5px; line-height: 1.25; vertical-align: bottom; width: 34px; white-space: normal; word-break: break-all; padding: 2px 1px; }
 .kin .ksw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; vertical-align: -1px; margin-left: 4px; }
@@ -183,6 +183,41 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 .chip .dd { color: var(--muted); margin-right: 3px; }
 /* profile */
+/* 年代筛选与播放 */
+.tbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 14px 0 10px; padding: 8px 10px; border: 1px solid var(--grid); border-radius: 8px; background: var(--surface); font-size: 13.5px; }
+.tb-l { font-weight: 600; margin-right: 2px; }
+.tb-b, .tb-play { font: inherit; font-size: 13px; border: 1px solid var(--axis); background: none; color: var(--ink-2); border-radius: 999px; padding: 2px 11px; cursor: pointer; }
+.tb-b.on { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 10%, transparent); font-weight: 600; }
+.tb-play { border-color: var(--accent); color: var(--accent); }
+.tb-r { position: relative; display: inline-block; width: 240px; height: 22px; }
+.tb-r input { position: absolute; left: 0; right: 0; top: 0; width: 100%; margin: 0; pointer-events: none; background: none; -webkit-appearance: none; appearance: none; height: 22px; }
+.tb-r input::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); cursor: pointer; margin-top: -5px; }
+.tb-r input::-moz-range-thumb { pointer-events: auto; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); cursor: pointer; }
+.tb-r input::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+.tb-r input:first-child::-webkit-slider-runnable-track { background: var(--grid); border-radius: 2px; }
+.tbar.dim-r .tb-r { opacity: .45; }
+.tb-y { min-width: 84px; font-variant-numeric: tabular-nums; }
+.tb-cur { font-size: 20px; color: var(--accent); }
+.fb-time { margin-left: 14px; }
+@media (max-width: 760px) { .tb-r { width: 100%; } }
+/* 两本对照 */
+.cmp-pick label { display: inline-flex; gap: 6px; align-items: center; }
+.cmp-pick select { max-width: 260px; }
+#cswap { font: inherit; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+.cmp-head, .cmp-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 28px; }
+.cmp-head { position: sticky; top: 0; z-index: 2; background: var(--page); font-weight: 600; font-size: 14px; padding: 8px 0; border-bottom: 2px solid var(--axis); margin-top: 18px; }
+.cmp-m { border-bottom: 1px solid var(--grid); padding: 10px 0 12px; }
+.cmp-mn { font-weight: 600; margin-bottom: 6px; }
+.cmp-cols { position: relative; }
+.cc { display: flex; flex-direction: column; gap: 4px; min-width: 0; position: relative; z-index: 1; }
+.ci { background: var(--surface); border: 1px solid var(--grid); border-radius: 6px; padding: 4px 8px; font-size: 13.5px; line-height: 1.5; }
+.ci.fx { outline: 2px solid var(--accent); }
+.ci-d { display: inline-block; min-width: 1.6em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ci-o { color: var(--accent); }
+.cmp-ln { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; z-index: 0; }
+.cmp-ln path { fill: none; stroke: var(--accent); stroke-width: 1.4; opacity: .75; }
+.cmp-ln circle { fill: var(--accent); }
+@media (max-width: 760px) { .cmp-head, .cmp-cols { grid-template-columns: 1fr; } .cmp-head { position: static; } }
 /* 跨页联动：搜索、聚焦、「这一天」 */
 .gsearch { position: relative; flex: 1 1 220px; max-width: 340px; }
 .gsearch input { width: 100%; font: inherit; font-size: 13px; padding: 4px 10px; border: 1px solid var(--axis); border-radius: 6px; background: var(--surface); color: var(--ink); }
@@ -361,6 +396,7 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
       <a href="#ring" data-v="ring" data-en="Ring calendar">环形历</a>
       <a href="#spread" data-v="spread" data-en="Circulation map">流通地图</a>
       <a href="#kin" data-v="kin" data-en="Edition kinship">版本亲疏</a>
+      <a href="#cmp" data-v="cmp" data-en="Two editions">两本对照</a>
       <a href="#gods" data-v="gods" data-en="Deities">神明档案</a>
       <a href="#context" data-v="context" data-en="Sources &amp; framework">源流与框架</a>
       <a href="#gaps" data-v="gaps" data-en="Gaps">缺口</a>
@@ -523,15 +559,18 @@ function focusNote(what) {
 }
 function focusBar() {
   var el = document.getElementById('focusbar');
-  if (!FOCUS) { el.hidden = true; el.innerHTML = ''; return; }
+  var tOn = typeof TIME !== 'undefined' && timeOn();
+  if (!FOCUS && !tOn) { el.hidden = true; el.innerHTML = ''; return; }
   el.hidden = false;
-  el.innerHTML = '<div class="wrap">' + L('神明聚焦：', 'Focused deity: ') + '<a href="' + focusHref() + '"><b>' + focusName() + '</b></a>' +
+  el.innerHTML = '<div class="wrap">' + (FOCUS ? L('神明聚焦：', 'Focused deity: ') + '<a href="' + focusHref() + '"><b>' + focusName() + '</b></a>' +
     (FOCUS.g ? ' <span class="muted small">' + esc(FOCUS.g) + '</span>' : '') +
     '<span class="muted small">' + L('　各页只突出这位神：环形历、热力图、诸本对照、流通地图、版本对照、斋期日历', '　Every page highlights this deity: ring, heat map, collation, map, editions, calendar') + '</span>' +
-    ' <button type="button" class="linkbtn" data-unfocus>' + L('取消', 'Clear') + '</button></div>';
+    ' <button type="button" class="linkbtn" data-unfocus>' + L('取消', 'Clear') + '</button>' : '') +
+    (tOn ? '<span class="fb-time">' + L('年代：', 'Years: ') + '<b>' + esc(timeLabel()) + '</b><span class="muted small">' + L('（实践与斋历、流通地图、这一天）', ' (practice × calendar, map, this day)') + '</span> <button type="button" class="linkbtn" data-untime>' + L('取消', 'Clear') + '</button></span>' : '') + '</div>';
 }
 document.addEventListener('click', function (e) {
   if (e.target.closest('[data-unfocus]')) { e.preventDefault(); setFocus(null); return; }
+  if (e.target.closest('[data-untime]')) { e.preventDefault(); setTime('all'); return; }
   var f = e.target.closest('[data-focus]');
   if (f) { e.preventDefault(); setFocus(f.getAttribute('data-focus')); return; }
   var d = e.target.closest('[data-day]');
@@ -572,6 +611,8 @@ function renderDay() {
   var vs = EVS.filter(function (v) { return byV[v.i]; }), none = EVS.filter(function (v) { return !byV[v.i]; });
   var ps = [], seen = {};
   es.forEach(function (e) { (PBYE[e.id] || []).forEach(function (p) { if (!seen[p.id]) { seen[p.id] = 1; ps.push({ p: p, e: e }); } }); });
+  var nAllP = ps.length;
+  ps = ps.filter(function (x) { return fYear(x.p); });
   ps.sort(function (a, b) { return (+a.p.year || 9999) - (+b.p.year || 9999); });
   var nFit = ps.filter(function (x) { return x.p.rel === REL_FIT; }).length, nDev = ps.filter(function (x) { return isDev(x.p); }).length;
   var prev = d > 1 ? [m, d - 1] : m > 1 ? [m - 1, 30] : [12, 30], next = d < 30 ? [m, d + 1] : m < 12 ? [m + 1, 1] : [1, 1];
@@ -601,6 +642,7 @@ function renderDay() {
       '<div class="small muted">' + N(p.wt) + ' · ' + L('对上 ', 'matched to ') + esc(x.e.id) + ' ' + edWhen(v) + ' ' + N(v.short) + '</div>' +
       (p.relNote ? '<div class="small">' + L('偏差说明：', 'Deviation: ') + esc(p.relNote) + zhNote() + '</div>' : (isDev(p) ? '<div class="small muted">' + L('偏差说明暂空', 'Deviation note to be written') + '</div>' : '')) + '</div>';
   }).join('');
+  if (timeOn()) h += '<p class="small">' + L('年代筛选：' + timeLabel() + '（全部年代共 ' + nAllP + ' 条）', 'Years: ' + timeLabel() + ' (' + nAllP + ' in all years)') + '</p>';
   h += '<p class="small muted">' + L('每条实践只对一个斋历条目（年代最近的版本），所以右栏只列对上这一天各条目的实践。', 'Each practice record is matched to one entry (the edition closest in date), so this column lists only practice matched to this day’s entries.') + '</p>';
   if (/^#?fit/.test(location.hash)) h += '<p><button type="button" class="linkbtn" id="dpfit">' + L('在「实践与斋历」列表中只看这一天', 'Show only this day in the practice list') + '</button></p>';
   h += '</section></div>';
@@ -695,6 +737,197 @@ function gsMark() { document.querySelectorAll('#gsr .gs-i').forEach(function (a)
   document.addEventListener('click', function (e) { if (!e.target.closest('.gsearch')) out.hidden = true; });
   addEventListener('keydown', function (e) { if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName)) { e.preventDefault(); inp.focus(); inp.select(); } });
 })();
+
+// ---------- 年代：全站共用的年代筛选与播放 ----------
+// 实践记录按「约略年份」或「时段」（研究者编码）筛；流通地图按刊刻、购得等年份筛（时段按 1644、1860 两个暂定界年换成年份）
+var TY0 = 1260, TY1 = 1950;
+var PERIODS = [['晚明', 'Late Ming', 1368, 1643], ['清代', 'Qing', 1644, 1859], ['晚清民国', 'Late Qing & Republic', 1860, 1949]];
+var TIME = { mode: 'all', period: '', lo: TY0, hi: TY1, cur: 0, play: null };
+try { var tsv = JSON.parse(localStorage.getItem('zhai-time') || 'null'); if (tsv && tsv.mode) { TIME.mode = tsv.mode; TIME.period = tsv.period || ''; TIME.lo = +tsv.lo || TY0; TIME.hi = +tsv.hi || TY1; } } catch (e) {}
+var TIME_HOOK = null;   // 当前页面的重绘函数（实践与斋历、流通地图）
+function timeSave() { try { localStorage.setItem('zhai-time', JSON.stringify({ mode: TIME.mode, period: TIME.period, lo: TIME.lo, hi: TIME.hi })); } catch (e) {} }
+function timeOn() { return TIME.mode !== 'all' || !!TIME.play; }
+function timeSpan() {   // 当前生效的年份区间；播放时上限是播放到的年份
+  if (TIME.mode === 'period') { var P = PERIODS.filter(function (x) { return x[0] === TIME.period; })[0]; return P ? [P[2], TIME.play ? TIME.cur : P[3]] : [TY0, TY1]; }
+  if (TIME.mode === 'range' || TIME.play) return [TIME.lo, TIME.play ? TIME.cur : TIME.hi];
+  return [TY0, 9999];
+}
+function timeWindow() {  // 不计播放进度的整个区间（热力图色阶按它定，播放时颜色才不会跳）
+  if (TIME.mode === 'period') { var P = PERIODS.filter(function (x) { return x[0] === TIME.period; })[0]; return P ? [P[2], P[3]] : [TY0, TY1]; }
+  if (TIME.mode === 'range' || TIME.play) return [TIME.lo, TIME.hi];
+  return [TY0, 9999];
+}
+function pYear(p) { var y = parseInt(p.year, 10); return isNaN(y) ? 0 : y; }
+// 实践记录是否在年代范围内：按时段时用研究者的时段编码；按年代时用约略年份（无年份者排除）
+function fYear(p, whole) {
+  if (!timeOn()) return true;
+  var y = pYear(p), s = whole ? timeWindow() : timeSpan();
+  if (TIME.mode === 'period' && !TIME.play) return p.period === TIME.period;
+  if (TIME.mode === 'period' && p.period !== TIME.period) return false;
+  return y > 0 && y >= s[0] && y <= s[1];
+}
+function yearOK(y) { if (!timeOn() || !y) return true; var s = timeSpan(); return y >= s[0] && y <= s[1]; }
+function timeLabel() {
+  if (TIME.play) return TIME.lo + '–' + TIME.cur;
+  if (TIME.mode === 'period') { var P = PERIODS.filter(function (x) { return x[0] === TIME.period; })[0]; return P ? L(P[0], P[1]) : ''; }
+  if (TIME.mode === 'range') return TIME.lo + '–' + TIME.hi;
+  return '';
+}
+function setTime(mode, a, b) {
+  timeStop(true);
+  TIME.mode = mode;
+  if (mode === 'period') TIME.period = a;
+  if (mode === 'range') { TIME.lo = Math.min(a, b); TIME.hi = Math.max(a, b); }
+  timeSave(); focusBar(); timeRedraw();
+}
+function timeRedraw() { if (TIME.play) focusBar(); timeBarSync(); if (TIME_HOOK) TIME_HOOK(); }
+function timeStop(silent) {
+  if (!TIME.play) return;
+  clearInterval(TIME.play); TIME.play = null;
+  if (!silent) { focusBar(); timeRedraw(); }
+}
+function timePlay() {
+  if (TIME.play) { timeStop(); return; }
+  var w = timeWindow(), lo = w[0] === TY0 ? 1500 : w[0], hi = Math.min(w[1], TY1);
+  if (TIME.mode === 'all') { TIME.lo = lo; TIME.hi = hi; }
+  var step = Math.max(1, Math.round((hi - lo) / 70));
+  TIME.cur = lo;
+  TIME.play = setInterval(function () {
+    TIME.cur = Math.min(hi, TIME.cur + step);
+    timeRedraw();
+    if (TIME.cur >= hi) { clearInterval(TIME.play); TIME.play = null; if (TIME.mode === 'all') TIME.mode = 'range'; timeSave(); focusBar(); timeRedraw(); }
+  }, 260);
+  focusBar(); timeRedraw();
+}
+// 年代控件：放在「实践与斋历」「流通地图」页首；状态全站共用
+function timeBarHTML() {
+  var b = function (mode, k, zh, en) { var on = TIME.mode === mode && (mode !== 'period' || TIME.period === k); return '<button type="button" class="tb-b' + (on ? ' on' : '') + '" data-tm="' + mode + '" data-tp="' + k + '">' + L(zh, en) + '</button>'; };
+  return '<div class="tbar" id="tbar"><span class="tb-l">' + L('年代', 'Period') + '</span>' + b('all', '', '全部', 'All') +
+    PERIODS.map(function (P) { return b('period', P[0], P[0], P[1]); }).join('') + b('range', '', '自定起止', 'Custom years') +
+    '<span class="tb-r"><input type="range" id="tlo" min="' + TY0 + '" max="' + TY1 + '" step="1" value="' + TIME.lo + '" aria-label="' + L('起年', 'From') + '"><input type="range" id="thi" min="' + TY0 + '" max="' + TY1 + '" step="1" value="' + TIME.hi + '" aria-label="' + L('止年', 'To') + '"></span>' +
+    '<span class="tb-y" id="tby"></span><button type="button" class="tb-play" id="tplay"></button><span class="tb-n muted small" id="tbn"></span></div>';
+}
+function timeBarWire(countFn) {
+  var bar = document.getElementById('tbar'); if (!bar) return;
+  bar.TB_COUNT = countFn;
+  bar.querySelectorAll('[data-tm]').forEach(function (x) {
+    x.onclick = function () { var m = x.getAttribute('data-tm'); if (m === 'range') setTime('range', TIME.lo, TIME.hi); else setTime(m, x.getAttribute('data-tp')); };
+  });
+  var lo = document.getElementById('tlo'), hi = document.getElementById('thi');
+  var mv = function () { setTime('range', +lo.value, +hi.value); };
+  lo.oninput = mv; hi.oninput = mv;
+  document.getElementById('tplay').onclick = timePlay;
+  timeBarSync();
+}
+function timeBarSync() {
+  var bar = document.getElementById('tbar'); if (!bar) return;
+  bar.querySelectorAll('[data-tm]').forEach(function (x) { var m = x.getAttribute('data-tm'); x.classList.toggle('on', !TIME.play && TIME.mode === m && (m !== 'period' || TIME.period === x.getAttribute('data-tp'))); });
+  var w = timeWindow(), lo = document.getElementById('tlo'), hi = document.getElementById('thi');
+  if (document.activeElement !== lo) lo.value = Math.max(TY0, w[0]); if (document.activeElement !== hi) hi.value = Math.min(TY1, w[1]);
+  bar.classList.toggle('dim-r', TIME.mode !== 'range' && !TIME.play);
+  document.getElementById('tby').innerHTML = TIME.play ? '<b class="tb-cur">' + TIME.cur + '</b>' : esc(timeLabel() || L('全部年代', 'all years'));
+  document.getElementById('tplay').textContent = TIME.play ? L('■ 停止', '■ Stop') : L('▶ 按年代播放', '▶ Play by year');
+  var n = document.getElementById('tbn'); if (n && bar.TB_COUNT) n.textContent = bar.TB_COUNT();
+}
+
+// ---------- 视图：两本对照（比较单位与「版本亲疏」相同：建議規範名＋编码日期类型＋月＋日） ----------
+var CMP = { main: true, undated: false };
+function viewCompare(a, b) {
+  var byNo = function (no) { return ED.versions.filter(function (v) { return +v.no === +no; })[0]; };
+  var K = window.ZHAI_KIN, inc = K && K.incl ? K.incl : [];
+  var A = byNo(a) || byNo(1), B = byNo(b) || byNo(9);
+  if (A === B) B = EVS.filter(function (v) { return v !== A; })[0];
+  var opt = function (sel) { return EVS.map(function (v) { return '<option value="' + esc(v.no) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v.when) + ' ' + esc(I.en() ? NT(v.short) : v.short) + '</option>'; }).join(''); };
+  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && (!CMP.main || e.p === '正文'); }); };
+  var EA = take(A), EB = take(B);
+  var unit = function (e) { return e.k + '|' + (e.c || '') + '|' + e.m + '|' + e.d; };
+  var ident = function (e) { return e.k + '|' + (e.c || ''); };
+  var datedA = EA.filter(function (e) { return e.m && e.d; }), datedB = EB.filter(function (e) { return e.m && e.d; });
+  var UA = {}, UB = {}; datedA.forEach(function (e) { (UA[unit(e)] = UA[unit(e)] || []).push(e); }); datedB.forEach(function (e) { (UB[unit(e)] = UB[unit(e)] || []).push(e); });
+  var shared = Object.keys(UA).filter(function (u) { return UB[u]; });
+  var onlyA = Object.keys(UA).filter(function (u) { return !UB[u]; }), onlyB = Object.keys(UB).filter(function (u) { return !UA[u]; });
+  var union = Object.keys(UA).length + onlyB.length, j = union ? shared.length / union : 0;
+  // 只见于一本的单位：同一神（同日期类型）在另一本作别的日子 → 同月异日（连线）或异月（注明）
+  var IA = {}, IB = {}; onlyA.forEach(function (u) { var e = UA[u][0]; (IA[ident(e)] = IA[ident(e)] || []).push(e); }); onlyB.forEach(function (u) { var e = UB[u][0]; (IB[ident(e)] = IB[ident(e)] || []).push(e); });
+  var pairs = [], other = {};   // other[entry.id] = 另一本的日期
+  Object.keys(IA).forEach(function (id) {
+    if (!IB[id]) return;
+    IA[id].forEach(function (x) {
+      var same = IB[id].filter(function (y) { return y.m === x.m; });
+      same.forEach(function (y) { pairs.push([x.id, y.id]); });
+      (other[x.id] = other[x.id] || []).push.apply(other[x.id], IB[id].map(function (y) { return y; }));
+    });
+    IB[id].forEach(function (y) { (other[y.id] = other[y.id] || []).push.apply(other[y.id], IA[id]); });
+  });
+  var nSM = pairs.length, nDM = 0;
+  Object.keys(other).forEach(function (eid) { if (EBYID[eid] && EBYID[eid].v === A.i && other[eid].some(function (y) { return y.m !== EBYID[eid].m; })) nDM++; });
+  var kp = K && K.pairs ? K.pairs.filter(function (p) { return (p.a === +A.no && p.b === +B.no) || (p.a === +B.no && p.b === +A.no); })[0] : null;
+  var h = L('<h1>两本对照</h1><p class="lede">任选两个版本，按月日对齐，分成三栏：两本共有、只见于甲本、只见于乙本。比较单位与「<a href="#kin">版本亲疏</a>」相同：建議規範名＋编码日期类型＋月＋日，默认只计正文条目。同一位神（同一日期类型）在两本中同月而异日的，用连线把两条连起来；异月的在条目下注明另一本的日期。点日期打开「这一天」。</p>',
+      '<h1>Two editions side by side</h1><p class="lede">Choose two editions; their entries are aligned by month and day in three columns: shared, only in A, only in B. The unit of comparison is the same as on <a href="#kin">Edition kinship</a>: normalized name + coded type of day + month + day, main-table entries only by default. When the same deity (same type of day) falls in the same month but on different days in the two editions, a line joins the two entries; for a different month, the other edition’s date is noted under the entry. Click a date to open “this day”.</p>') +
+    '<div class="controls cmp-pick"><label>' + L('甲本', 'A') + ' <select id="ca">' + opt(A) + '</select></label><button type="button" id="cswap" title="' + L('甲乙互换', 'Swap') + '">⇄</button><label>' + L('乙本', 'B') + ' <select id="cb">' + opt(B) + '</select></label>' +
+    '<label class="small"><input type="checkbox" id="cmain"' + (CMP.main ? ' checked' : '') + '> ' + L('只计正文', 'Main table only') + '</label><label class="small"><input type="checkbox" id="cund"' + (CMP.undated ? ' checked' : '') + '> ' + L('列出无具体月日的条目', 'List entries without a specific day') + '</label></div>' +
+    '<div class="tiles">' + tile(shared.length, L('两本共有', 'Shared'), L('重合度 ', 'Overlap ') + Math.round(j * 100) + '%' + (kp ? L('（版本亲疏页：', ' (kinship page: ') + Math.round(kp.j * 100) + '%）' : '')) +
+    tile(onlyA.length, L('只见于甲本', 'Only in A'), edWhen(A) + ' ' + N(A.short)) + tile(onlyB.length, L('只见于乙本', 'Only in B'), edWhen(B) + ' ' + N(B.short)) +
+    tile(nSM, L('同月异日', 'Same month, other day'), L('连线标出；另有异月 ' + nDM + ' 条', 'joined by lines; ' + nDM + ' more in another month')) + '</div>' +
+    ((inc.indexOf(+A.no) < 0 || inc.indexOf(+B.no) < 0) ? '<p class="small muted">' + L('注意：所选版本中有未纳入「版本亲疏」比较的版本（文本不全或体例不同），这里照样列出，但重合度只作参考。', 'Note: at least one chosen edition is outside the kinship comparison (incomplete text or a different format); it is listed here, but treat the overlap as indicative.') + '</p>' : '');
+  var item = function (e, side) {
+    var o = (other[e.id] || []).map(function (y) { return (y.m === e.m ? '' : '') + y.m + '/' + y.d; });
+    var nm = e.t || e.g || e.k;
+    return '<div class="ci' + (fNorm(e.k) ? ' fx' : '') + '" data-eid="' + esc(e.id) + '"><span class="ci-d dlink" data-day="' + e.m + '/' + e.d + '">' + e.d + '</span> <a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a>' +
+      '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + (nm && nm !== e.k ? '<div class="small">' + esc(nm) + '</div>' : '') +
+      (o.length ? '<div class="small ci-o">' + (side === 'a' ? L('乙本作 ', 'B: ') : L('甲本作 ', 'A: ')) + o.join(L('、', ', ')) + '</div>' : '') + '</div>';
+  };
+  var itemS = function (u) {
+    var x = UA[u][0], y = UB[u][0];
+    return '<div class="ci' + (fNorm(x.k) ? ' fx' : '') + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> <a href="#ed/' + encodeURIComponent(x.k) + '">' + N(x.k) + '</a><span class="muted small"> ' + esc(C(x.c) || '') + '</span>' +
+      ((x.t || '') !== (y.t || '') ? '<div class="small">' + L('甲：', 'A: ') + esc(x.t || x.g || '—') + '</div><div class="small">' + L('乙：', 'B: ') + esc(y.t || y.g || '—') + '</div>' : (x.t && x.t !== x.k ? '<div class="small">' + esc(x.t) + '</div>' : '')) + '</div>';
+  };
+  var byDay = function (u1, u2) { var a1 = u1.split('|'), a2 = u2.split('|'); return +a1[3] - +a2[3]; };
+  h += '<div class="cmp-head"><div>' + L('两本共有', 'Shared') + '</div><div>' + L('只见于甲本', 'Only in A') + '<span class="muted small"> ' + edWhen(A) + ' ' + N(A.short) + '</span></div><div>' + L('只见于乙本', 'Only in B') + '<span class="muted small"> ' + edWhen(B) + ' ' + N(B.short) + '</span></div></div>';
+  for (var m = 1; m <= 12; m++) {
+    var sm = shared.filter(function (u) { return +u.split('|')[2] === m; }).sort(byDay);
+    var am = onlyA.filter(function (u) { return +u.split('|')[2] === m; }).sort(byDay), bm = onlyB.filter(function (u) { return +u.split('|')[2] === m; }).sort(byDay);
+    if (!sm.length && !am.length && !bm.length) continue;
+    h += '<div class="cmp-m" data-m="' + m + '"><div class="cmp-mn">' + monthName(m) + ' <span class="muted small">' + L('共有 ' + sm.length + ' · 甲 ' + am.length + ' · 乙 ' + bm.length, 'shared ' + sm.length + ' · A ' + am.length + ' · B ' + bm.length) + '</span></div><div class="cmp-cols">' +
+      '<div class="cc">' + sm.map(itemS).join('') + '</div><div class="cc">' + am.map(function (u) { return item(UA[u][0], 'a'); }).join('') + '</div><div class="cc">' + bm.map(function (u) { return item(UB[u][0], 'b'); }).join('') + '</div>' +
+      '<svg class="cmp-ln" aria-hidden="true"></svg></div></div>';
+  }
+  if (CMP.undated) {
+    var nk = function (es) { var o = {}; es.filter(function (e) { return !(e.m && e.d); }).forEach(function (e) { (o[ident(e)] = o[ident(e)] || []).push(e); }); return o; };
+    var NA = nk(EA), NB = nk(EB), keys = Object.keys(NA).concat(Object.keys(NB).filter(function (x) { return !NA[x]; }));
+    var col = function (f) { return keys.filter(f).map(function (x) { var e = (NA[x] || NB[x])[0]; return '<div class="ci"><a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a> <span class="muted small">' + esc((e.mo || '') + (e.dy || '')) + '</span></div>'; }).join(''); };
+    h += '<div class="cmp-m"><div class="cmp-mn">' + L('无具体月日（每月、六十甲子日等）', 'No specific day (monthly, sixty jiazi days, etc.)') + '</div><div class="cmp-cols"><div class="cc">' + col(function (x) { return NA[x] && NB[x]; }) + '</div><div class="cc">' + col(function (x) { return NA[x] && !NB[x]; }) + '</div><div class="cc">' + col(function (x) { return !NA[x] && NB[x]; }) + '</div></div></div>';
+  }
+  app.innerHTML = h;
+  putFocusNote(L('它的条目加框', 'its entries are outlined'));
+  var go = function (x, y) { location.hash = 'cmp/' + x + '/' + y; };
+  document.getElementById('ca').onchange = function (e) { go(e.target.value, B.no); };
+  document.getElementById('cb').onchange = function (e) { go(A.no, e.target.value); };
+  document.getElementById('cswap').onclick = function () { go(B.no, A.no); };
+  document.getElementById('cmain').onchange = function (e) { CMP.main = e.target.checked; viewCompare(A.no, B.no); };
+  document.getElementById('cund').onchange = function (e) { CMP.undated = e.target.checked; viewCompare(A.no, B.no); };
+  // 同月异日的连线：甲独有栏的条目 → 乙独有栏的条目
+  var draw = function () {
+    app.querySelectorAll('.cmp-cols').forEach(function (box) {
+      var svg = box.querySelector('.cmp-ln'); if (!svg) return;
+      var r0 = box.getBoundingClientRect(), s = '';
+      svg.setAttribute('width', r0.width); svg.setAttribute('height', r0.height);
+      var cols = box.querySelectorAll('.cc');
+      if (cols.length < 3 || cols[2].getBoundingClientRect().top > cols[1].getBoundingClientRect().bottom - 4) { svg.innerHTML = ''; return; }  // 窄屏三栏上下排列时不画线
+      pairs.forEach(function (pr) {
+        var x = box.querySelector('[data-eid="' + pr[0] + '"]'), y = box.querySelector('[data-eid="' + pr[1] + '"]');
+        if (!x || !y) return;
+        var a = x.getBoundingClientRect(), b = y.getBoundingClientRect();
+        var x1 = a.right - r0.left, y1 = a.top + 14 - r0.top, x2 = b.left - r0.left, y2 = b.top + 14 - r0.top, mx = (x1 + x2) / 2;
+        s += '<path d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '"/><circle cx="' + x1 + '" cy="' + y1 + '" r="2.5"/><circle cx="' + x2 + '" cy="' + y2 + '" r="2.5"/>';
+      });
+      svg.innerHTML = s;
+    });
+  };
+  draw(); setTimeout(draw, 50);
+  var rt; var onR = function () { if (!document.querySelector('.cmp-cols')) { removeEventListener('resize', onR); return; } clearTimeout(rt); rt = setTimeout(draw, 120); };
+  addEventListener('resize', onR);
+}
 
 // 在页首说明之后插入「本页正按聚焦神明显示」
 function putFocusNote(what) {
@@ -988,7 +1221,7 @@ function viewFit() {
     '<div class="tiles">' + tile(Object.keys(keys).length, L('神明／斋', 'Deities / fasts'), L('有实践对上斋历', 'with practice matched to a calendar')) +
     tile(nFit, L('贴合', 'Fit'), L('实践与斋历条目一致', 'practice and calendar entry agree')) +
     tile(nDev, L('存在偏差', 'With deviation'), L('对得上，但有出入', 'corresponding, but differing')) +
-    tile(nNo, L('不对应', 'No match'), L('斋历未载的实践（研究者判定）', 'practice absent from the calendars (researcher’s judgement)')) + '</div>' + fitHeatHTML() +
+    tile(nNo, L('不对应', 'No match'), L('斋历未载的实践（研究者判定）', 'practice absent from the calendars (researcher’s judgement)')) + '</div>' + timeBarHTML() + fitHeatHTML() +
     '<h2>' + L('按神明', 'By deity') + '</h2><div class="controls"><input type="search" id="fq" placeholder="' + L('搜索神名、斋名、文献、地点、记录ID', 'Search deity, fast, source, place, record ID') + '" value="' + esc(FIT.q) + '">' +
     '<select id="frel"><option value="">' + L('全部', 'All') + '</option><option value="' + REL_FIT + '"' + (FIT.rel === REL_FIT ? ' selected' : '') + '>' + L('贴合', 'Fit') + '</option><option value="' + REL_DEV + '"' + (FIT.rel === REL_DEV ? ' selected' : '') + '>' + L('存在偏差', 'With deviation') + '</option></select>' +
     '<button type="button" id="fall">' + L('全部展开', 'Expand all') + '</button><button type="button" id="fnone">' + L('全部收起', 'Collapse all') + '</button>' +
@@ -1005,7 +1238,7 @@ function viewFit() {
   var fill = function () {
     var q = FIT.q.toLowerCase();
     var ps = LINKED.filter(function (p) {
-      if (!fPrac(p)) return false;
+      if (!fPrac(p) || !fYear(p)) return false;
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return false;
       if (FIT.rel === REL_DEV && !isDev(p)) return false;
       if (FIT.day && fitDayOf(p) !== FIT.day) return false;
@@ -1045,7 +1278,7 @@ function viewFit() {
   var heat = function () {
     var P = fitPres(), cnt = {}, set = {}, names = {}, max = 0;
     LINKED.forEach(function (p) {
-      if (!fPrac(p)) return;
+      if (!fPrac(p) || !fYear(p)) return;
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return;
       if (FIT.rel === REL_DEV && !isDev(p)) return;
       var k = fitDayOf(p); if (!k) return;
@@ -1060,6 +1293,11 @@ function viewFit() {
       var n = P.day[k] ? Object.keys(P.day[k]).length : 0;
       return FIT.pres === 'any' ? n > 0 : n * 2 > P.W;
     };
+    if (TIME.play) {  // 播放时色阶按整个年代区间定，格子才是逐年加深、不会忽深忽浅
+      var setW = {};
+      LINKED.forEach(function (p) { if (!fPrac(p) || !fYear(p, true)) return; if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return; if (FIT.rel === REL_DEV && !isDev(p)) return; var k = fitDayOf(p); if (!k) return; (setW[k] = setW[k] || {})[FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id] = 1; });
+      Object.keys(setW).forEach(function (k) { max = Math.max(max, Object.keys(setW[k]).length); });
+    }
     var lv = function (n) { return !n ? 0 : max <= 4 ? Math.min(n, 4) : n <= max * 0.12 ? 1 : n <= max * 0.3 ? 2 : n <= max * 0.6 ? 3 : 4; };
     var h = '<div></div>', np = 0, nPres = 0;
     for (var d = 1; d <= 30; d++) h += '<div class="fh-d">' + (d === 1 || d % 5 === 0 ? (I.en() ? d : FIT_DN(d)) : '') + '</div>';
@@ -1087,6 +1325,8 @@ function viewFit() {
       [1, 2, 3, 4].map(function (i) { return '<span class="fh-c l' + i + ' fh-sw"></span>'; }).join('') + L('　少 → 多　', '　few → many　') + '<span class="fh-c pr fh-sw"></span> ' + L('规定但无实践', 'prescribed, no practice');
   };
   fill();
+  TIME_HOOK = fill;
+  timeBarWire(function () { var n = LINKED.filter(function (p) { return fPrac(p) && fYear(p); }).length; return L('对上斋历的实践 ' + n + ' / ' + LINKED.length + ' 条', n + ' / ' + LINKED.length + ' matched practice records'); });
   document.getElementById('funit').onchange = function (e) { FIT.unit = e.target.value; heat(); };
   document.getElementById('fpres').onchange = function (e) { FIT.pres = e.target.value; heat(); };
   document.getElementById('fb').onclick = function (ev) {
@@ -1118,6 +1358,7 @@ function viewSpread() {
   var line = function (st, dash, w, ar) { return '<svg viewBox="0 0 34 16"><line x1="2" y1="8" x2="' + (ar ? 26 : 32) + '" y2="8" stroke="' + st + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>' + (ar ? '<path d="M25,3 L33,8 L25,13 z" fill="' + st + '"/>' : '') + '</svg>'; };
   var h = L('<h1>流通地图</h1><p class="lede">《玉匣記》的刊刻地与流通示意。据版本对比工作簿已录的版本与三浦國雄〈通書『玉匣記』初探〉（2002）的著录（工作簿「版本著录_三浦2002」页、数据库文献 W168–W181）整理。地图显示的是<b>现存本子在哪里刊刻、在哪里被抄写或购得</b>，以及<b>哪些版本因共用序文、校者署名或版心而可归为一个家族</b>；不等于斋期条目内容的承传。三浦著录的本子均未目验。底图只画海岸线，不画政区界线。鼠标移到地点或连线上看依据。</p>',
       '<h1>Circulation map</h1><p class="lede">Where editions of the <i>Yuxiaji</i> 玉匣記 were printed and how copies moved, compiled from the editions in the comparison workbook and from Miura Kunio’s 三浦國雄 survey (2002; workbook sheet 版本著录_三浦2002, database texts W168–W181). The map shows <b>where surviving copies were printed, copied or acquired</b>, and <b>which editions form families through a shared preface, reviser’s name or block-centre label</b>; it does not show the transmission of calendar entries. Editions known only from Miura have not been examined. The base map shows coastlines only, without political boundaries. Hover over a place or line for the evidence.</p>') +
+    timeBarHTML() + '<p class="small muted" style="margin:-4px 0 10px">' + L('地图按年份显示：地点按说明里所记的刊刻、抄写、购得年份，连线按其年份；「晚明／清代／晚清民国」在地图上暂以 1644、1860 为界（研究的时段界年尚未定）。', 'The map filters by year: places by the years of printing, copying or acquisition in their notes, lines by their own year; on the map “Late Ming / Qing / Late Qing & Republic” use 1644 and 1860 as provisional boundaries (the study’s period boundaries are not yet fixed).') + '</p>' +
     '<div class="spread"><div class="sgrid"><div class="card" id="smap"></div><div>' +
     '<div class="card"><h2 style="margin-top:0">' + L('图例', 'Legend') + '</h2><div class="slg">' +
       '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--accent)"/></svg><span>' + L('刊刻地（资料明载）', 'Place of printing (stated)') + '</span>' +
@@ -1161,7 +1402,7 @@ function viewSpread() {
     s += '<path class="ireg" d="M' + R.map(function (c) { return c.join(','); }).join(' L') + ' Z"/>';
     var edges = function (ins) {
       M.edges.forEach(function (e, i) {
-        if (!edgeOn(e)) return;
+        if (!edgeOn(e) || !edgeYear(e)) return;
         if (ins !== !!(PL[e.a].jn && PL[e.b].jn)) return;   // 江南城市之间的连线只画在放大图里
         var c = curve(e, ins), mk = e.t === 'fam' ? (e.dir ? 'sar-' + e.f : '') : 'sar-doc';
         s += '<g data-e="' + i + '"><path class="hit" d="' + c.d + '"/><path class="sedge ' + e.t + '" d="' + c.d + '" style="stroke:' + color(e) + '"' + (mk ? ' marker-end="url(#' + mk + ')"' : '') + '/>' +
@@ -1171,6 +1412,7 @@ function viewSpread() {
     var pts = function (ins) {
       M.places.forEach(function (p) {
         if (p.modern && !SP.modern) return;
+        if (!placeYear(p)) return;
         if (ins && !p.jn) return;
         var x = ins ? p.ix : p.x, y = ins ? p.iy : p.y, l = (ins ? M.ilbl[p.id] : M.lbl[p.id]) || [10, 4, 'start'], r = ins ? 1 : (p.jn ? 0.7 : 1);
         var sym = p.kind === 'acq' ? '<rect class="acq" x="' + (x - 5.5 * r) + '" y="' + (y - 5.5 * r) + '" width="' + 11 * r + '" height="' + 11 * r + '" transform="rotate(45 ' + x + ' ' + y + ')"/>' : '<circle class="' + p.kind + '" cx="' + x + '" cy="' + y + '" r="' + (p.kind === 'print' ? 6.5 : 5.5) * r + '"/>';
@@ -1184,6 +1426,7 @@ function viewSpread() {
     edges(true); pts(true);
     s += '</svg>';
     var mc = document.getElementById('smap'); mc.innerHTML = s;
+    timeBarSync();
     spFocus = FOCUS ? function () {
       // 收录聚焦神明的版本 → 版本目录编号 → 地点说明中「编号…」所指的地点
       var nos = {}; ED.entries.forEach(function (e) { if (fNorm(e.k)) nos[+ED.versions[e.v].no] = 1; });
@@ -1222,6 +1465,20 @@ function viewSpread() {
       li.onmouseleave = function () { app.querySelectorAll('#smap .sedge.hl').forEach(function (x) { x.classList.remove('hl'); }); };
     });
   }
+  // 年代：地点按说明里各条的年份（刊刻、购得、收藏），连线按其年份；无年份的连线随两端地点显示
+  var lineYear = function (x) { var m = /(1[2-9]\d\d)/.exec(x); return m ? +m[1] : 0; };
+  var placeYear = function (p) {
+    if (!timeOn()) return true;
+    var ys = (M.info[p.id] || []).slice(1).filter(function (x) { return SP.modern || x.indexOf('［1949 后］') < 0; }).map(lineYear).filter(Boolean);
+    return !ys.length || ys.some(yearOK);
+  };
+  var edgeYear = function (e) {
+    if (!timeOn()) return true;
+    if (!placeYear(PL[e.a]) || !placeYear(PL[e.b])) return false;
+    var y = lineYear(String(e.y || '').replace(/^→/, '')); return !y || yearOK(y);
+  };
+  TIME_HOOK = draw;
+  timeBarWire(function () { var n = M.places.filter(function (p) { return (!p.modern || SP.modern) && placeYear(p); }).length; return L('地图上 ' + n + ' 处地点', n + ' places on the map') + (TIME.mode === 'period' || TIME.play ? '' : '') ; });
   document.getElementById('sflt').addEventListener('change', function (e) {
     if (e.target.id === 'smod') SP.modern = e.target.checked;
     else { var k = e.target.getAttribute('data-k'); if (k) SP.on[k] = e.target.checked; }
@@ -1321,12 +1578,12 @@ function viewKinship() {
       ORD.forEach(function (b) {
         if (a.no === b.no) { hm += '<td style="background:var(--surface-2)"></td>'; return; }
         var p = PB[pk(a.no, b.no)], j = p ? p.j : 0;
-        hm += '<td data-k="' + pk(a.no, b.no) + '" style="background:color-mix(in srgb, var(--heat1) ' + Math.round(j * 100) + '%, var(--heat0));color:' + (j > 0.55 ? 'var(--page)' : 'var(--ink-2)') + '">' + (j >= 0.05 ? Math.round(j * 100) : '') + '</td>';
+        hm += '<td data-k="' + pk(a.no, b.no) + '" data-ab="' + a.no + '/' + b.no + '" title="' + esc(L('点击两本并排对照', 'Click to compare side by side')) + '" style="background:color-mix(in srgb, var(--heat1) ' + Math.round(j * 100) + '%, var(--heat0));color:' + (j > 0.55 ? 'var(--page)' : 'var(--ink-2)') + '">' + (j >= 0.05 ? Math.round(j * 100) : '') + '</td>';
       });
       hm += '</tr>';
     });
     var el = document.getElementById('khm'); el.innerHTML = hm + '</tbody></table>';
-    el.querySelectorAll('td[data-k]').forEach(function (td) { td.addEventListener('mousemove', function (e) { var p = PB[td.getAttribute('data-k')]; if (p) showTip(e, pairTip(p)); }); td.addEventListener('mouseleave', hideTip); });
+    el.querySelectorAll('td[data-k]').forEach(function (td) { td.addEventListener('mousemove', function (e) { var p = PB[td.getAttribute('data-k')]; if (p) showTip(e, pairTip(p)); }); td.addEventListener('mouseleave', hideTip); td.style.cursor = 'pointer'; td.addEventListener('click', function () { hideTip(); location.hash = 'cmp/' + td.getAttribute('data-ab'); }); });
   })();
   document.getElementById('kret').innerHTML = ORD.filter(function (n) { return n.no !== K.base && K.ret[n.no] != null; }).map(function (n) {
     var v = K.ret[n.no];
@@ -1722,7 +1979,8 @@ function viewEdVersion(i, jump) {
   var h = '<p class="small"><a href="#editions">' + L('← 诸本对照', '← Collated editions') + '</a></p><h1>' + N(v.short) + '</h1>' +
     '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + esc(v.era) : '') + (v.date ? '<div class="muted small">' + esc(v.date) + '</div>' : '') + '</dd>' +
     '<dt>' + L('书名', 'Title') + '</dt><dd>' + esc(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + esc(v.pub) + '</dd>' : '') +
-    '<dt>' + L('文本类型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('资料来源', 'Source') + '</dt><dd class="small">' + esc(v.src) + '</dd></dl>' +
+    '<dt>' + L('文本类型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('资料来源', 'Source') + '</dt><dd class="small">' + esc(v.src) + '</dd>' +
+    '<dt>' + L('对照', 'Compare') + '</dt><dd><a href="#cmp/' + esc(v.no) + '/' + (+v.no === 1 ? 9 : 1) + '">' + L('与另一版本两本对照', 'Compare with another edition') + '</a></dd></dl>' +
     '<div class="controls" style="margin-top:14px"><input type="search" id="evq" placeholder="' + L('在本版本中搜索', 'Search this edition') + '"><span class="muted small" id="evc"></span></div>' +
     '<div class="scroll"><table><thead><tr><th>#</th>' + ED_HEAD() + '<th>' + L('规范名', 'Normalized name') + '</th></tr></thead><tbody id="evb"></tbody></table></div>';
   app.innerHTML = h;
@@ -1776,7 +2034,7 @@ function route() {
   if (window.ZhaiRing) ZhaiRing.hideTip();
   var hsh = location.hash.replace(/^#/, '') || 'overview';
   var v = hsh.split('/')[0];
-  M.scrolled = 0; EDF.scrolled = 0;
+  M.scrolled = 0; EDF.scrolled = 0; TIME_HOOK = null; timeStop(true);
   var navV = v === 'g' ? 'gods' : (v === 'ed' || v === 'ev') ? 'editions' : v;
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === navV); });
   if (v === 'g') viewGod(hsh.split('/')[1], hsh.split('/')[2]);
@@ -1792,6 +2050,7 @@ function route() {
   else if (v === 'ring') viewRing(hsh.split('/')[1]);
   else if (v === 'spread') viewSpread();
   else if (v === 'kin') viewKinship();
+  else if (v === 'cmp') viewCompare(hsh.split('/')[1], hsh.split('/')[2]);
   else viewOverview();
   window.scrollTo(0, 0);
 }

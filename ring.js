@@ -24,10 +24,10 @@ function lunarLong(m, d) { return EN() ? I18.monDay(m, d) : lunar(m, d); }
 function monthLabel(m) { return EN() ? I18.ordL(m) : MS[m] + '月'; }
 var TR = {
   T: { lab: '道', c: '--zr-dao', pig: '石青' }, B: { lab: '佛', c: '--zr-fo', pig: '藤黄' },
-  L: { lab: '地方', c: '--zr-di', pig: '石绿' }, C: { lab: '儒', c: '--zr-ru', pig: '朱砂' },
+  L: { lab: '地方', c: '--zr-di', pig: '石绿' }, C: { lab: '儒', c: '--zr-ru', pig: '青莲' },
   Q: { lab: '其他', c: '--zr-qi', pig: '暖灰' }, U: { lab: '未定', c: '--zr-wei', pig: '铅灰' }
 };
-var TR_EN = { T: ['Daoist', 'azurite'], B: ['Buddhist', 'gamboge'], L: ['Local', 'malachite'], C: ['Confucian', 'cinnabar'], Q: ['Other', 'warm gray'], U: ['Undetermined', 'lead grey'] };
+var TR_EN = { T: ['Daoist', 'azurite'], B: ['Buddhist', 'gamboge'], L: ['Local', 'malachite'], C: ['Confucian', 'lotus purple'], Q: ['Other', 'warm gray'], U: ['Undetermined', 'lead grey'] };
 // 着色方案：nat＝性質（道、佛、地方、儒），kind＝编码日期类型（纪念、成就、巡察、节令、其他）
 // kind 方案沿用同一组颜色与代码 T B L C Q U，只换名称
 var CUR = null, LASTPT = '';

@@ -133,3 +133,5 @@
 .zr-tip { position: fixed; pointer-events: none; background: var(--ink, #0b0b0b); color: var(--page, #f9f9f7); font-size: 12.5px; padding: 6px 9px; border-radius: 4px; max-width: 260px; z-index: 50; line-height: 1.45; }
 
 @media (prefers-reduced-motion: reduce) { .zr .zr-cell, .zr .zr-slice { transition: none; } }
+.zr .zr-openday { font: inherit; font-size: 13px; border: 1px solid var(--zr-gold); color: var(--zr-ink); background: none; border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+.zr .zr-day { color: inherit; }

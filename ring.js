@@ -30,6 +30,8 @@ var TR = {
 var TR_EN = { T: ['Daoist', 'azurite'], B: ['Buddhist', 'gamboge'], L: ['Local', 'malachite'], C: ['Confucian', 'cinnabar'], Q: ['Other', 'ochre'], U: ['Undetermined', 'lead grey'] };
 // 着色方案：nat＝性質（道、佛、地方、儒），kind＝编码日期类型（纪念、成就、巡察、节令、其他）
 // kind 方案沿用同一组颜色与代码 T B L C Q U，只换名称
+var CUR = null, LASTPT = '';
+document.addEventListener('pointerdown', function (e) { LASTPT = e.pointerType; }, true);
 var SCHEME = 'nat';
 // 网站传入的选项：focus = { names: [规范名…], label } 只突出这位神；onDay(m, d) 点放大月份中的某一天时调用
 var OPT = {};
@@ -303,6 +305,13 @@ function disc(root, D) {
     var box = monthBox(m);
     animateTo(box, function () { if (zoom === m) drawDayLabels(m, box); });
   }
+  CUR = {   // 给网站的「可分享链接」读写：放大的月份、打开的图层
+    get: function () { return { zoom: zoom, layers: allOn() ? '' : noneOn() ? 'none' : LAYERS.filter(function (x) { return on[x.k]; }).map(function (x) { return x.k; }).join(',') }; },
+    set: function (o) {
+      if (o.layers) { var ks = o.layers.split(','); LAYERS.forEach(function (x) { on[x.k] = ks.indexOf(x.k) >= 0; }); apply(); }
+      if (o.month >= 1 && o.month <= 12) zoomTo(o.month);
+    }
+  };
   function zoomOut() {
     if (!zoom) return;
     zoom = 0; sel = null; hl.setAttribute('d', ''); dayLabs.innerHTML = '';
@@ -329,7 +338,7 @@ function disc(root, D) {
   svg.addEventListener('click', function (ev) {
     var m = locate(ev).m;
     if (!zoom) { if (m) zoomTo(m); return; }
-    if (m === zoom) { pick(ev); var l = locate(ev); if (l.d && OPT.onDay) OPT.onDay(m, l.d); } else if (m) zoomTo(m); else zoomOut();
+    if (m === zoom) { pick(ev); var l = locate(ev); if (l.d && OPT.onDay && LASTPT !== 'touch') OPT.onDay(m, l.d); }   // 触屏：点一天先在旁边的面板里看，面板上有「打开这一天」 else if (m) zoomTo(m); else zoomOut();
   });
   apply(); renderPanel();
 }
@@ -517,7 +526,7 @@ window.ZhaiRing = {
     if (!data || !data.entries) { el.innerHTML = '<p>' + L('环形历数据未载入。', 'Ring calendar data not loaded.') + '</p>'; return; }
     SCHEME = (data.meta && data.meta.scheme) || 'nat';
     OPT = opt;
-    var D = prepare(data);
+    var D = prepare(data); CUR = null;
     var root = document.createElement('div'); root.className = 'zr';
     if (opt.title !== false) {
       var days = Object.keys(D.byDay).length, gods = {}; D.all.forEach(function (r) { if (r.god) gods[r.god] = 1; });
@@ -535,6 +544,8 @@ window.ZhaiRing = {
     (opt.sections || ['disc', 'treemap', 'dom', 'strips', 'table', 'notes']).forEach(function (s) { if (fns[s]) fns[s](root, D); });
     return root;
   },
-  hideTip: hideTip
+  hideTip: hideTip,
+  cur: function () { return CUR ? CUR.get() : null; },
+  set: function (o) { if (CUR) CUR.set(o || {}); }
 };
 })();

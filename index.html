@@ -242,6 +242,20 @@ tr.jump > td { animation: jumpfade 2.4s ease-out; }
 td.edc[data-day], td[data-day], .fh-c { cursor: pointer; }
 td.edc[data-day]:hover { outline: 1.5px solid var(--ink-2); outline-offset: -2px; }
 .dlink { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.cmppanel { position: fixed; inset: 0; z-index: 55; background: rgba(0,0,0,.32); display: flex; justify-content: center; align-items: flex-start; padding: 3vh 2vw; }
+.cmppanel[hidden] { display: none; }
+.cp-box { background: var(--page); width: min(1240px, 100%); max-height: 94vh; overflow: auto; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+.cp-body { padding: 0 22px 36px; }
+.cp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; position: sticky; top: 0; background: var(--page); padding: 14px 0 10px; border-bottom: 1px solid var(--grid); z-index: 2; }
+.cp-title { font-size: 22px; font-weight: 700; }
+.cp-lede { max-width: 860px; }
+body.cmpopen { overflow: hidden; }
+.cc-l { display: none; font-size: 13px; font-weight: 600; color: var(--ink-2); margin: 8px 0 4px; }
+@media (max-width: 760px) { .cc-l { display: block; } .cp-box .cmp-head { display: none; } }
+.kcmp-p { margin: 0 0 8px; }
+.kcmp { font: inherit; font-size: 14px; padding: 6px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; cursor: pointer; }
+.kcmp:hover { background: var(--accent); color: var(--page); }
+@media (max-width: 700px) { .cmppanel { padding: 0; } .cp-box { max-height: 100vh; height: 100%; border-radius: 0; } .cp-body { padding: 0 14px 30px; } }
 .daypanel { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.28); display: flex; justify-content: flex-end; }
 .daypanel[hidden] { display: none; }
 .dp-box { background: var(--page); width: min(980px, 100%); height: 100%; overflow: auto; box-shadow: -6px 0 24px rgba(0,0,0,.18); }
@@ -396,7 +410,6 @@ footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid)
       <a href="#ring" data-v="ring" data-en="Ring calendar">环形历</a>
       <a href="#spread" data-v="spread" data-en="Circulation map">流通地图</a>
       <a href="#kin" data-v="kin" data-en="Edition kinship">版本亲疏</a>
-      <a href="#cmp" data-v="cmp" data-en="Two editions">两本对照</a>
       <a href="#gods" data-v="gods" data-en="Deities">神明档案</a>
       <a href="#context" data-v="context" data-en="Sources &amp; framework">源流与框架</a>
       <a href="#gaps" data-v="gaps" data-en="Gaps">缺口</a>
@@ -831,102 +844,166 @@ function timeBarSync() {
 }
 
 // ---------- 视图：两本对照（比较单位与「版本亲疏」相同：建議規範名＋编码日期类型＋月＋日） ----------
-var CMP = { main: true, undated: false };
-function viewCompare(a, b) {
+// ---------- 两本细看：「版本亲疏」页上的浮窗（网址 #kin/甲/乙） ----------
+// 比较单位与 build_kinship.py 相同：建議規範名＋编码日期类型＋月＋日；「初一至初九」等拆成逐日；位置空白者算正文
+var CMP = { main: true, undated: false, a: 1, b: 9 };
+var KCN = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
+var KMON = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12, '冬': 11, '腊': 12, '臘': 12 };
+var KDAY = '(?:初[一二三四五六七八九十]|廿[一二三四五六七八九]?|卅|三十|二十[一二三四五六七八九]?|十[一二三四五六七八九]?|朔|望|晦|元日)';
+function kDnum(s) {
+  s = s.replace(/日/g, '');
+  if (s === '朔' || s === '元' || s === '初日') return 1;
+  if (s === '望') return 15;
+  if (s === '晦' || s === '卅' || s === '三十') return 30;
+  if (s[0] === '初') return s.slice(1) === '十' ? 10 : KCN[s.slice(1)];
+  if (s[0] === '廿') return 20 + (KCN[s.slice(1)] || 0);
+  if (s.indexOf('二十') === 0) return 20 + (KCN[s.slice(2)] || 0);
+  if (s[0] === '十') return 10 + (KCN[s.slice(1)] || 0);
+  return KCN[s];
+}
+function kDays(e) {   // 条目 → [月, [日…]]；不是具体月日的返回 null
+  if (e._kd !== undefined) return e._kd;
+  var m = /^(十一|十二|正|冬|腊|臘|[一二三四五六七八九十])月$/.exec(e.mo || ''), dy = e.dy || '', ds = {}, r;
+  if (!m || !dy) return (e._kd = null);
+  var re1 = new RegExp('(' + KDAY + ')日?至(' + KDAY + ')', 'g');
+  while ((r = re1.exec(dy))) { var x = kDnum(r[1]), y = kDnum(r[2]); if (x && y) for (var i = x; i <= y; i++) ds[i] = 1; }
+  var small = dy.replace(/（月小.*?）/g, ''), re2 = new RegExp(KDAY, 'g');
+  while ((r = re2.exec(small))) { var z = kDnum(r[0]); if (z) ds[z] = 1; }
+  var re3 = /([一二三四五六七八九])日/g;
+  while ((r = re3.exec(small))) { var pc = small[r.index - 1]; if (pc !== '初' && pc !== '十' && pc !== '廿') ds[KCN[r[1]]] = 1; }
+  var ks = Object.keys(ds).map(Number).sort(function (a, b) { return a - b; });
+  return (e._kd = ks.length ? [KMON[m[1]], ks] : null);
+}
+function cmpBox() {
+  var box = document.getElementById('cmppanel');
+  if (!box) {
+    box = document.createElement('div'); box.id = 'cmppanel'; box.className = 'cmppanel'; box.hidden = true;
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+    box.innerHTML = '<div class="cp-box"><div class="cp-body"></div></div>';
+    document.body.appendChild(box);
+    box.addEventListener('click', function (e) { if (e.target === box) closeCmp(); });
+    addEventListener('keydown', function (e) { if (e.key === 'Escape' && !box.hidden) closeCmp(); });
+    var rt; addEventListener('resize', function () { if (box.hidden) return; clearTimeout(rt); rt = setTimeout(cmpLines, 120); });
+  }
+  return box;
+}
+function cmpIsOpen() { var b = document.getElementById('cmppanel'); return !!(b && !b.hidden); }
+function openCmp(a, b) {
+  var box = cmpBox(), was = !box.hidden;
+  box.hidden = false; document.body.classList.add('cmpopen');
+  box.setAttribute('aria-label', L('两本细看', 'Two editions in detail'));
+  renderCmp(a, b);
+  if (!was) { box.querySelector('.cp-box').scrollTop = 0; var c = box.querySelector('.cp-close'); if (c) c.focus(); }
+}
+function closeCmp(keepHash) {
+  var box = document.getElementById('cmppanel'); if (!box || box.hidden) return;
+  box.hidden = true; document.body.classList.remove('cmpopen'); hideTip();
+  if (!keepHash && /^#kin\//.test(location.hash)) history.replaceState(null, '', location.pathname + location.search + '#kin');
+}
+var CMP_PAIRS = [];
+function renderCmp(a, b) {
   var byNo = function (no) { return ED.versions.filter(function (v) { return +v.no === +no; })[0]; };
   var K = window.ZHAI_KIN, inc = K && K.incl ? K.incl : [];
   var A = byNo(a) || byNo(1), B = byNo(b) || byNo(9);
   if (A === B) B = EVS.filter(function (v) { return v !== A; })[0];
+  CMP.a = +A.no; CMP.b = +B.no;
+  var want = '#kin/' + A.no + '/' + B.no;
+  if (location.hash !== want) history.replaceState(null, '', location.pathname + location.search + want);
   var opt = function (sel) { return EVS.map(function (v) { return '<option value="' + esc(v.no) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v.when) + ' ' + esc(I.en() ? NT(v.short) : v.short) + '</option>'; }).join(''); };
-  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && (!CMP.main || e.p === '正文'); }); };
+  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && e.id && (!CMP.main || !e.p || e.p === '正文'); }); };
   var EA = take(A), EB = take(B);
-  var unit = function (e) { return e.k + '|' + (e.c || '') + '|' + e.m + '|' + e.d; };
-  var ident = function (e) { return e.k + '|' + (e.c || ''); };
-  var datedA = EA.filter(function (e) { return e.m && e.d; }), datedB = EB.filter(function (e) { return e.m && e.d; });
-  var UA = {}, UB = {}; datedA.forEach(function (e) { (UA[unit(e)] = UA[unit(e)] || []).push(e); }); datedB.forEach(function (e) { (UB[unit(e)] = UB[unit(e)] || []).push(e); });
+  var ident = function (e) { return e.k + '|' + (e.c || '其他'); };
+  // 每个比较单位：{u, e, m, d}；一条「初一至初九」的条目拆成九个单位
+  var units = function (es) { var U = {}; es.forEach(function (e) { var md = kDays(e); if (!md) return; md[1].forEach(function (d) { var u = ident(e) + '|' + md[0] + '|' + d; if (!U[u]) U[u] = { u: u, e: e, m: md[0], d: d }; }); }); return U; };
+  var UA = units(EA), UB = units(EB);
   var shared = Object.keys(UA).filter(function (u) { return UB[u]; });
   var onlyA = Object.keys(UA).filter(function (u) { return !UB[u]; }), onlyB = Object.keys(UB).filter(function (u) { return !UA[u]; });
   var union = Object.keys(UA).length + onlyB.length, j = union ? shared.length / union : 0;
   // 只见于一本的单位：同一神（同日期类型）在另一本作别的日子 → 同月异日（连线）或异月（注明）
-  var IA = {}, IB = {}; onlyA.forEach(function (u) { var e = UA[u][0]; (IA[ident(e)] = IA[ident(e)] || []).push(e); }); onlyB.forEach(function (u) { var e = UB[u][0]; (IB[ident(e)] = IB[ident(e)] || []).push(e); });
-  var pairs = [], other = {};   // other[entry.id] = 另一本的日期
+  var IA = {}, IB = {}; onlyA.forEach(function (u) { var x = UA[u]; (IA[ident(x.e)] = IA[ident(x.e)] || []).push(x); }); onlyB.forEach(function (u) { var y = UB[u]; (IB[ident(y.e)] = IB[ident(y.e)] || []).push(y); });
+  var pairs = [], other = {}, nDM = 0;   // other[单位] = 另一本的同神单位
   Object.keys(IA).forEach(function (id) {
     if (!IB[id]) return;
     IA[id].forEach(function (x) {
-      var same = IB[id].filter(function (y) { return y.m === x.m; });
-      same.forEach(function (y) { pairs.push([x.id, y.id]); });
-      (other[x.id] = other[x.id] || []).push.apply(other[x.id], IB[id].map(function (y) { return y; }));
+      IB[id].forEach(function (y) { if (y.m === x.m) pairs.push([x.u, y.u]); });
+      other['a' + x.u] = IB[id];
+      if (IB[id].some(function (y) { return y.m !== x.m; })) nDM++;
     });
-    IB[id].forEach(function (y) { (other[y.id] = other[y.id] || []).push.apply(other[y.id], IA[id]); });
+    IB[id].forEach(function (y) { other['b' + y.u] = IA[id]; });
   });
-  var nSM = pairs.length, nDM = 0;
-  Object.keys(other).forEach(function (eid) { if (EBYID[eid] && EBYID[eid].v === A.i && other[eid].some(function (y) { return y.m !== EBYID[eid].m; })) nDM++; });
+  CMP_PAIRS = pairs;
   var kp = K && K.pairs ? K.pairs.filter(function (p) { return (p.a === +A.no && p.b === +B.no) || (p.a === +B.no && p.b === +A.no); })[0] : null;
-  var h = L('<h1>两本对照</h1><p class="lede">任选两个版本，按月日对齐，分成三栏：两本共有、只见于甲本、只见于乙本。比较单位与「<a href="#kin">版本亲疏</a>」相同：建議規範名＋编码日期类型＋月＋日，默认只计正文条目。同一位神（同一日期类型）在两本中同月而异日的，用连线把两条连起来；异月的在条目下注明另一本的日期。点日期打开「这一天」。</p>',
-      '<h1>Two editions side by side</h1><p class="lede">Choose two editions; their entries are aligned by month and day in three columns: shared, only in A, only in B. The unit of comparison is the same as on <a href="#kin">Edition kinship</a>: normalized name + coded type of day + month + day, main-table entries only by default. When the same deity (same type of day) falls in the same month but on different days in the two editions, a line joins the two entries; for a different month, the other edition’s date is noted under the entry. Click a date to open “this day”.</p>') +
+  var vlab = function (v) { return edWhen(v) + ' ' + N(v.short); };
+  var h = '<div class="cp-head"><div><div class="cp-title">' + L('两本细看', 'Two editions in detail') + '</div><div class="small muted">' + vlab(A) + ' ～ ' + vlab(B) + '</div></div><button type="button" class="dp-close" aria-label="' + L('关闭', 'Close') + '">✕</button></div>' +
+    '<p class="small muted cp-lede">' + L('按月日对齐，分三栏：两本共有、只见于甲本、只见于乙本。比较单位与本页的矩阵相同（规范名＋编码日期类型＋月日；跨几天的条目按日拆开）。同一位神同月异日的两条用连线连起；异月的在条目下注明另一本的日期。点日期打开「这一天」。',
+      'Aligned by month and day in three columns: shared, only in A, only in B. Same unit as the matrix on this page (normalized name + coded date type + day; entries spanning several days are split by day). The same deity in the same month on different days is joined by a line; for a different month the other edition’s date is noted. Click a date to open “this day”.') + '</p>' +
+    (FOCUS ? focusNote(L('它的条目加框', 'its entries are outlined')) : '') +
     '<div class="controls cmp-pick"><label>' + L('甲本', 'A') + ' <select id="ca">' + opt(A) + '</select></label><button type="button" id="cswap" title="' + L('甲乙互换', 'Swap') + '">⇄</button><label>' + L('乙本', 'B') + ' <select id="cb">' + opt(B) + '</select></label>' +
     '<label class="small"><input type="checkbox" id="cmain"' + (CMP.main ? ' checked' : '') + '> ' + L('只计正文', 'Main table only') + '</label><label class="small"><input type="checkbox" id="cund"' + (CMP.undated ? ' checked' : '') + '> ' + L('列出无具体月日的条目', 'List entries without a specific day') + '</label></div>' +
-    '<div class="tiles">' + tile(shared.length, L('两本共有', 'Shared'), L('重合度 ', 'Overlap ') + Math.round(j * 100) + '%' + (kp ? L('（版本亲疏页：', ' (kinship page: ') + Math.round(kp.j * 100) + '%）' : '')) +
-    tile(onlyA.length, L('只见于甲本', 'Only in A'), edWhen(A) + ' ' + N(A.short)) + tile(onlyB.length, L('只见于乙本', 'Only in B'), edWhen(B) + ' ' + N(B.short)) +
-    tile(nSM, L('同月异日', 'Same month, other day'), L('连线标出；另有异月 ' + nDM + ' 条', 'joined by lines; ' + nDM + ' more in another month')) + '</div>' +
-    ((inc.indexOf(+A.no) < 0 || inc.indexOf(+B.no) < 0) ? '<p class="small muted">' + L('注意：所选版本中有未纳入「版本亲疏」比较的版本（文本不全或体例不同），这里照样列出，但重合度只作参考。', 'Note: at least one chosen edition is outside the kinship comparison (incomplete text or a different format); it is listed here, but treat the overlap as indicative.') + '</p>' : '');
-  var item = function (e, side) {
-    var o = (other[e.id] || []).map(function (y) { return (y.m === e.m ? '' : '') + y.m + '/' + y.d; });
+    '<div class="tiles">' + tile(shared.length, L('两本共有', 'Shared'), L('重合度 ', 'Overlap ') + Math.round(j * 100) + '%' + (!CMP.main && kp ? L('（矩阵只计正文：', ' (matrix, main table only: ') + Math.round(kp.j * 100) + '%）' : '')) +
+    tile(onlyA.length, L('只见于甲本', 'Only in A'), vlab(A)) + tile(onlyB.length, L('只见于乙本', 'Only in B'), vlab(B)) +
+    tile(pairs.length, L('同月异日', 'Same month, other day'), L('连线标出；另有异月 ' + nDM + ' 条', 'joined by lines; ' + nDM + ' more in another month')) + '</div>' +
+    ((inc.indexOf(+A.no) < 0 || inc.indexOf(+B.no) < 0) ? '<p class="small muted">' + L('注意：所选版本中有未纳入矩阵的版本（文本不全或体例不同），这里照样列出，但重合度只作参考。', 'Note: at least one chosen edition is outside the matrix (incomplete text or a different format); it is listed here, but treat the overlap as indicative.') + '</p>' : '');
+  var span = function (e) { var md = kDays(e); return md && md[1].length > 1 ? '<span class="muted small">（' + esc(e.dy) + '）</span>' : ''; };
+  var item = function (x, side) {
+    var e = x.e, o = (other[side + x.u] || []).map(function (y) { return y.m + '/' + y.d; });
     var nm = e.t || e.g || e.k;
-    return '<div class="ci' + (fNorm(e.k) ? ' fx' : '') + '" data-eid="' + esc(e.id) + '"><span class="ci-d dlink" data-day="' + e.m + '/' + e.d + '">' + e.d + '</span> <a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a>' +
-      '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + (nm && nm !== e.k ? '<div class="small">' + esc(nm) + '</div>' : '') +
+    return '<div class="ci' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + x.u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> <a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a>' +
+      '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + span(e) + (nm && nm !== e.k ? '<div class="small">' + esc(nm) + '</div>' : '') +
       (o.length ? '<div class="small ci-o">' + (side === 'a' ? L('乙本作 ', 'B: ') : L('甲本作 ', 'A: ')) + o.join(L('、', ', ')) + '</div>' : '') + '</div>';
   };
   var itemS = function (u) {
-    var x = UA[u][0], y = UB[u][0];
-    return '<div class="ci' + (fNorm(x.k) ? ' fx' : '') + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> <a href="#ed/' + encodeURIComponent(x.k) + '">' + N(x.k) + '</a><span class="muted small"> ' + esc(C(x.c) || '') + '</span>' +
+    var x = UA[u].e, y = UB[u].e;
+    return '<div class="ci' + (fNorm(x.k) ? ' fx' : '') + '"><span class="ci-d dlink" data-day="' + UA[u].m + '/' + UA[u].d + '">' + UA[u].d + '</span> <a href="#ed/' + encodeURIComponent(x.k) + '">' + N(x.k) + '</a><span class="muted small"> ' + esc(C(x.c) || '') + '</span>' + span(x) +
       ((x.t || '') !== (y.t || '') ? '<div class="small">' + L('甲：', 'A: ') + esc(x.t || x.g || '—') + '</div><div class="small">' + L('乙：', 'B: ') + esc(y.t || y.g || '—') + '</div>' : (x.t && x.t !== x.k ? '<div class="small">' + esc(x.t) + '</div>' : '')) + '</div>';
   };
-  var byDay = function (u1, u2) { var a1 = u1.split('|'), a2 = u2.split('|'); return +a1[3] - +a2[3]; };
-  h += '<div class="cmp-head"><div>' + L('两本共有', 'Shared') + '</div><div>' + L('只见于甲本', 'Only in A') + '<span class="muted small"> ' + edWhen(A) + ' ' + N(A.short) + '</span></div><div>' + L('只见于乙本', 'Only in B') + '<span class="muted small"> ' + edWhen(B) + ' ' + N(B.short) + '</span></div></div>';
+  var ccl = function (xs, t) { return xs.length ? '<div class="cc-l">' + t + '</div>' : ''; };   // 窄屏三栏上下排列时每段的小标题
+  var inM = function (U, m) { return function (u) { return U[u].m === m; }; };
+  var byDay = function (U) { return function (u1, u2) { return U[u1].d - U[u2].d; }; };
+  h += '<div class="cmp-head"><div>' + L('两本共有', 'Shared') + '</div><div>' + L('只见于甲本', 'Only in A') + '<span class="muted small"> ' + vlab(A) + '</span></div><div>' + L('只见于乙本', 'Only in B') + '<span class="muted small"> ' + vlab(B) + '</span></div></div>';
   for (var m = 1; m <= 12; m++) {
-    var sm = shared.filter(function (u) { return +u.split('|')[2] === m; }).sort(byDay);
-    var am = onlyA.filter(function (u) { return +u.split('|')[2] === m; }).sort(byDay), bm = onlyB.filter(function (u) { return +u.split('|')[2] === m; }).sort(byDay);
+    var sm = shared.filter(inM(UA, m)).sort(byDay(UA)), am = onlyA.filter(inM(UA, m)).sort(byDay(UA)), bm = onlyB.filter(inM(UB, m)).sort(byDay(UB));
     if (!sm.length && !am.length && !bm.length) continue;
     h += '<div class="cmp-m" data-m="' + m + '"><div class="cmp-mn">' + monthName(m) + ' <span class="muted small">' + L('共有 ' + sm.length + ' · 甲 ' + am.length + ' · 乙 ' + bm.length, 'shared ' + sm.length + ' · A ' + am.length + ' · B ' + bm.length) + '</span></div><div class="cmp-cols">' +
-      '<div class="cc">' + sm.map(itemS).join('') + '</div><div class="cc">' + am.map(function (u) { return item(UA[u][0], 'a'); }).join('') + '</div><div class="cc">' + bm.map(function (u) { return item(UB[u][0], 'b'); }).join('') + '</div>' +
+      '<div class="cc">' + ccl(sm, L('两本共有', 'Shared')) + sm.map(itemS).join('') + '</div><div class="cc">' + ccl(am, L('只见于甲本', 'Only in A')) + am.map(function (u) { return item(UA[u], 'a'); }).join('') + '</div><div class="cc">' + ccl(bm, L('只见于乙本', 'Only in B')) + bm.map(function (u) { return item(UB[u], 'b'); }).join('') + '</div>' +
       '<svg class="cmp-ln" aria-hidden="true"></svg></div></div>';
   }
   if (CMP.undated) {
-    var nk = function (es) { var o = {}; es.filter(function (e) { return !(e.m && e.d); }).forEach(function (e) { (o[ident(e)] = o[ident(e)] || []).push(e); }); return o; };
+    var nk = function (es) { var o = {}; es.filter(function (e) { return !kDays(e); }).forEach(function (e) { (o[ident(e)] = o[ident(e)] || []).push(e); }); return o; };
     var NA = nk(EA), NB = nk(EB), keys = Object.keys(NA).concat(Object.keys(NB).filter(function (x) { return !NA[x]; }));
     var col = function (f) { return keys.filter(f).map(function (x) { var e = (NA[x] || NB[x])[0]; return '<div class="ci"><a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a> <span class="muted small">' + esc((e.mo || '') + (e.dy || '')) + '</span></div>'; }).join(''); };
     h += '<div class="cmp-m"><div class="cmp-mn">' + L('无具体月日（每月、六十甲子日等）', 'No specific day (monthly, sixty jiazi days, etc.)') + '</div><div class="cmp-cols"><div class="cc">' + col(function (x) { return NA[x] && NB[x]; }) + '</div><div class="cc">' + col(function (x) { return NA[x] && !NB[x]; }) + '</div><div class="cc">' + col(function (x) { return !NA[x] && NB[x]; }) + '</div></div></div>';
   }
-  app.innerHTML = h;
-  putFocusNote(L('它的条目加框', 'its entries are outlined'));
-  var go = function (x, y) { location.hash = 'cmp/' + x + '/' + y; };
-  document.getElementById('ca').onchange = function (e) { go(e.target.value, B.no); };
-  document.getElementById('cb').onchange = function (e) { go(A.no, e.target.value); };
-  document.getElementById('cswap').onclick = function () { go(B.no, A.no); };
-  document.getElementById('cmain').onchange = function (e) { CMP.main = e.target.checked; viewCompare(A.no, B.no); };
-  document.getElementById('cund').onchange = function (e) { CMP.undated = e.target.checked; viewCompare(A.no, B.no); };
-  // 同月异日的连线：甲独有栏的条目 → 乙独有栏的条目
-  var draw = function () {
-    app.querySelectorAll('.cmp-cols').forEach(function (box) {
-      var svg = box.querySelector('.cmp-ln'); if (!svg) return;
-      var r0 = box.getBoundingClientRect(), s = '';
-      svg.setAttribute('width', r0.width); svg.setAttribute('height', r0.height);
-      var cols = box.querySelectorAll('.cc');
-      if (cols.length < 3 || cols[2].getBoundingClientRect().top > cols[1].getBoundingClientRect().bottom - 4) { svg.innerHTML = ''; return; }  // 窄屏三栏上下排列时不画线
-      pairs.forEach(function (pr) {
-        var x = box.querySelector('[data-eid="' + pr[0] + '"]'), y = box.querySelector('[data-eid="' + pr[1] + '"]');
-        if (!x || !y) return;
-        var a = x.getBoundingClientRect(), b = y.getBoundingClientRect();
-        var x1 = a.right - r0.left, y1 = a.top + 14 - r0.top, x2 = b.left - r0.left, y2 = b.top + 14 - r0.top, mx = (x1 + x2) / 2;
-        s += '<path d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '"/><circle cx="' + x1 + '" cy="' + y1 + '" r="2.5"/><circle cx="' + x2 + '" cy="' + y2 + '" r="2.5"/>';
-      });
-      svg.innerHTML = s;
+  var body = document.querySelector('#cmppanel .cp-body');
+  body.innerHTML = h;
+  body.querySelector('.cp-close, .dp-close').onclick = function () { closeCmp(); };
+  document.getElementById('ca').onchange = function (e) { renderCmp(e.target.value, B.no); };
+  document.getElementById('cb').onchange = function (e) { renderCmp(A.no, e.target.value); };
+  document.getElementById('cswap').onclick = function () { renderCmp(B.no, A.no); };
+  document.getElementById('cmain').onchange = function (e) { CMP.main = e.target.checked; renderCmp(A.no, B.no); };
+  document.getElementById('cund').onchange = function (e) { CMP.undated = e.target.checked; renderCmp(A.no, B.no); };
+  body.querySelectorAll('a[href^="#"]').forEach(function (x) { x.addEventListener('click', function () { closeCmp(true); }); });
+  cmpLines(); setTimeout(cmpLines, 50);
+}
+// 同月异日的连线：甲独有栏的条目 → 乙独有栏的条目
+function cmpLines() {
+  var body = document.querySelector('#cmppanel .cp-body'); if (!body) return;
+  var ch = body.querySelector('.cmp-head'), hd = body.querySelector('.cp-head'); if (ch && hd) ch.style.top = hd.offsetHeight + 'px';
+  body.querySelectorAll('.cmp-cols').forEach(function (box) {
+    var svg = box.querySelector('.cmp-ln'); if (!svg) return;
+    var r0 = box.getBoundingClientRect(), s = '';
+    svg.setAttribute('width', r0.width); svg.setAttribute('height', r0.height);
+    var cols = box.querySelectorAll('.cc');
+    if (cols.length < 3 || cols[2].getBoundingClientRect().top > cols[1].getBoundingClientRect().bottom - 4) { svg.innerHTML = ''; return; }  // 窄屏三栏上下排列时不画线
+    CMP_PAIRS.forEach(function (pr) {
+      var x = box.querySelector('[data-u="' + CSS.escape('a' + pr[0]) + '"]'), y = box.querySelector('[data-u="' + CSS.escape('b' + pr[1]) + '"]');
+      if (!x || !y) return;
+      var a = x.getBoundingClientRect(), b = y.getBoundingClientRect();
+      var x1 = a.right - r0.left, y1 = a.top + 14 - r0.top, x2 = b.left - r0.left, y2 = b.top + 14 - r0.top, mx = (x1 + x2) / 2;
+      s += '<path d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '"/><circle cx="' + x1 + '" cy="' + y1 + '" r="2.5"/><circle cx="' + x2 + '" cy="' + y2 + '" r="2.5"/>';
     });
-  };
-  draw(); setTimeout(draw, 50);
-  var rt; var onR = function () { if (!document.querySelector('.cmp-cols')) { removeEventListener('resize', onR); return; } clearTimeout(rt); rt = setTimeout(draw, 120); };
-  addEventListener('resize', onR);
+    svg.innerHTML = s;
+  });
 }
 
 // 在页首说明之后插入「本页正按聚焦神明显示」
@@ -1510,7 +1587,7 @@ function viewKinship() {
     '<div class="kin"><div class="controls card"><label>' + L('连线：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少数日期', 'Shared minority dates') + '</option></select></label>' +
     '<label id="kthrw">' + L('只显示重合度 ≥ ', 'Only overlap ≥ ') + '<input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + KIN.thr + '"> <b id="kthrv">' + KIN.thr.toFixed(2) + '</b></label>' +
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('显示有依据的先后关系', 'Show evidenced sequences') + '</label></div>' +
-    '<div class="card" id="knet"></div><div class="kgrid"><div><h2>' + L('重合度矩阵', 'Overlap matrix') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('格中数字为重合度（×100）；鼠标移上去看双向包含比例与共有的少数日期。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates. Editions in chronological order.') + '</p><div class="card scroll" id="khm"></div></div><div>' +
+    '<div class="card" id="knet"></div><div class="kgrid"><div><h2>' + L('重合度矩阵', 'Overlap matrix') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('格中数字为重合度（×100）；鼠标移上去看双向包含比例与共有的少数日期，点格子逐条细看这两本。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.') + '</p><p class="kcmp-p"><button type="button" class="kcmp" id="kcmp">' + L('⇄ 选两个版本逐条细看', '⇄ Compare two editions entry by entry') + '</button></p><div class="card scroll" id="khm"></div></div><div>' +
     '<h2>' + L('道藏本（1607）条目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的条目见于各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
     '<h2>' + L('未计入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
     '<h2>' + L('读图须知', 'Reading notes') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' +
@@ -1518,6 +1595,7 @@ function viewKinship() {
         '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanac group is the largest, its editions have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>') +
     '</ul></div></div></div></div>';
   app.innerHTML = h;
+  document.getElementById('kcmp').onclick = function () { location.hash = 'kin/' + CMP.a + '/' + CMP.b; };
   var pairTip = function (p) {
     var A = NB[p.a], B = NB[p.b];
     return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b><div>' + L('重合度 ', 'Overlap ') + '<b>' + (p.j * 100).toFixed(0) + '</b>' +
@@ -1583,7 +1661,7 @@ function viewKinship() {
       hm += '</tr>';
     });
     var el = document.getElementById('khm'); el.innerHTML = hm + '</tbody></table>';
-    el.querySelectorAll('td[data-k]').forEach(function (td) { td.addEventListener('mousemove', function (e) { var p = PB[td.getAttribute('data-k')]; if (p) showTip(e, pairTip(p)); }); td.addEventListener('mouseleave', hideTip); td.style.cursor = 'pointer'; td.addEventListener('click', function () { hideTip(); location.hash = 'cmp/' + td.getAttribute('data-ab'); }); });
+    el.querySelectorAll('td[data-k]').forEach(function (td) { td.addEventListener('mousemove', function (e) { var p = PB[td.getAttribute('data-k')]; if (p) showTip(e, pairTip(p)); }); td.addEventListener('mouseleave', hideTip); td.style.cursor = 'pointer'; td.addEventListener('click', function () { hideTip(); location.hash = 'kin/' + td.getAttribute('data-ab'); }); });
   })();
   document.getElementById('kret').innerHTML = ORD.filter(function (n) { return n.no !== K.base && K.ret[n.no] != null; }).map(function (n) {
     var v = K.ret[n.no];
@@ -1980,7 +2058,7 @@ function viewEdVersion(i, jump) {
     '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + esc(v.era) : '') + (v.date ? '<div class="muted small">' + esc(v.date) + '</div>' : '') + '</dd>' +
     '<dt>' + L('书名', 'Title') + '</dt><dd>' + esc(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + esc(v.pub) + '</dd>' : '') +
     '<dt>' + L('文本类型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('资料来源', 'Source') + '</dt><dd class="small">' + esc(v.src) + '</dd>' +
-    '<dt>' + L('对照', 'Compare') + '</dt><dd><a href="#cmp/' + esc(v.no) + '/' + (+v.no === 1 ? 9 : 1) + '">' + L('与另一版本两本对照', 'Compare with another edition') + '</a></dd></dl>' +
+    '<dt>' + L('对照', 'Compare') + '</dt><dd><a href="#kin/' + esc(v.no) + '/' + (+v.no === 1 ? 9 : 1) + '">' + L('与另一版本逐条细看（版本亲疏）', 'Compare entry by entry with another edition (kinship)') + '</a></dd></dl>' +
     '<div class="controls" style="margin-top:14px"><input type="search" id="evq" placeholder="' + L('在本版本中搜索', 'Search this edition') + '"><span class="muted small" id="evc"></span></div>' +
     '<div class="scroll"><table><thead><tr><th>#</th>' + ED_HEAD() + '<th>' + L('规范名', 'Normalized name') + '</th></tr></thead><tbody id="evb"></tbody></table></div>';
   app.innerHTML = h;
@@ -2029,11 +2107,15 @@ function viewRing(no) {
 }
 
 // ---------- 路由 ----------
-function route() {
+function route(ev) {
   hideTip();
   if (window.ZhaiRing) ZhaiRing.hideTip();
   var hsh = location.hash.replace(/^#/, '') || 'overview';
   var v = hsh.split('/')[0];
+  if (v === 'cmp') { history.replaceState(null, '', location.pathname + location.search + '#kin' + hsh.slice(3)); hsh = 'kin' + hsh.slice(3); v = 'kin'; }   // 旧网址 #cmp/甲/乙
+  var ab = v === 'kin' ? hsh.split('/').slice(1) : [], kinFast = !!(ev && ev.type === 'hashchange') && v === 'kin' && LAST_V === 'kin', keepY = false;
+  LAST_V = v;
+  if (v !== 'kin' || !ab[0]) closeCmp(true);
   M.scrolled = 0; EDF.scrolled = 0; TIME_HOOK = null; timeStop(true);
   var navV = v === 'g' ? 'gods' : (v === 'ed' || v === 'ev') ? 'editions' : v;
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === navV); });
@@ -2049,11 +2131,12 @@ function route() {
   else if (v === 'context') viewContext();
   else if (v === 'ring') viewRing(hsh.split('/')[1]);
   else if (v === 'spread') viewSpread();
-  else if (v === 'kin') viewKinship();
-  else if (v === 'cmp') viewCompare(hsh.split('/')[1], hsh.split('/')[2]);
+  else if (v === 'kin') { if (!(kinFast && app.querySelector('.kin'))) viewKinship(); else keepY = true; }
   else viewOverview();
-  window.scrollTo(0, 0);
+  if (!keepY) window.scrollTo(0, 0);
+  if (ab[0]) openCmp(ab[0], ab[1]);
 }
+var LAST_V = '';
 window.addEventListener('hashchange', route);
 var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { var v = location.hash; if (!v || v === '#overview' || /^#g\/[^\/]+$/.test(v)) route(); }, 200); });
 function footer() {

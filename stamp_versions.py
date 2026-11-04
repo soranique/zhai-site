@@ -7,7 +7,7 @@
 import hashlib
 import re
 
-FILES = ['ring.css', 'i18n.js', 'data.js', 'editions-data.js', 'spread-data.js', 'kinship-data.js', 'search-data.js', 'ring.js']
+FILES = ['ring.css', 'fr.js', 'i18n.js', 'data.js', 'editions-data.js', 'spread-data.js', 'kinship-data.js', 'search-data.js', 'ring.js']
 
 html = open('index.html', encoding='utf-8').read()
 for f in FILES:

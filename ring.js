@@ -10,17 +10,18 @@ var NS = 'http://www.w3.org/2000/svg';
 var MN = ['', '正月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
 var MS = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
 var NUM = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-// 中／英：语言由网站的 i18n.js（window.ZhaiI18n）决定；单独使用本模块时一律中文
+// 中／英／法：语言由网站的 i18n.js（window.ZhaiI18n）决定；单独使用本模块时一律中文；法文没写第三个参数时按英文查 fr.js
 var I18 = window.ZhaiI18n;
 function EN() { return !!(I18 && I18.en()); }
-function L(zh, en) { return EN() ? en : zh; }
+function L(zh, en, fr) { return I18 ? I18.L(zh, en, fr) : zh; }
+function TT(en) { return I18 ? I18.T(en) : en; }   // 英文 → 当前西文
 function NH(t) { return I18 ? I18.N(t) : esc(t); }   // 专名（HTML）：英文界面为「拼音 汉字」
 function NTX(t) { return I18 ? I18.NT(t) : String(t); }
 function ORD(n) { return I18 ? I18.ord(n) : String(n); }
 function DN(d) { if (EN()) return String(d); return d <= 10 ? '初' + NUM[d] : d < 20 ? '十' + NUM[d - 10] : d === 20 ? '二十' : d < 30 ? '廿' + NUM[d - 20] : '三十'; }
 function lunar(m, d) { return EN() ? m + '/' + d : MN[m] + DN(d); }
-function lunarLong(m, d) { return EN() ? ORD(m) + ' month, day ' + d : lunar(m, d); }
-function monthLabel(m) { return EN() ? ORD(m) : MS[m] + '月'; }
+function lunarLong(m, d) { return EN() ? I18.monDay(m, d) : lunar(m, d); }
+function monthLabel(m) { return EN() ? I18.ordL(m) : MS[m] + '月'; }
 var TR = {
   T: { lab: '道', c: '--zr-dao', pig: '石青' }, B: { lab: '佛', c: '--zr-fo', pig: '藤黄' },
   L: { lab: '地方', c: '--zr-di', pig: '石绿' }, C: { lab: '儒', c: '--zr-ru', pig: '朱砂' },
@@ -37,17 +38,17 @@ function isFocus(r) { return focusOn() && OPT.focus.names.indexOf(r.god) >= 0; }
 var KIND_ZH = { T: '纪念', B: '成就', L: '巡察', C: '节令', Q: '其他', U: '未标' };
 var KIND_EN = { T: 'Commemoration', B: 'Attainment', L: 'Inspection', C: 'Seasonal festival', Q: 'Other', U: 'Unmarked' };
 var KIND_CODE = { '纪念': 'T', '成就': 'B', '巡察': 'L', '节令': 'C', '其他': 'Q' };
-function trLab(k) { return SCHEME === 'kind' ? (EN() ? KIND_EN[k] : KIND_ZH[k]) : EN() ? TR_EN[k][0] : TR[k].lab; }
-function trPig(k) { return EN() ? TR_EN[k][1] : TR[k].pig; }
+function trLab(k) { return SCHEME === 'kind' ? (EN() ? TT(KIND_EN[k]) : KIND_ZH[k]) : EN() ? TT(TR_EN[k][0]) : TR[k].lab; }
+function trPig(k) { return EN() ? TT(TR_EN[k][1]) : TR[k].pig; }
 var ORDER = ['T', 'B', 'L', 'C', 'Q', 'U'];
 var SUF_ZH = { A: '成道', B: '朝真', D: '下降', P: '出家', S: '讳辰' };
 var SUF_EN = { A: 'attaining the Way', B: 'audience with the Perfected', D: 'descent', P: 'leaving home', S: 'death day' };
 var SUF = {};
-['A', 'B', 'D', 'P', 'S'].forEach(function (k) { Object.defineProperty(SUF, k, { get: function () { return EN() ? SUF_EN[k] : SUF_ZH[k]; }, enumerable: true }); });
+['A', 'B', 'D', 'P', 'S'].forEach(function (k) { Object.defineProperty(SUF, k, { get: function () { return EN() ? TT(SUF_EN[k]) : SUF_ZH[k]; }, enumerable: true }); });
 var OTHER_SRC = '其他出处';
 function srcName(s) { return s === OTHER_SRC ? L(OTHER_SRC, 'Other sources') : NH(s); }
 function srcText(s) { return s === OTHER_SRC ? L(OTHER_SRC, 'Other sources') : NTX(s); }
-function nEntries(n) { return L(n + ' 条', n + (n === 1 ? ' entry' : ' entries')); }
+function nEntries(n) { return L(n + ' 条', n + (n === 1 ? ' entry' : ' entries'), n + (n === 1 ? ' entrée' : ' entrées')); }
 var TEN_LAB = function () { return L('十斋日', 'ten fast days'); };
 function one(c) { return c === 'N' || c === 'O' ? 'Q' : (TR[c] ? c : 'U'); }
 function parts(n) { n = (n || '').replace('？', '?').trim(); if (!n || n === '?') return ['U']; return n.split('&').map(one); }
@@ -207,8 +208,8 @@ function disc(root, D) {
       var days = [];
       for (var dd = 1; dd <= 30; dd++) if (D.byDay[zoom * 100 + dd]) days.push(dd);
       var total = days.reduce(function (t, x) { return t + D.byDay[zoom * 100 + x].length; }, 0);
-      panel.innerHTML = '<div><div class="zr-pd">' + (EN() ? ORD(zoom) + ' month' : MN[zoom]) + '</div><div class="zr-pmeta">' +
-        L(nEntries(total) + ' · ' + days.length + ' 个神圣日', nEntries(total) + ' · ' + days.length + ' sacred days') + '</div></div>' +
+      panel.innerHTML = '<div><div class="zr-pd">' + (EN() ? I18.mon(zoom) : MN[zoom]) + '</div><div class="zr-pmeta">' +
+        L(nEntries(total) + ' · ' + days.length + ' 个神圣日', nEntries(total) + ' · ' + days.length + ' sacred days', nEntries(total) + ' · ' + days.length + ' jours sacrés') + '</div></div>' +
         '<ul class="zr-mlist">' + days.map(function (x) {
           var l = D.byDay[zoom * 100 + x];
           return '<li><i class="zr-sw" style="background:' + (D.TEN.indexOf(x) >= 0 ? 'var(--zr-gold)' : 'var(--zr-wei)') + '"></i><div><div class="zr-nm">' + lunarLong(zoom, x) + '<span class="zr-chip">' + nEntries(l.length) + '</span></div><div class="zr-sub">' + l.map(function (r) { return NH(r.name); }).join(L('、', '; ')) + '</div></div></li>';
@@ -294,7 +295,7 @@ function disc(root, D) {
     }
     var lp = P(RO + 8 / px + fs, ae);
     svgEl('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'class': 'zr-daylab',
-      style: 'font-size:' + (fs * 1.5).toFixed(2) + 'px;fill:var(--zr-ink);font-weight:700' }, dayLabs).textContent = EN() ? ORD(m) + ' month' : MN[m];
+      style: 'font-size:' + (fs * 1.5).toFixed(2) + 'px;fill:var(--zr-ink);font-weight:700' }, dayLabs).textContent = EN() ? I18.mon(m) : MN[m];
   }
   function zoomTo(m) {
     zoom = m; hover = 0; sel = null; hl.setAttribute('d', ''); dayLabs.innerHTML = '';
@@ -370,7 +371,7 @@ function treemap(root, D) {
         dv.style.cssText = 'left:' + g.x + 'px;top:' + g.y + 'px;width:' + g.w + 'px;height:' + g.h + 'px;background:' +
           (g.k === 'MIX' ? 'repeating-linear-gradient(135deg,var(--zr-dao) 0 6px,var(--zr-di) 6px 12px)' : 'var(' + TR[g.k].c + ')');
         if (g.w > 34 && g.h > 22) dv.innerHTML = '<em>' + (g.w > 70 ? lab + ' ' : '') + g.v + '</em>';
-        dv.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + srcName(S.k) + '</b> · ' + lab + '<br>' + L(g.v + ' 条，占该出处 ' + Math.round(g.v / S.v * 100) + '%', nEntries(g.v) + ', ' + Math.round(g.v / S.v * 100) + '% of this source')); });
+        dv.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + srcName(S.k) + '</b> · ' + lab + '<br>' + L(g.v + ' 条，占该出处 ' + Math.round(g.v / S.v * 100) + '%', nEntries(g.v) + ', ' + Math.round(g.v / S.v * 100) + '% of this source', nEntries(g.v) + ', ' + Math.round(g.v / S.v * 100) + ' % de cette source')); });
         dv.addEventListener('pointerleave', hideTip);
         box.appendChild(dv);
       });
@@ -391,7 +392,7 @@ function treemap(root, D) {
     return;
   }
   sec.querySelector('.zr-finding').textContent = L('两大出处的内部构成几乎一样：玉匣記中道教占 ' + pct('玉匣記', 'T') + '%、佛教 ' + pct('玉匣記', 'B') + '%，古今類傳中道教占 ' + pct('古今類傳', 'T') + '%、佛教 ' + pct('古今類傳', 'B') + '%。没有哪个出处是「佛教的来源」或「道教的来源」。',
-    'The two main sources are made up almost identically: in the ' + NTX('玉匣記') + ', Daoist entries are ' + pct('玉匣記', 'T') + '% and Buddhist ' + pct('玉匣記', 'B') + '%; in the ' + NTX('古今類傳') + ', Daoist ' + pct('古今類傳', 'T') + '% and Buddhist ' + pct('古今類傳', 'B') + '%. No source is “the Buddhist source” or “the Daoist source”.');
+    'The two main sources are made up almost identically: in the ' + NTX('玉匣記') + ', Daoist entries are ' + pct('玉匣記', 'T') + '% and Buddhist ' + pct('玉匣記', 'B') + '%; in the ' + NTX('古今類傳') + ', Daoist ' + pct('古今類傳', 'T') + '% and Buddhist ' + pct('古今類傳', 'B') + '%. No source is “the Buddhist source” or “the Daoist source”.', 'Les deux principales sources ont une composition presque identique : dans le ' + NTX('玉匣記') + ', les entrées taoïstes font ' + pct('玉匣記', 'T') + ' % et les bouddhiques ' + pct('玉匣記', 'B') + ' % ; dans le ' + NTX('古今類傳') + ', taoïstes ' + pct('古今類傳', 'T') + ' % et bouddhiques ' + pct('古今類傳', 'B') + ' %. Aucune source n’est « la source bouddhique » ou « la source taoïste ».');
 }
 
 // ---------- 每月各日 ----------
@@ -414,7 +415,7 @@ function dom(root, D) {
     var on = D.TEN.indexOf(d) >= 0, x = ml + (d - 1) * bw + 3, w = bw - 6, top = y(cnt[d]), rr = Math.min(3, w / 2, y(0) - top);
     svgEl('path', { d: 'M' + x + ',' + y(0) + 'V' + (top + rr) + 'Q' + x + ',' + top + ' ' + (x + rr) + ',' + top + 'H' + (x + w - rr) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + rr) + 'V' + y(0) + 'Z', fill: on ? 'var(--zr-gold)' : 'var(--zr-wei)' }, S);
     var hit = svgEl('rect', { x: ml + (d - 1) * bw, y: mt, width: bw, height: H - mt - mb, fill: 'transparent' }, S);
-    hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d) + '</b> · ' + nEntries(cnt[d]) + (on ? ' · ' + TEN_LAB() : '')); });
+    hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + nEntries(cnt[d]) + (on ? ' · ' + TEN_LAB() : '')); });
     hit.addEventListener('pointerleave', hideTip);
     svgEl('text', { x: ml + (d - 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: on ? 'var(--zr-gold)' : 'var(--zr-muted)', 'font-weight': on ? 700 : 400 }, S).textContent = DN(d).replace('初', '');
     if (on || cnt[d] >= 13) svgEl('text', { x: ml + (d - 0.5) * bw, y: top - 7, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S).textContent = cnt[d];
@@ -428,7 +429,7 @@ function dom(root, D) {
   sec.querySelector('.zr-finding').textContent = L('十斋日占一月的三分之一，承载了 ' + Math.round(tenE / D.daily.length * 100) + '% 的条目，但并不均匀：' +
     hi.map(DN).join('、') + ' 远高于平均，' + lo.map(DN).join('、') + ' 却低于平均。神诞历贴合的是其中几个节点，而不是整套十斋。',
     'The ten fast days are a third of the month and carry ' + Math.round(tenE / D.daily.length * 100) + '% of the entries, but unevenly: days ' +
-    hi.join(', ') + ' are well above average, while days ' + lo.join(', ') + ' fall below it. The birthday calendar follows a few of these points, not the whole set of ten fasts.');
+    hi.join(', ') + ' are well above average, while days ' + lo.join(', ') + ' fall below it. The birthday calendar follows a few of these points, not the whole set of ten fasts.', 'Les dix jours de jeûne forment un tiers du mois et portent ' + Math.round(tenE / D.daily.length * 100) + ' % des entrées, mais inégalement : les jours ' + hi.join(', ') + ' sont nettement au-dessus de la moyenne, tandis que les jours ' + lo.join(', ') + ' sont en dessous. Le calendrier des anniversaires suit quelques-uns de ces points, non l’ensemble des dix jeûnes.');
 }
 
 // ---------- 一神多日 ----------
@@ -446,7 +447,7 @@ function strips(root, D) {
   function clean(n) { return n.replace(/(誕辰|誕|成道|下降|降|朝真|得道|飛昇|出家|成佛|諱辰|降神)$/, '').replace(/^各戶/, ''); }
   rows.forEach(function (x) {
     var g = x[0], l = x[1], row = document.createElement('div'); row.className = 'zr-strip';
-    row.innerHTML = '<div class="zr-g">' + (SCHEME === 'kind' ? NH(g) + '<small>' + L(l.length + ' 日', l.length + ' days') + '</small>' : NH(clean(l[0].name)) + '<small>' + L(l.length + ' 日', l.length + ' days') + ' · G' + g + '</small>') + '</div>';
+    row.innerHTML = '<div class="zr-g">' + (SCHEME === 'kind' ? NH(g) + '<small>' + L(l.length + ' 日', l.length + ' days', l.length + ' jours') + '</small>' : NH(clean(l[0].name)) + '<small>' + L(l.length + ' 日', l.length + ' days', l.length + ' jours') + ' · G' + g + '</small>') + '</div>';
     var s = svgEl('svg', { viewBox: '0 0 720 30', preserveAspectRatio: 'none' }, row); box.appendChild(row);
     svgEl('line', { x1: 0, x2: 720, y1: 15, y2: 15, stroke: 'var(--zr-line)', 'vector-effect': 'non-scaling-stroke' }, s);
     for (var m = 0; m <= 12; m++) svgEl('line', { x1: m * 60, x2: m * 60, y1: 9, y2: 21, stroke: 'var(--zr-line)', 'vector-effect': 'non-scaling-stroke' }, s);
@@ -468,7 +469,7 @@ function strips(root, D) {
 function table(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec';
   var withNotes = !D.notesOmitted;
-  sec.innerHTML = '<details><summary>' + L('全部条目', 'All entries') + '</summary><div class="zr-tools"><input type="search" placeholder="' + L('搜索名称、出处' + (withNotes ? '、附录' : '') + '…', 'Search name, source' + (withNotes ? ', notes' : '') + ' (Chinese or pinyin)…') + '" aria-label="' + L('搜索条目', 'Search entries') + '"><span class="zr-hint"></span></div>' +
+  sec.innerHTML = '<details><summary>' + L('全部条目', 'All entries') + '</summary><div class="zr-tools"><input type="search" placeholder="' + L('搜索名称、出处' + (withNotes ? '、附录' : '') + '…', 'Search name, source' + (withNotes ? ', notes' : '') + ' (Chinese or pinyin)…', 'Chercher nom, source' + (withNotes ? ', notes' : '') + ' (chinois ou pinyin)…') + '" aria-label="' + L('搜索条目', 'Search entries') + '"><span class="zr-hint"></span></div>' +
     '<div class="zr-tbl"><table><thead><tr><th>' + L('日期', 'Date') + '</th><th>' + L('名称', 'Name') + '</th><th>' + L('性质', 'Tradition') + '</th><th>' + L('出处', 'Source') + '</th><th>' + L('编号', 'Code') + '</th>' + (withNotes ? '<th>' + L('附录', 'Notes') + '</th>' : '') + '</tr></thead><tbody></tbody></table></div></details>';
   root.appendChild(sec);
   var tb = sec.querySelector('tbody'), q = sec.querySelector('input'), qn = sec.querySelector('.zr-tools .zr-hint');
@@ -488,8 +489,8 @@ function notes(root, data) {
       L('<li>颜色按工作簿的「编码日期类型」：纪念（圣诞、圣降）、成就（出家、成道、涅槃等）、巡察（下降）、节令（腊与节辰）、其他；未填者为「未标」。</li>' +
         '<li>跨日斋期（如正月初八至十五）画成该月左侧的泥金细条，不计入每日条数。</li>',
         '<li>Colours follow the workbook’s coded type of day: commemoration (birthdays, sacred descents), attainment (leaving home, attaining the Way, nirvana, etc.), inspection (descents), seasonal festivals (la 臘 and festival days), and other; blank codes are “unmarked”.</li>' +
-        '<li>Multi-day fasts (e.g. 1/8–1/15) are drawn as thin gold bars on the left of their month and are not counted in the daily totals.</li>') +
-      (meta.undated ? L('<li>另有 ' + meta.undated + ' 条日期不是具体月日（如「每月」「六十甲子日」），未画入历盘，见「诸本对照」。</li>', '<li>' + meta.undated + ' further entries have no specific month and day (e.g. “every month”, the sixty jiazi days) and are not drawn; see Collated editions.</li>') : '') +
+        '<li>Multi-day fasts (e.g. 1/8–1/15) are drawn as thin gold bars on the left of their month and are not counted in the daily totals.</li>', '<li>Les couleurs suivent le type de jour codé du classeur : commémoration (anniversaires, descentes sacrées), accomplissement (sortie du monde, obtention de la Voie, nirvana, etc.), inspection (descentes), fêtes saisonnières (la 臘 et jours de fête), et autres ; les codes vides sont « non marqués ».</li>' + '<li>Les jeûnes de plusieurs jours (p. ex. 1/8–1/15) sont dessinés en fines barres dorées à gauche de leur mois et ne sont pas comptés dans les totaux journaliers.</li>') +
+      (meta.undated ? L('<li>另有 ' + meta.undated + ' 条日期不是具体月日（如「每月」「六十甲子日」），未画入历盘，见「诸本对照」。</li>', '<li>' + meta.undated + ' further entries have no specific month and day (e.g. “every month”, the sixty jiazi days) and are not drawn; see Collated editions.</li>', '<li>' + meta.undated + ' autres entrées n’ont pas de mois ni de jour précis (p. ex. « chaque mois », les soixante jours du cycle) et ne sont pas dessinées ; voir Collation des éditions.</li>') : '') +
       (meta.noText ? L('<li>此版本录自授权数据库，公开版不显示原文，条目以神名或原文所标代替。</li>', '<li>This edition was transcribed from a licensed database; the public version omits the original text and shows the deity name or label instead.</li>') : '') +
       L('<li>数据：', '<li>Data: ') + (meta.editionHtml || esc(meta.edition || '')) + L('；源表 ', '; source ') + esc(meta.sourceFile || '') + L('。</li>', '.</li>') + '</ul></div>';
     root.appendChild(sec);
@@ -502,10 +503,10 @@ function notes(root, data) {
       '<li>Tradition codes T, B, L, C are read as Daoist, Buddhist, local and Confucian; N and O are merged as “other” (meaning to be confirmed). Composite entries marked &amp; are split into an inner and an outer half on the disc.</li>' +
       '<li>Multi-day fasts (e.g. 1/8–1/15, 9/1–9/10) are drawn as thin gold bars on the left of their month and are not counted in the daily totals.</li>' +
       '<li>Code suffixes A, B, D, P, S are inferred from the names as attaining the Way (chengdao 成道), audience with the Perfected (chaozhen 朝真), descent (xiajiang 下降), leaving home (chujia 出家) and death day (huichen 諱辰); to be confirmed.</li>' +
-      '<li>Dates are lunar month/day. Names of deities and sources are given in pinyin (generated automatically) with Chinese characters.</li>') +
+      '<li>Dates are lunar month/day. Names of deities and sources are given in pinyin (generated automatically) with Chinese characters.</li>', '<li>Les codes de tradition T, B, L, C sont lus comme taoïste, bouddhiste, local et confucéen ; N et O sont fusionnés en « autre » (sens à confirmer). Les entrées composites marquées &amp; sont partagées en une moitié intérieure et une moitié extérieure sur le disque.</li>' + '<li>Les jeûnes de plusieurs jours (p. ex. 1/8–1/15, 9/1–9/10) sont dessinés en fines barres dorées à gauche de leur mois et ne sont pas comptés dans les totaux journaliers.</li>' + '<li>Les suffixes de code A, B, D, P, S sont déduits des noms comme obtention de la Voie (chengdao 成道), audience auprès des Parfaits (chaozhen 朝真), descente (xiajiang 下降), sortie du monde (chujia 出家) et jour de la mort (huichen 諱辰) ; à confirmer.</li>' + '<li>Les dates sont lunaires, au format mois/jour. Les noms des divinités et des sources sont donnés en pinyin (généré automatiquement) avec les caractères chinois.</li>') +
     (meta.notesOmitted ? L('<li>公开版不收源表的「附錄」栏。</li>', '<li>The public version omits the source table’s notes column (fulu 附錄).</li>') : '') +
     L('<li>数据：' + esc(meta.edition || '待确认') + '；源表 ' + esc(meta.sourceFile || '') + '，生成于 ' + esc(meta.generated || '') + '。</li></ul></div>',
-      '<li>Data: ' + (meta.editionEn || NH(meta.edition || '待确认')) + '; source table ' + esc(meta.sourceFile || '') + ', generated ' + esc(meta.generated || '') + '.</li></ul></div>');
+      '<li>Data: ' + (meta.editionEn || NH(meta.edition || '待确认')) + '; source table ' + esc(meta.sourceFile || '') + ', generated ' + esc(meta.generated || '') + '.</li></ul></div>', '<li>Données : ' + (meta.editionEn || NH(meta.edition || '待确认')) + ' ; table source ' + esc(meta.sourceFile || '') + ', générée le ' + esc(meta.generated || '') + '.</li></ul></div>');
   root.appendChild(sec);
 }
 

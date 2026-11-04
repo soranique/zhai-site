@@ -1,5 +1,7 @@
-/* 中／英界面切换
-   - 语言存于浏览器（localStorage 'zhai-lang'）；网址加 ?lang=en 或 ?lang=zh 可直接指定
+/* 中／英／法界面切换
+   - 语言存于浏览器（localStorage 'zhai-lang'）；网址加 ?lang=zh、?lang=en 或 ?lang=fr 可直接指定
+   - 法文：L(zh, en, fr) 的第三个参数；没给第三个参数时，按英文到 fr.js（window.ZHAI_FR，英文→法文对照表）里查，查不到就显示英文
+   - I.en() 表示「西文界面」（英文或法文），专有名词都显示「拼音 汉字」；I.fr() 只在法文界面为真
    - 专有名词（人名、神名、地名、书名）不翻译：英文界面显示「拼音 汉字」，拼音由 build_data.py / build_ring_data.py 生成
    - 编码取值（证据强度、时段、D/A/C/B 等）在 CODES 中给出英文
    - 研究笔记、摘要、原文等自由文本保持中文 */
@@ -8,8 +10,8 @@
 var KEY = 'zhai-lang', lang = 'zh';
 try {
   var q = new URLSearchParams(location.search).get('lang');
-  if (q === 'en' || q === 'zh') { lang = q; localStorage.setItem(KEY, q); }
-  else { var s = localStorage.getItem(KEY); if (s === 'en' || s === 'zh') lang = s; }
+  if (q === 'en' || q === 'zh' || q === 'fr') { lang = q; localStorage.setItem(KEY, q); }
+  else { var s = localStorage.getItem(KEY); if (s === 'en' || s === 'zh' || s === 'fr') lang = s; }
 } catch (e) {}
 
 var PY = {}, TITLE = {};
@@ -77,13 +79,19 @@ var DAY_RE = '(初十|初[一二三四五六七八九]|二十[一二三四五六
 var MON_RE = '(闰|閏)?(十一|十二|[正一二三四五六七八九十冬腊臘])月';
 // 单独的日子只在「初X」「X日」或前面是「至」「、」「，」、开头时才算日期，避免把「四十天」读成日期
 var LONE_DAY = new RegExp('(^|[至、，,；;：\\s（(]|every month )(初十|初[一二三四五六七八九]|二十[一二三四五六七八九]?|廿[一二三四五六七八九]?|三十|十[一二三四五六七八九])(日)?(?![天年岁歲人条條种種])', 'g');
+var DW = {
+  en: { ic: 'intercal. ', icm: 'intercalary ', every: 'every month ', day: 'day ', whole: 'whole month', unfixed: 'unfixed' },
+  fr: { ic: 'interc. ', icm: 'intercalaire ', every: 'chaque mois ', day: 'jour ', whole: 'mois entier', unfixed: 'non fixe' }
+};
+function monName(n) { return lang === 'fr' ? (n === 1 ? '1er' : n + 'e') + ' mois' : ord(n) + ' month'; }
 function dateSeg(s) {
-  s = s.replace(new RegExp(MON_RE + DAY_RE, 'g'), function (_, leap, m, d) { return (leap ? 'intercal. ' : '') + MON[m] + '/' + cnDay(d) + ' '; });
-  s = s.replace(new RegExp(MON_RE, 'g'), function (_, leap, m) { return (leap ? 'intercalary ' : '') + ord(MON[m]) + ' month '; });
-  s = s.replace(/每月[：:]?/g, 'every month ');
-  s = s.replace(LONE_DAY, function (_, pre, d) { return pre + 'day ' + cnDay(d) + ' '; });
-  s = s.replace(/(\d+)\/(\d+)\s*至\s*day (\d+)/g, '$1/$2–$1/$3').replace(/day (\d+)\s*至\s*day (\d+)/g, 'day $1–$2');
-  s = s.replace(/整月/g, 'whole month').replace(/不定/g, 'unfixed')
+  var W = DW[lang] || DW.en, dw = W.day.trim();
+  s = s.replace(new RegExp(MON_RE + DAY_RE, 'g'), function (_, leap, m, d) { return (leap ? W.ic : '') + MON[m] + '/' + cnDay(d) + ' '; });
+  s = s.replace(new RegExp(MON_RE, 'g'), function (_, leap, m) { return lang === 'fr' ? monName(MON[m]) + (leap ? ' intercalaire' : '') + ' ' : (leap ? W.icm : '') + monName(MON[m]) + ' '; });
+  s = s.replace(/每月[：:]?/g, W.every);
+  s = s.replace(LONE_DAY, function (_, pre, d) { return pre + W.day + cnDay(d) + ' '; });
+  s = s.replace(new RegExp('(\\d+)\\/(\\d+)\\s*至\\s*' + dw + ' (\\d+)', 'g'), '$1/$2–$1/$3').replace(new RegExp(dw + ' (\\d+)\\s*至\\s*' + dw + ' (\\d+)', 'g'), dw + ' $1–$2');
+  s = s.replace(/整月/g, W.whole).replace(/不定/g, W.unfixed)
     .replace(/至/g, '–').replace(/、/g, ', ').replace(/；/g, '; ').replace(/，/g, ', ').replace(/（/g, ' (').replace(/）/g, ')');
   return s.replace(/\s+/g, ' ').replace(/\s+([,;)–])/g, '$1').replace(/–\s+/g, '–').replace(/\(\s+/g, '(').trim();
 }
@@ -91,38 +99,49 @@ function ord(n) { var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(
 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
+function FR() { return window.ZHAI_FR || {}; }
+/** 英文 → 当前西文（法文界面查 fr.js，查不到原样返回英文） */
+function T(en) { if (lang !== 'fr' || en == null) return en; var f = FR()[en]; return f != null ? f : en; }
 var I = {
   get lang() { return lang; },
-  en: function () { return lang === 'en'; },
+  en: function () { return lang === 'en' || lang === 'fr'; },
+  fr: function () { return lang === 'fr'; },
   set: function (l) {
-    lang = l === 'en' ? 'en' : 'zh';
+    lang = l === 'en' || l === 'fr' ? l : 'zh';
     try { localStorage.setItem(KEY, lang); } catch (e) {}
     I.apply();
   },
   /** 按当前语言取字串 */
-  L: function (zh, en) { return lang === 'en' ? en : zh; },
+  L: function (zh, en, fr) { return lang === 'zh' ? zh : lang === 'fr' ? (fr != null ? fr : T(en)) : en; },
+  T: T,
+  /** 月份名：「正月」/「1st month」/「1er mois」；带日：「1st month, day 8」/「1er mois, jour 8」 */
+  mon: function (m) { return monName(m); },
+  monDay: function (m, d) { return monName(m) + (lang === 'fr' ? ', jour ' : ', day ') + d; },
+  /** 序数：1st / 1er */
+  ordL: function (n) { return lang === 'fr' ? (n === 1 ? '1er' : n + 'e') : ord(n); },
   addPinyin: addPinyin,
   /** 拼音（无则空） */
   py: function (t) { return PY[t] || ''; },
   /** 专有名词，返回 HTML：中文界面原样；英文界面「拼音 汉字」，书名拼音为斜体 */
   N: function (t) {
     if (t == null || t === '') return '';
-    if (lang !== 'en' || !PY[t]) return esc(t);
+    if (lang === 'zh' || !PY[t]) return esc(t);
     return (TITLE[t] ? '<i>' + esc(PY[t]) + '</i>' : esc(PY[t])) + ' ' + esc(t);
   },
   /** 同上，纯文字（用于提示框、SVG） */
   NT: function (t) {
     if (t == null || t === '') return '';
-    return lang === 'en' && PY[t] ? PY[t] + ' ' + t : String(t);
+    return lang !== 'zh' && PY[t] ? PY[t] + ' ' + t : String(t);
   },
   /** 编码取值 */
   C: function (v) {
-    if (lang !== 'en' || v == null || v === '') return v == null ? '' : v;
-    return CODES[v] || CODES[String(v).trim()] || v;
+    if (lang === 'zh' || v == null || v === '') return v == null ? '' : v;
+    var e = CODES[v] || CODES[String(v).trim()];
+    return e ? T(e) : v;
   },
   /** 农历日期文字转英文：「六月二十四」→「6/24」，「正月」→「1st month」，「初八」→「day 8」 */
   D: function (t) {
-    if (lang !== 'en' || !t) return t || '';
+    if (lang === 'zh' || !t) return t || '';
     // 「」内是原文引文，不改
     return String(t).split(/(「[^」]*」)/).map(function (seg, i) { return i % 2 ? seg : dateSeg(seg); }).join('');
   },
@@ -131,14 +150,13 @@ var I = {
   ord: ord,
   /** 切换后：更新 <html lang>、静态文字（data-en 属性）与按钮 */
   apply: function () {
-    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-Hans';
+    document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : lang;
     document.querySelectorAll('[data-en]').forEach(function (el) {
       if (!el.hasAttribute('data-zh')) el.setAttribute('data-zh', el.innerHTML);
-      el.innerHTML = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-zh');
+      el.innerHTML = lang === 'zh' ? el.getAttribute('data-zh') : T(el.getAttribute('data-en'));
     });
-    var b = document.getElementById('lang');
-    if (b) { b.textContent = lang === 'en' ? '中文' : 'EN'; b.setAttribute('aria-label', lang === 'en' ? '切换为中文' : 'Switch to English'); }
-    document.title = lang === 'en' ? 'Deity-Day Fasting Calendars' : '神诞斋期版本对照';
+    document.querySelectorAll('#langs [data-lang]').forEach(function (b) { var on = b.getAttribute('data-lang') === lang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    document.title = { zh: '神诞斋期版本对照', en: 'Deity-Day Fasting Calendars', fr: 'Calendriers de jeûne des fêtes divines' }[lang];
   }
 };
 window.ZhaiI18n = I;

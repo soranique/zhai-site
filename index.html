@@ -7,8 +7,8 @@
 <meta name="description" content="江南周期性神诞持斋研究：神明在各版本斋期表中的记载，与实践记录、《申报》、风俗志的对照。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Serif+SC:wght@400;600;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ring.css?v=9169cebd">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Serif+SC:wght@400;600;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ring.css?v=b5298586">
 <style>
 :root {
   color-scheme: light;
@@ -25,7 +25,10 @@
   --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4;   /* 石青 青莲 石绿 藤黄 天青 苔绿 暖灰 铅灰 */
   --v1: var(--cat1); --v2: var(--cat2); --v3: var(--cat3); --v4: var(--cat4);
   --ev1: #245f94; --ev2: #6b95c4; --ev3: #b3cbe5;   /* 证据强度（有序）：石青由深到浅 */
-  --font-src: "LXGW WenKai TC", "Kaiti TC", "STKaiti", "KaiTi", "BiauKai", "AR PL UKai TW", "AR PL UKai CN", serif;   /* 史料原文用楷体 */
+  /* 字体：拉丁字母与数字一律用无衬线体 Noto Sans（排在最前；它不含汉字，汉字自动落到后面的宋体或楷体） */
+  --font-latin: "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Noto Sans", "Helvetica Neue", Arial, "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-src: "Noto Sans", "Helvetica Neue", Arial, "LXGW WenKai TC", "Kaiti TC", "STKaiti", "KaiTi", "BiauKai", "AR PL UKai TW", "AR PL UKai CN", serif;   /* 史料原文用楷体 */
   --hl: #fff3c4;
   --yuan: #f6ebe7; --yuan-line: #dcbcb0;
 }
@@ -55,10 +58,10 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--page); color: var(--ink);
-  font: 15px/1.7 "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font: 15px/1.7 var(--font-body);
 }
-/* 英文界面：拉丁字母用 Noto Serif，汉字仍用 Noto Serif SC */
-html[lang="en"] body, html[lang="fr"] body { font-family: "Noto Serif", "Noto Serif SC", "Songti SC", "SimSun", serif; }
+/* 各种语言界面同一套字体：英文、法文和所有数字用无衬线体，汉字用宋体（原文用楷体） */
+table, .tile .n, .fheat, .db-n, .tb-y { font-variant-numeric: tabular-nums; }
 a { color: var(--ink); text-decoration-line: underline; text-decoration-color: color-mix(in srgb, var(--accent) 50%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: var(--accent); text-decoration-color: currentColor; }
 
@@ -465,7 +468,7 @@ html:not([lang^="zh"]) .top nav { order: 6; flex-basis: 100%; }
 @media (min-width: 701px) {
   .top .hbtn, .top #theme { font-size: 0; width: 28px; height: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
   .top .hbtn::before, .top #theme::before { font-size: 13px; line-height: 1; }
-  #share::before { content: '🔗'; } #demo::before { content: '▶'; } #theme::before { content: '◐'; }
+  #share::before { content: '🔗'; } #demo::before { content: '▶'; } #theme::before { content: '◐'; font-family: "Noto Serif SC", "Songti SC", "Segoe UI Symbol", "Apple Symbols", serif; }   /* 无衬线体里没有 ◐ */
 }
 @media (max-width: 700px) {
   #menu { display: inline-block; margin-left: auto; max-width: 55vw; overflow: hidden; text-overflow: ellipsis; }

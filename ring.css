@@ -4,12 +4,12 @@
    深浅色写法与网站相同：媒体查询 + [data-theme] 两处都要写。 */
 .zr {
   /* 矿物颜料：浅色模式（已通过色盲可辨性检验） */
-  --zr-dao: #245f94;   /* 石青 道 */
-  --zr-fo:  #bd8b18;   /* 藤黄 佛 */
-  --zr-di:  #1a9178;   /* 石绿 地方 */
-  --zr-ru:  #b5361f;   /* 朱砂 儒 */
-  --zr-qi:  #a59c8e;   /* 暖灰 其他（剩余类，不再用赭石：赭石与朱砂在红色弱下难分） */
-  --zr-wei: #cfccc4;   /* 铅灰 未定 */
+  --zr-dao: var(--cat1, #245f94);   /* 石青 道（与网站分类色一致） */
+  --zr-fo:  var(--cat4, #bd8b18);   /* 藤黄 佛 */
+  --zr-di:  var(--cat3, #1a9178);   /* 石绿 地方 */
+  --zr-ru:  var(--cat2, #9a7fd1);   /* 青莲 儒（朱红只留给强调，不再作分类色） */
+  --zr-qi:  var(--cat-o, #a59c8e);   /* 暖灰 其他 */
+  --zr-wei: var(--cat-u, #cfccc4);   /* 铅灰 未定 */
   --zr-cell: var(--surface-2, #f2f1ed);
   --zr-fast: #efe2bf;  /* 十斋日空格 */
   --zr-gold: #a8801f;  /* 泥金：十斋日、强调线 */
@@ -21,13 +21,13 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .zr {
-    --zr-dao: #4d84d0; --zr-fo: #ba881a; --zr-di: #2aa470; --zr-ru: #c9443a;
+    --zr-dao: var(--cat1, #3567b0); --zr-fo: var(--cat4, #ba881a); --zr-di: var(--cat3, #2aa470); --zr-ru: var(--cat2, #9a82d6);
     --zr-qi: #8d877c; --zr-wei: #55595d;
     --zr-fast: #3a3322; --zr-gold: #c9a45c;
   }
 }
 :root[data-theme="dark"] .zr {
-  --zr-dao: #4d84d0; --zr-fo: #ba881a; --zr-di: #2aa470; --zr-ru: #c9443a;
+  --zr-dao: var(--cat1, #3567b0); --zr-fo: var(--cat4, #ba881a); --zr-di: var(--cat3, #2aa470); --zr-ru: var(--cat2, #9a82d6);
   --zr-qi: #8d877c; --zr-wei: #55595d;
   --zr-fast: #3a3322; --zr-gold: #c9a45c;
 }

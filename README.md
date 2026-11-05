@@ -81,7 +81,7 @@ python3 build_editions.py 玉匣記版本对比.xlsx
 
 **神明、实践记录、《申报》、风俗志**：来自持斋研究数据库，由 `build_data.py` 生成 `data.js`。
 
-改了 `data.js`、`editions-data.js` 后再运行 `python3 build_search.py`（更新搜索用的繁简对照）。改了 `data.js`、`editions-data.js`、`ring.js` 等文件后，再运行 `python3 stamp_versions.py`：它给 `index.html` 里的文件地址加上版本号，读者的浏览器才会取新文件，而不是沿用缓存的旧版。
+运行完 `build_data.py`、`build_editions.py`、`build_kinship.py` 后，先运行 `python3 apply_traditional.py`（把数据转成繁体；史料原文、照录栏不转，转换规则在 `zh_trad.py`），再运行 `python3 build_search.py`（更新搜索用的繁简对照）。神名合并在工作簿的「建議規範名（對比用）」栏，对照表见工作簿「規範名歸併表」页。改了 `data.js`、`editions-data.js`、`ring.js` 等文件后，再运行 `python3 stamp_versions.py`：它给 `index.html` 里的文件地址加上版本号，读者的浏览器才会取新文件，而不是沿用缓存的旧版。
 
 不会运行程序也没关系：把新的 Excel 交给 Claude，说「更新网站数据」即可。
 

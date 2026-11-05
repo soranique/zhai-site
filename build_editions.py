@@ -61,52 +61,53 @@ def day_no(s):
     return DIG[t]
 
 
-# 專門單獨齋期在网站上不算版本，只在环形历选单里单列；每种斋期一盘
-# 编号沿用版本目录编号再加一位（#ring/241）；汇集页按「文獻」拆开，年代据该页「出版信息」
-SOLO_BOOKS = {'恐懼修省錄': (251, '1849'), '敬竈全書': (252, '1868'), '呂祖全書': (253, '1775')}
+# 專門單獨齋期：照常作为版本进各页，另在环形历选单末尾按「一种斋期一盘」列出（build_rings）。
+# 一页默认一盘；汇集页有「文獻」栏，每种文献一盘，编号 = 版本目录编号 ×10 + 出现次序（新文献加在表末即可，编号不变）。
+# 一页里有几种斋期又没有「文獻」栏的，在这里写明分界（从哪条条目ID起算下一盘）
+SOLO_SPLIT = {'24': [('增訂敬信錄·司命竈君日期', ''), ('增訂敬信錄·白衣齋期', '24-0064')]}
 
 
-def split_solo(versions, entries):
-    """把專門單獨齋期从版本、条目里拿出来，返回 (版本, 条目, 环形历用的盘, 无具体日期的文献)。"""
+def book_year(pub, default=''):
+    m = re.search(r'(\d{4}) 年', pub) or re.search(r'（(\d{4})）', pub) or re.search(r'(\d{4})', pub)
+    return m.group(1) if m else default
+
+
+def build_rings(versions, entries):
+    """返回 (环形历用的盘, 没有具体日期、画不进去的文献)。"""
     rings, undated = [], []
 
-    def ring(v, no, when, short, es, second=False):
+    def ring(v, no, when, short, es):
         rs = []
         for e in es:
-            e = dict(e)
-            md = re.match(r'每月', e['mo'])
-            d = day_no(e['dy']) if md else None
-            if md and d:                # 「每月初六」排进十二个月
-                rs += [dict(e, m=m, d=d) for m in range(1, 13)]
-            else:
-                rs.append(e)
+            d = day_no(e['dy']) if e['mo'].startswith('每月') else None
+            rs += [dict(e, m=m, d=d) for m in range(1, 13)] if d else [dict(e)]   # 「每月初六」排进十二个月
+        if not any(e['m'] and e['d'] for e in rs):
+            undated.append(short)
+            return
         rings.append({'no': str(no), 'sheet': v['sheet'], 'when': when, 'short': short, 'pub': '', 'noText': False, 'solo': True,
-                      'second': second, 'src': v['src'], 'n': len(es), 'es': rs})
+                      'second': v['when'] == '彙集', 'src': v['src'], 'n': len(es), 'es': rs})
 
     for v in versions:
         if not v['solo']:
             continue
         es = [e for e in entries if e['v'] == v['i']]
-        if v['no'] == '24':
-            cut = [e for e in es if e['id'] >= '24-0064']
-            ring(v, 241, v['when'], '增訂敬信錄·司命竈君日期', [e for e in es if e['id'] < '24-0064'])
-            ring(v, 242, v['when'], '增訂敬信錄·白衣齋期', cut)
+        books = {}
+        for e in es:
+            b = e['pg'].split('｜')
+            if len(b) == 3:              # 文獻｜出处｜出版信息
+                books.setdefault(b[0], []).append(e)
+        if books:
+            for i, (b, xs) in enumerate(books.items()):
+                ring(v, int(v['no']) * 10 + i + 1, book_year(xs[0]['pg'].split('｜')[2], v['when']), b, xs)
+        elif v['no'] in SOLO_SPLIT:
+            cuts = SOLO_SPLIT[v['no']]
+            for i, (name, start) in enumerate(cuts):
+                end = cuts[i + 1][1] if i + 1 < len(cuts) else '~'
+                ring(v, int(v['no']) * 10 + i + 1, v['when'], name, [e for e in es if start <= e['id'] < end])
         else:
-            books = {}
-            for e in es:
-                books.setdefault(e['pg'].split('｜')[0], []).append(e)
-            for b, xs in books.items():
-                if b in SOLO_BOOKS:
-                    ring(v, SOLO_BOOKS[b][0], SOLO_BOOKS[b][1], b, xs, second=True)
-                else:
-                    undated.append(b)
+            ring(v, int(v['no']) * 10 + 1, v['when'], v['short'], es)
     rings.sort(key=lambda r: r['when'])
-    keep = [v for v in versions if not v['solo']]
-    remap = {v['i']: i for i, v in enumerate(keep)}
-    for i, v in enumerate(keep):
-        v['i'] = i
-    kept = [dict(e, v=remap[e['v']]) for e in entries if e['v'] in remap]
-    return keep, kept, rings, undated
+    return rings, undated
 
 
 def main():
@@ -146,8 +147,10 @@ def main():
             'title': clean(r[3]), 'type': clean(r[4]), 'date': clean(r[5]), 'src': clean(r[6]),
             'year': int(yr.group(1)) if yr else None, 'yuxia': '玉匣記' in sheet,
             'no': clean(r[0]), 'noText': bool(re.search(r'[識识]典', clean(r[6]))),
-            'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：网站上只进环形历（见 split_solo）
+            'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：环形历里另列（见 build_rings），概览时间线不列
         }
+        if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
+            v.update(when='彙集', era='據 Goossaert 2024', short='專門單獨齋期彙集', pub='')
         ws = wb[sheet]
         rows = list(ws.iter_rows(values_only=True))
         col = {clean(h): i for i, h in enumerate(rows[0])}
@@ -184,7 +187,7 @@ def main():
         v['n'] = n
         versions.append(v)
 
-    versions, entries, solo, solo_undated = split_solo(versions, entries)
+    solo, solo_undated = build_rings(versions, entries)
 
     names = [(e['k'], 'name') for e in entries if e['k']] + [(e['g'], 'name') for e in entries if e['g']]
     py = pinyin_util.build_map(names)

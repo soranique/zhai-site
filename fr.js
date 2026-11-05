@@ -621,6 +621,9 @@ window.ZHAI_FR = {
   "Standalone fast calendars": "Calendriers de jeûne spécifiques",
   "This records one particular fast only, not a full-year calendar.": "Ne note qu’un jeûne particulier, et non un calendrier annuel complet.",
   " Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.": " D’après Goossaert 2024, l’ouvrage n’a pas été vu ; les dates mensuelles sont répétées sur les douze mois.",
+  "Standalone fast calendar": "Calendrier de jeûne spécifique",
+  "Standalone fast calendar (in a morality book)": "Calendrier de jeûne spécifique (dans un livre de morale)",
+  "Standalone fast calendars (secondhand)": "Calendriers de jeûne spécifiques (de seconde main)",
   "Copy link": "Copier le lien",
   "▶︎ Present": "▶︎ Présenter"
 };

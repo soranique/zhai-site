@@ -26,6 +26,8 @@ DIG = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '�
 
 
 def clean(v):
+    if isinstance(v, float) and v.is_integer():   # Google 表格导出的整数带 .0
+        v = int(v)
     return '' if v is None else str(v).strip()
 
 

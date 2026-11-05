@@ -43,7 +43,9 @@ def sheet_rows(wb, name):
     for r in rows[1:]:
         if r[0] is None or str(r[0]).strip() == '':
             continue
-        out.append({h: ('' if v is None else str(v).strip()) for h, v in zip(head, r) if h})
+        # Google 表格导出的整数带 .0
+        out.append({h: ('' if v is None else str(int(v) if isinstance(v, float) and v.is_integer() else v).strip())
+                    for h, v in zip(head, r) if h})
     return out
 
 

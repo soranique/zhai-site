@@ -11,6 +11,8 @@
   同一本中同类日期超过 3 个者（如逐月下降）不判。同版本（WIT）合为一个见证
 - 「共有的少数日期」：两本都作、而多数本子不作的日期
 - 另输出 minor（少数日期的条目ID）与 common（各神各日期类型的通行日期），「诸本对照」据此标红
+- 重合度把「初一至初九」拆成逐日；判定少数日期、通行日期时与工作簿「日期异文」完全一致，只算写成单一月日的条目
+  （strict_day；区间、连写日期及夏至、冬至不计），两者口径不同，所以 E 与 J 分开存
 """
 import json
 import re
@@ -21,15 +23,19 @@ from itertools import combinations
 import openpyxl
 
 # ---- 设定（随研究改） ----
-INCL = [12, 13, 1, 14, 3, 15, 4, 5, 16, 17, 6, 8, 9, 10, 11, 18]   # 版本目录编号：已获完整文本
-EXCL = {2: '无逐月神诞表，只有六十甲子日', 7: '两处缺页', 19: '无具体月日的神诞', 20: '只有十王立誓日'}
+INCL = [12, 13, 1, 14, 3, 15, 4, 16, 17, 5, 22, 20, 6, 8, 9, 10, 21, 23, 11, 18]   # 版本目录编号：已获完整文本，按年代
+EXCL = {2: '无逐月神诞表，只有六十甲子日', 7: '两处缺页', 19: '无具体月日的神诞', 24: '只有灶君、白衣两种专门单独斋期',
+        25: '专门单独斋期汇集，据 Goossaert 2024 转述，未见原书'}
+SKIP = {20: {'C0130', 'C0131', 'C0132', 'C0133', 'C0134', 'C0135', 'C0136'}}   # 《玉歷鈔傳警世》只取诸圣诞辰表，不取十王立誓日
 WIT = {9: 8}   # 1891 与 1882 同版，计为同一个见证
 LANE = {1: '道藏本', 14: '道藏本', 15: '宮觀手冊', 12: '日用類書', 13: '日用類書', 3: '單行本', 4: '單行本', 8: '單行本',
-        9: '單行本', 5: '通書', 6: '通書', 10: '通書', 11: '通書', 16: '善書', 17: '善書', 18: '未定'}
-TENT = {13: '工作簿「文本类型」未填，按书名暂归日用類書', 15: '工作簿「文本类型」未填，按山志所收齋曆暂归宮觀手冊', 18: '书名不明'}
+        9: '單行本', 5: '通書', 6: '通書', 10: '通書', 11: '通書', 16: '善書', 17: '善書', 22: '善書', 20: '善書', 21: '善書',
+        23: '宮觀手冊', 18: '未定'}
+TENT = {13: '工作簿「文本类型」未填，按书名暂归日用類書', 15: '工作簿「文本类型」未填，按山志所收齋曆暂归宮觀手冊', 23: '工作簿「文本类型」为寺院課誦本，暂归宮觀手冊', 18: '书名不明'}
 NOTE = {4: '截图解析度有限', 8: '与 1891 本同版', 9: '与 1882 本同版（1891 重印）'}
 SHORT = {12: '事林廣記', 13: '萬寶全書', 1: '諸神聖誕日', 14: '朝修吉辰章', 3: '選擇集要', 15: '穹窿山志', 4: '玉匣記廣集', 5: '廣玉匣記',
-         16: '修身立命', 17: '正心致福', 6: '新增廣', 8: '萬全(劉)', 9: '萬全(劉)重印', 10: '增廣通書', 11: '增廣(春明)', 18: 'Liste本'}
+         16: '修身立命', 17: '正心致福', 6: '新增廣', 8: '萬全(劉)', 9: '萬全(劉)重印', 10: '增廣通書', 11: '增廣(春明)', 18: 'Liste本',
+         22: '聖經彙纂', 20: '玉歷鈔傳', 21: '家庭寶筏', 23: '禪門日誦'}
 DIR = [dict(a=8, b=9, st='确定', d='同版重印：1891 年劉誠印据 1882 年原板重印一千部（跋）'),
        dict(a=6, b=8, st='候选', d='1827 本条目有九成见于 1882 本，1882 本另有增补；劉誠印跋称「逐月神佛聖誕未列者細心搜求重加增補」。1827 本只是工作簿中年代最近的同组本子，不一定是劉誠印所据之本'),
        dict(a=14, b=15, st='候选', d='《朝修吉辰章》条目绝大多数见于《穹窿山志》；按年代先后（1607 刊／1444 序 → 康熙初年）')]
@@ -81,20 +87,38 @@ def days_of(mo, dy):
     return (MON[m.group(1)], ds) if ds else None
 
 
+def strict_day(mo, dy):
+    """与「日期异文」相同的取法：只认单一具体月日，返回 (月, 日)，否则 None。"""
+    mo, dy = (mo or '').strip(), (dy or '').strip().replace('元日', '初一日').replace('初日', '初一日')
+    if not re.fullmatch(r'(正|二|三|四|五|六|七|八|九|十|十一|十二)月', mo):
+        return None
+    if not re.fullmatch(r'[初十廿二三]?[一二三四五六七八九十廿]+日?', dy):
+        return None
+    x = dy.rstrip('日')
+    d = dnum(x) if x != '二十' else 20
+    return (MON[mo[:-1]], d) if d else None
+
+
 def main(path):
     wb = openpyxl.load_workbook(path, read_only=True)
     vers = {r[0]: r[1] for r in wb['版本目录'].iter_rows(min_row=2, values_only=True) if r[1]}
     E = defaultdict(lambda: defaultdict(set))   # (规范名, 类型) → 版本 → {(月, 日)}
+    J = defaultdict(lambda: defaultdict(set))   # 同上，但只含单一月日（判定通行、少数日期用，与「日期异文」同）
     EID = defaultdict(list)                     # (规范名, 类型, 版本, 月, 日) → [条目ID]
     for no in INCL:
         for r in wb[vers[no]].iter_rows(min_row=2, values_only=True):
             if not r[15] or not r[16] or r[9] not in (None, '正文'):
                 continue
+            if r[12] in SKIP.get(no, ()):
+                continue
             md = days_of(r[1], r[2])
             if md:
                 for d in md[1]:
                     E[(r[15], r[6] or '其他')][no].add((md[0], d))
-                    EID[(r[15], r[6] or '其他', no, md[0], d)].append(r[16])
+            sd = strict_day(r[1], r[2])
+            if sd:
+                J[(r[15], r[6] or '其他')][no].add(sd)
+                EID[(r[15], r[6] or '其他', no) + sd].append(r[16])
     S = {v: set() for v in INCL}
     for (k, ty), byv in E.items():
         for v, ds in byv.items():
@@ -103,7 +127,7 @@ def main(path):
     MINOR = defaultdict(set)
     minor_e = {}      # 条目ID → [异文类型, 少数/独有, 持此日期的见证数, 该神见证数, 通行日期]
     common = {}       # 规范名 → {类型: '通行日期（见证数/总数）' 或 '多日期神' 或 '见证不足'}
-    for (k, ty), byv in E.items():
+    for (k, ty), byv in J.items():
         ws = {wit(v) for v in byv}
         if len(ws) < 3:
             common.setdefault(k, {})[ty] = '见证少于 3 个，不判'
@@ -145,7 +169,7 @@ def main(path):
     for p in pairs:
         if BASE in (p['a'], p['b']):
             ret[p['b'] if p['a'] == BASE else p['a']] = p['ca'] if p['a'] == BASE else p['cb']
-    excl = ['%s（编号%d）：%s' % (vers[k].split('_')[0] + ' ' + vers[k].split('_')[2], k, why) for k, why in EXCL.items() if k in vers]
+    excl = ['%s（编号%d）：%s' % (' '.join((vers[k].split('_') + [''])[i] for i in (0, 2)).strip(), k, why) for k, why in EXCL.items() if k in vers]
     out = dict(source=path.split('/')[-1], nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
                incl=INCL, minor=minor_e, common=common)
     with open('kinship-data.js', 'w', encoding='utf-8') as f:

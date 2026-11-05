@@ -98,7 +98,10 @@ def main():
             'title': clean(r[3]), 'type': clean(r[4]), 'date': clean(r[5]), 'src': clean(r[6]),
             'year': int(yr.group(1)) if yr else None, 'yuxia': '玉匣記' in sheet,
             'no': clean(r[0]), 'noText': bool(re.search(r'[識识]典', clean(r[6]))),
+            'solo': '專門單獨齋期' in clean(r[4]),   # 新类别「專門單獨齋期」：只有一种专门斋期，不是逐月总表，不入日期异文
         }
+        if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
+            v.update(when='彙集', era='據 Goossaert 2024', short='專門單獨齋期彙集', pub='')
         ws = wb[sheet]
         rows = list(ws.iter_rows(values_only=True))
         col = {clean(h): i for i, h in enumerate(rows[0])}
@@ -127,7 +130,9 @@ def main():
                 'v': v['i'], 'n': get(row, '序号'), 'mo': mo, 'dy': dy, 'm': month_no(mo), 'd': day_no(dy) if month_no(mo) else None,
                 't': '' if v['noText'] else text, 'g': god, 'k': get(row, '建議規範名（對比用）') or god, 'c': get(row, '编码日期类型'),
                 'l': get(row, '原文所标'), 'q': get(row, '持斋/戒/修持要求'), 'p': get(row, '位置'),
-                'pg': get(row, '页码/出处'), 'code': get(row, '原表编号'),
+                'pg': '｜'.join(x for x in (get(row, '文獻'), get(row, '页码/出处'),
+                                           next((get(row, h) for h in col if h.startswith('出版信息')), '')) if x),
+                'code': get(row, '原表编号'),
             })
             n += 1
         v['n'] = n

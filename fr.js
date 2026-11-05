@@ -617,14 +617,10 @@ window.ZHAI_FR = {
   "No.: ": "N° : ",
   "In: ": "Dans : ",
   "Prevailing date: ": "Date usuelle : ",
-  "Click a row for all entries of that edition. Standalone fast calendars are a separate category: each records one particular fast (e.g. for the Stove God or White-robed Guanyin) rather than a full year of fast days, so they are left out of the date-variant and kinship comparisons. The Zhunti ten fast days or the birthdays of the Ten Kings, when they appear alongside a full-year calendar, do not count as such.": "Cliquez sur une ligne pour voir toutes les entrées de cette édition. Les calendriers de jeûne spécifiques forment une catégorie à part : chacun ne note qu’un jeûne particulier (par exemple pour le dieu du Foyer ou Guanyin en blanc) et non une année complète de jours de jeûne ; ils sont donc exclus des comparaisons de variantes de dates et de parenté. Les dix jours de jeûne de Zhunti ou les naissances des dix rois, lorsqu’ils figurent à côté d’un calendrier annuel complet, n’entrent pas dans cette catégorie.",
-  "Standalone fast calendar: left out of the date-variant and kinship comparisons": "Calendrier de jeûne spécifique : exclu des comparaisons de variantes de dates et de parenté",
-  "standalone fast calendar": "calendrier de jeûne spécifique",
-  "Standalone fast calendar": "Calendrier de jeûne spécifique",
-  "Standalone fast calendar (in a morality book)": "Calendrier de jeûne spécifique (dans un livre de morale)",
-  "Standalone fast calendars (secondhand)": "Calendriers de jeûne spécifiques (de seconde main)",
   "Monastic liturgy book": "Livre de liturgie monastique",
-  "Category": "Catégorie",
+  "Standalone fast calendars": "Calendriers de jeûne spécifiques",
+  "This records one particular fast only, not a full-year calendar.": "Ne note qu’un jeûne particulier, et non un calendrier annuel complet.",
+  " Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.": " D’après Goossaert 2024, l’ouvrage n’a pas été vu ; les dates mensuelles sont répétées sur les douze mois.",
   "Copy link": "Copier le lien",
   "▶︎ Present": "▶︎ Présenter"
 };

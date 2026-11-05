@@ -61,7 +61,7 @@ var CODES = {
   '素食店業': 'Vegetarian food trade',
   // 諸本對照
   '正文': 'Main table', '表後附錄': 'Appendix after the table', '專項日表': 'Separate day list',
-  '道藏': 'Daoist Canon', '寺院課誦本': 'Monastic liturgy book', '專門單獨齋期': 'Standalone fast calendar', '專門單獨齋期（善書所收）': 'Standalone fast calendar (in a morality book)', '專門單獨齋期（二手轉述）': 'Standalone fast calendars (secondhand)', '單行本': 'Separate edition', '單行本（通書）': 'Separate edition (almanac)', '通書': 'Almanac (tongshu)', '通書': 'Almanac (tongshu)',
+  '道藏': 'Daoist Canon', '寺院課誦本': 'Monastic liturgy book', '單行本': 'Separate edition', '單行本（通書）': 'Separate edition (almanac)', '通書': 'Almanac (tongshu)', '通書': 'Almanac (tongshu)',
   '通書（寫本）': 'Almanac (manuscript)', '通書（鉛印本）': 'Almanac (letterpress)', '日用類書': 'Daily-use encyclopedia', '善書': 'Morality book', '附刻（魯班經）': 'Appended to the Lu Ban jing 魯班經', '詞義噪音（素事等）': 'Lexical noise', '是': 'Yes', '否': 'No'
 };
 

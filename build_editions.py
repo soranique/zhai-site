@@ -61,6 +61,54 @@ def day_no(s):
     return DIG[t]
 
 
+# 專門單獨齋期在网站上不算版本，只在环形历选单里单列；每种斋期一盘
+# 编号沿用版本目录编号再加一位（#ring/241）；汇集页按「文獻」拆开，年代据该页「出版信息」
+SOLO_BOOKS = {'恐懼修省錄': (251, '1849'), '敬竈全書': (252, '1868'), '呂祖全書': (253, '1775')}
+
+
+def split_solo(versions, entries):
+    """把專門單獨齋期从版本、条目里拿出来，返回 (版本, 条目, 环形历用的盘, 无具体日期的文献)。"""
+    rings, undated = [], []
+
+    def ring(v, no, when, short, es, second=False):
+        rs = []
+        for e in es:
+            e = dict(e)
+            md = re.match(r'每月', e['mo'])
+            d = day_no(e['dy']) if md else None
+            if md and d:                # 「每月初六」排进十二个月
+                rs += [dict(e, m=m, d=d) for m in range(1, 13)]
+            else:
+                rs.append(e)
+        rings.append({'no': str(no), 'sheet': v['sheet'], 'when': when, 'short': short, 'pub': '', 'noText': False, 'solo': True,
+                      'second': second, 'src': v['src'], 'n': len(es), 'es': rs})
+
+    for v in versions:
+        if not v['solo']:
+            continue
+        es = [e for e in entries if e['v'] == v['i']]
+        if v['no'] == '24':
+            cut = [e for e in es if e['id'] >= '24-0064']
+            ring(v, 241, v['when'], '增訂敬信錄·司命竈君日期', [e for e in es if e['id'] < '24-0064'])
+            ring(v, 242, v['when'], '增訂敬信錄·白衣齋期', cut)
+        else:
+            books = {}
+            for e in es:
+                books.setdefault(e['pg'].split('｜')[0], []).append(e)
+            for b, xs in books.items():
+                if b in SOLO_BOOKS:
+                    ring(v, SOLO_BOOKS[b][0], SOLO_BOOKS[b][1], b, xs, second=True)
+                else:
+                    undated.append(b)
+    rings.sort(key=lambda r: r['when'])
+    keep = [v for v in versions if not v['solo']]
+    remap = {v['i']: i for i, v in enumerate(keep)}
+    for i, v in enumerate(keep):
+        v['i'] = i
+    kept = [dict(e, v=remap[e['v']]) for e in entries if e['v'] in remap]
+    return keep, kept, rings, undated
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('xlsx')
@@ -98,10 +146,8 @@ def main():
             'title': clean(r[3]), 'type': clean(r[4]), 'date': clean(r[5]), 'src': clean(r[6]),
             'year': int(yr.group(1)) if yr else None, 'yuxia': '玉匣記' in sheet,
             'no': clean(r[0]), 'noText': bool(re.search(r'[識识]典', clean(r[6]))),
-            'solo': '專門單獨齋期' in clean(r[4]),   # 新类别「專門單獨齋期」：只有一种专门斋期，不是逐月总表，不入日期异文
+            'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：网站上只进环形历（见 split_solo）
         }
-        if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
-            v.update(when='彙集', era='據 Goossaert 2024', short='專門單獨齋期彙集', pub='')
         ws = wb[sheet]
         rows = list(ws.iter_rows(values_only=True))
         col = {clean(h): i for i, h in enumerate(rows[0])}
@@ -138,17 +184,21 @@ def main():
         v['n'] = n
         versions.append(v)
 
+    versions, entries, solo, solo_undated = split_solo(versions, entries)
+
     names = [(e['k'], 'name') for e in entries if e['k']] + [(e['g'], 'name') for e in entries if e['g']]
     py = pinyin_util.build_map(names)
     py_title = pinyin_util.build_map([(v['short'], 'title') for v in versions])
 
     with open(a.out, 'w', encoding='utf-8') as f:
         f.write('// 由 build_editions.py 自动生成，请勿手改\nwindow.ZHAI_ED = ')
-        json.dump({'source': a.xlsx.split('/')[-1], 'versions': versions, 'entries': entries, 'norms': norms, 'cmap': cmap,
+        json.dump({'source': a.xlsx.split('/')[-1], 'versions': versions, 'entries': entries, 'solo': solo,
+                   'soloUndated': solo_undated, 'norms': norms, 'cmap': cmap,
                    'py': py, 'pyTitle': py_title},
                   f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
     undated = sum(1 for e in entries if not e['m'])
+    print('專門單獨齋期 %d 盘（环形历）；无具体日期 %s' % (len(solo), '、'.join(solo_undated)))
     print('版本 %d、条目 %d（无法按月日排的 %d 条）、规范名 %d；接到斋库神明 ID 的规范名 %d（待核 %d）；C 编号对照 %d' % (
         len(versions), len(entries), undated, len({e['k'] for e in entries if e['k']}),
         sum(1 for v in norms.values() if v[0]), sum(1 for v in norms.values() if v[1]), len(cmap)))

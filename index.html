@@ -2249,7 +2249,7 @@ function viewEdVersion(i, jump) {
 
 // ---------- 环形历：工作簿中的一个版本 ----------
 function ringVersion(no) {
-  var def = ED.versions.filter(function (v) { return /正心致福/.test(v.sheet); })[0] || EVS[0];
+  var def = ED.versions.filter(function (v) { return +v.no === 6; })[0] || EVS[0];   // 默认版本：1827 合安堂本
   return (no && ED.versions.filter(function (v) { return +v.no === +no; })[0]) || def;
 }
 function ringData(v) {

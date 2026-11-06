@@ -25,11 +25,12 @@ function monthLabel(m) { return EN() ? I18.ordL(m) : MS[m] + '月'; }
 var TR = {
   T: { lab: '道', c: '--zr-dao', pig: '藍色' }, B: { lab: '佛', c: '--zr-fo', pig: '黃色' },
   L: { lab: '地方', c: '--zr-di', pig: '綠色' }, C: { lab: '儒', c: '--zr-ru', pig: '紫色' },
-  Q: { lab: '其他', c: '--zr-qi', pig: '灰色' }, U: { lab: '未定', c: '--zr-wei', pig: '淺灰' }
+  Q: { lab: '其他', c: '--zr-qi', pig: '灰色' }, U: { lab: '未定', c: '--zr-wei', pig: '淺灰' },
+  A: { lab: '集會', c: '--zr-hui', pig: '紅色' }   // 只用於 kind 方案
 };
-var TR_EN = { T: ['Daoist', 'blue'], B: ['Buddhist', 'yellow'], L: ['Local', 'green'], C: ['Confucian', 'purple'], Q: ['Other', 'gray'], U: ['Undetermined', 'light gray'] };
-// 着色方案：nat＝性質（道、佛、地方、儒），kind＝編碼日期類型（紀念、成就、巡察、節令、其他）
-// kind 方案沿用同一組顏色與代碼 T B L C Q U，只換名稱
+var TR_EN = { T: ['Daoist', 'blue'], B: ['Buddhist', 'yellow'], L: ['Local', 'green'], C: ['Confucian', 'purple'], Q: ['Other', 'gray'], U: ['Undetermined', 'light gray'], A: ['Assembly', 'red'] };
+// 着色方案：nat＝性質（道、佛、地方、儒），kind＝編碼日期類型（紀念、成就、巡察、集會、節令、其他）
+// kind 方案沿用同一組顏色與代碼 T B L C Q U，只換名稱；另加 A＝集會（紅色），nat 方案不用
 var CUR = null, LASTPT = '';
 document.addEventListener('pointerdown', function (e) { LASTPT = e.pointerType; }, true);
 var SCHEME = 'nat';
@@ -37,12 +38,13 @@ var SCHEME = 'nat';
 var OPT = {};
 function focusOn() { return !!(OPT.focus && OPT.focus.names && OPT.focus.names.length); }
 function isFocus(r) { return focusOn() && OPT.focus.names.indexOf(r.god) >= 0; }
-var KIND_ZH = { T: '紀念', B: '成就', L: '巡察', C: '節令', Q: '其他', U: '未標' };
-var KIND_EN = { T: 'Commemoration', B: 'Attainment', L: 'Inspection', C: 'Seasonal festival', Q: 'Other', U: 'Unmarked' };
-var KIND_CODE = { '紀念': 'T', '成就': 'B', '巡察': 'L', '節令': 'C', '其他': 'Q' };
+var KIND_ZH = { T: '紀念', B: '成就', L: '巡察', A: '集會', C: '節令', Q: '其他', U: '未標' };
+var KIND_EN = { T: 'Commemoration', B: 'Attainment', L: 'Inspection', A: 'Assembly', C: 'Seasonal festival', Q: 'Other', U: 'Unmarked' };
+var KIND_CODE = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
 function trLab(k) { return SCHEME === 'kind' ? (EN() ? TT(KIND_EN[k]) : KIND_ZH[k]) : EN() ? TT(TR_EN[k][0]) : TR[k].lab; }
 function trPig(k) { return EN() ? TT(TR_EN[k][1]) : TR[k].pig; }
-var ORDER = ['T', 'B', 'L', 'C', 'Q', 'U'];
+var ORDER_ALL = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'];
+var ORDER = ORDER_ALL;   // 圖例、排序用；nat 方案沒有 A，圖例只列有條目的類（見 legendKeys）
 var SUF_ZH = { A: '成道', B: '朝真', D: '下降', P: '出家', S: '諱辰' };
 var SUF_EN = { A: 'attaining the Way', B: 'audience with the Perfected', D: 'descent', P: 'leaving home', S: 'death day' };
 var SUF = {};
@@ -225,7 +227,7 @@ function disc(root, D) {
     }
   }
   function legend() {
-    return '<div class="zr-legend"><div>' + ORDER.map(function (k) { return '<span><i class="zr-sw" style="background:var(' + TR[k].c + ')"></i>' + trLab(k) + '<span class="zr-hint">' + trPig(k) + '</span></span>'; }).join('') +
+    return '<div class="zr-legend"><div>' + ORDER.filter(function (k) { return k !== 'A' || SCHEME === 'kind'; }).map(function (k) { return '<span><i class="zr-sw" style="background:var(' + TR[k].c + ')"></i>' + trLab(k) + '<span class="zr-hint">' + trPig(k) + '</span></span>'; }).join('') +
       '</div><div><span><i class="zr-sw" style="background:var(--zr-fast);outline:1px solid var(--zr-gold)"></i>' + L('十齋日', 'Ten fast days') + '</span><span><i class="zr-sw" style="background:var(--zr-six);outline:1px solid var(--zr-six-ink)"></i>' + L('六齋日', 'Six fast days', 'Six jours de jeûne') + '</span><span><i class="zr-sw" style="background:linear-gradient(135deg,var(--zr-fast) 50%,var(--zr-six) 50%)"></i>' + L('兩者重合（各半）', 'Both (half each)', 'Les deux (moitié chacun)') + '</span>' + (SCHEME === 'kind' ? '' : '<span><i class="zr-sw" style="background:linear-gradient(135deg,var(--zr-dao) 50%,var(--zr-di) 50%)"></i>' + L('複合（內外兩半）', 'Composite (inner / outer half)') + '</span>') + '</div></div>';
   }
   function item(r) {
@@ -525,10 +527,10 @@ function notes(root, data) {
   var meta = data.meta || {};
   if (SCHEME === 'kind') {
     sec.innerHTML = '<div><div class="zr-eyebrow">' + L('讀圖前提', 'Reading notes') + '</div><ul class="zr-notes">' +
-      L('<li>顏色按工作簿的「編碼日期類型」：紀念（聖誕、聖降）、成就（出家、成道、涅槃等）、巡察（下降）、節令（臘與節辰）、其他；未填者爲「未標」。</li>' +
+      L('<li>顏色按工作簿的「編碼日期類型」：紀念（聖誕、聖降）、成就（出家、成道、涅槃等）、巡察（下降）、集會（神仙集會、朝元、朝真、三元三會等，參 Goossaert 2024）、節令（臘與節辰）、其他；未填者爲「未標」。</li>' +
         '<li>跨日齋期（如正月初八至十五）畫成該月左側的泥金細條，不計入每日條數。</li>',
-        '<li>Colours follow the workbook’s coded type of day: commemoration (birthdays, sacred descents), attainment (leaving home, attaining the Way, nirvana, etc.), inspection (descents), seasonal festivals (la 臘 and festival days), and other; blank codes are “unmarked”.</li>' +
-        '<li>Multi-day fasts (e.g. 1/8–1/15) are drawn as thin gold bars on the left of their month and are not counted in the daily totals.</li>', '<li>Les couleurs suivent le type de jour codé du classeur : commémoration (anniversaires, descentes sacrées), accomplissement (sortie du monde, obtention de la Voie, nirvana, etc.), inspection (descentes), fêtes saisonnières (la 臘 et jours de fête), et autres ; les codes vides sont « non marqués ».</li>' + '<li>Les jeûnes de plusieurs jours (p. ex. 1/8–1/15) sont dessinés en fines barres dorées à gauche de leur mois et ne sont pas comptés dans les totaux journaliers.</li>') +
+        '<li>Colours follow the workbook’s coded type of day: commemoration (birthdays, sacred descents), attainment (leaving home, attaining the Way, nirvana, etc.), inspection (descents), assembly (divine meetings, audiences such as chaoyuan 朝元, the three assemblies, etc.; cf. Goossaert 2024), seasonal festivals (la 臘 and festival days), and other; blank codes are “unmarked”.</li>' +
+        '<li>Multi-day fasts (e.g. 1/8–1/15) are drawn as thin gold bars on the left of their month and are not counted in the daily totals.</li>', '<li>Les couleurs suivent le type de jour codé du classeur : commémoration (anniversaires, descentes sacrées), accomplissement (sortie du monde, obtention de la Voie, nirvana, etc.), inspection (descentes), assemblée (réunions divines, audiences comme le chaoyuan 朝元, les trois assemblées, etc. ; cf. Goossaert 2024), fêtes saisonnières (la 臘 et jours de fête), et autres ; les codes vides sont « non marqués ».</li>' + '<li>Les jeûnes de plusieurs jours (p. ex. 1/8–1/15) sont dessinés en fines barres dorées à gauche de leur mois et ne sont pas comptés dans les totaux journaliers.</li>') +
       (meta.undated ? L('<li>另有 ' + meta.undated + ' 條日期不是具體月日（如「每月」「六十甲子日」），未畫入曆盤，見「版本目錄和內容對照」。</li>', '<li>' + meta.undated + ' further entries have no specific month and day (e.g. “every month”, the sixty jiazi days) and are not drawn; see Editions and contents.</li>', '<li>' + meta.undated + ' autres entrées n’ont pas de mois ni de jour précis (p. ex. « chaque mois », les soixante jours du cycle) et ne sont pas dessinées ; voir Éditions et contenus.</li>') : '') +
       (meta.noText ? L('<li>此版本錄自授權數據庫，公開版不顯示原文，條目以神名或原文所標代替。</li>', '<li>This edition was transcribed from a licensed database; the public version omits the original text and shows the deity name or label instead.</li>') : '') +
       L('<li>數據：', '<li>Data: ') + (meta.editionHtml || esc(meta.edition || '')) + L('；源表 ', '; source ') + esc(meta.sourceFile || '') + L('。</li>', '.</li>') + '</ul></div>';

@@ -10,6 +10,7 @@
   --zr-ru:  var(--cat2, #9a7fd1);   /* 青莲 儒（朱红只留给强调，不再作分类色） */
   --zr-qi:  var(--cat-o, #a59c8e);   /* 暖灰 其他 */
   --zr-wei: var(--cat-u, #cfccc4);   /* 铅灰 未定 */
+  --zr-hui: var(--cat7, #b4443f);   /* 红 集会（只用于日期类型配色） */
   --zr-cell: var(--surface-2, #f2f1ed);
   --zr-fast: #efe2bf;  /* 十斋日空格 */
   --zr-six: #cfe0e6;   /* 六斋日空格（与十斋日并列；重合日各占一半） */

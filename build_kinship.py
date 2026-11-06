@@ -109,6 +109,7 @@ def main(path):
     OMIT = []                                   # 条目ID：网站有神名、但不计入比较的条目（没有建議規範名，或在 SKIP 里）
     for no in INCL:
         for r in wb[vers[no]].iter_rows(min_row=2, values_only=True):
+            r = tuple(r) + (None,) * (20 - len(r))   # 只读模式下行尾空格可能被省略
             if r[16] and r[9] in (None, '正文') and (r[15] or r[4]) and (not r[15] or r[12] in SKIP.get(no, ())):
                 OMIT.append(r[16])
             if not r[15] or not r[16] or r[9] not in (None, '正文'):

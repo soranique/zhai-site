@@ -529,6 +529,7 @@ window.ZHAI_FR = {
   "no prevailing date": "pas de date usuelle",
   "Unmarked": "Non marqué",
   "blue": "bleu",
+  "red": "rouge",
   "yellow": "jaune",
   "green": "vert",
   "cinnabar": "cinabre",

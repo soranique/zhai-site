@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@400;500;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ring.css?v=62b8fcf4">
+<link rel="stylesheet" href="ring.css?v=f4781cf8">
 <style>
 :root {
   color-scheme: light;
@@ -22,7 +22,7 @@
   --axis: #c3c2b7;
   --accent: #8a2b1a;
   /* 配色規則：硃紅（--accent）只用於強調與數量（熱力圖、重合度矩陣）；分類一律用下面這套礦物色（--cat1…6 + 兩種灰），已過色盲檢驗 */
-  --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4;   /* 石青 青蓮 石綠 藤黃 天青 苔綠 暖灰 鉛灰 */
+  --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4; --cat7: #b4443f;   /* 石青 青蓮 石綠 藤黃 天青 苔綠 暖灰 鉛灰 */
   --v1: var(--cat1); --v2: var(--cat2); --v3: var(--cat3); --v4: var(--cat4);
   --ev1: #245f94; --ev2: #6b95c4; --ev3: #b3cbe5;   /* 證據強度（有序）：石青由深到淺 */
   /* 字體：中文一律黑體；英文、法文、數字用蘋果系統字體（SF），非蘋果設備用外觀相近的 Inter；史料原文用楷體
@@ -40,7 +40,7 @@
     --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
     --ink: #f0efec; --ink-2: #c3c2b7; --muted: #9a9892;
     --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
-    --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d;
+    --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f;
     --ev1: #8fb3e0; --ev2: #4f7fc0; --ev3: #2c4b78;
     --hl: #4a3f12;
     --yuan: #2c201c; --yuan-line: #5a3a30;
@@ -51,7 +51,7 @@
   --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
   --ink: #f0efec; --ink-2: #c3c2b7; --muted: #9a9892;
   --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
-  --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d;
+  --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f;
   --ev1: #8fb3e0; --ev2: #4f7fc0; --ev3: #2c4b78;
   --hl: #4a3f12;
   --yuan: #2c201c; --yuan-line: #5a3a30;
@@ -539,14 +539,14 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=2183fdce"></script>
-<script src="fr.js?v=482fc770"></script>
-<script src="i18n.js?v=8193db02"></script>
+<script src="fr.js?v=636ef2f7"></script>
+<script src="i18n.js?v=71a8cf1b"></script>
 <script src="data.js?v=c14ec032"></script>
-<script src="editions-data.js?v=83d93381"></script>
-<script src="kinship-data.js?v=41daa732"></script>
+<script src="editions-data.js?v=a3a4b756"></script>
+<script src="kinship-data.js?v=30c22f5f"></script>
 <script src="spread-data.js?v=7d06d645"></script>
 <script src="search-data.js?v=29fb70ad"></script>
-<script src="ring.js?v=f66e921a"></script>
+<script src="ring.js?v=b14cf3b2"></script>
 <script>
 (function () {
 'use strict';
@@ -2341,7 +2341,7 @@ function ringVersion(no) {
 function soloName(e) { return /未見原書/.test(e.t) ? e.l : /僅列日期/.test(e.l) ? (e.q || e.k) : e.t; }
 function ringData(v) {
   var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
-  var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '節令': 'C', '其他': 'Q' };
+  var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
   return {
     meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + esc(v.pub) : ''),
       sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,

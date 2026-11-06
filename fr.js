@@ -167,7 +167,6 @@ window.ZHAI_FR = {
   "Show evidenced sequences": "Montrer les filiations attestées",
   "Overlap matrix": "Matrice de recouvrement",
   "Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.": "Recouvrement × 100 ; survoler pour l’inclusion dans les deux sens et les dates minoritaires communes ; cliquer sur une case pour comparer les deux éditions entrée par entrée. Éditions par ordre chronologique.",
-  "⇄ Compare two editions entry by entry": "⇄ Comparer deux éditions entrée par entrée",
   "Retention of the Daozang (1607) entries": "Conservation des entrées du Daozang (1607)",
   "Share of the entries of the 1607 Daozang text found in each edition.": "Part des entrées du texte du Daozang de 1607 retrouvées dans chaque édition.",
   "Editions not included": "Éditions non retenues",

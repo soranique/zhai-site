@@ -181,7 +181,7 @@ function disc(root, D) {
     { k: 'fast', lab: L('十齋日', 'Ten fast days') },
     { k: 'six', lab: L('六齋日', 'Six fast days', 'Six jours de jeûne') },
     { k: 'T', lab: trLab('T'), show: ['T'] }, { k: 'B', lab: trLab('B'), show: ['B'] },
-    { k: 'L', lab: trLab('L'), show: ['L'] }, { k: 'C', lab: trLab('C'), show: ['C'] },
+    { k: 'L', lab: trLab('L'), show: ['L'] }, { k: 'A', lab: trLab('A'), show: ['A'] }, { k: 'C', lab: trLab('C'), show: ['C'] },
     { k: 'QU', lab: L('其他・未標', 'Other · unmarked'), show: ['Q', 'U'] }] : [
     { k: 'fast', lab: L('十齋日', 'Ten fast days') },
     { k: 'six', lab: L('六齋日', 'Six fast days', 'Six jours de jeûne') },

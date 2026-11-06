@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""从「玉匣記及其他斋历：版本横向对比」工作簿生成 editions-data.js（网站「诸本对照」分页用）。
+"""从「玉匣記及其他斋历：版本横向对比」工作簿生成 editions-data.js（网站「版本目录和内容对照」分页用）。
 
 用法：python3 build_editions.py 版本对比.xlsx [-o editions-data.js]
 

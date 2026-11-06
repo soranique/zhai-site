@@ -281,6 +281,9 @@ svg.venn circle { fill-opacity: .2; stroke-width: 2; }
 .vn-d { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; }
 .vn-t tr.on td { background: var(--surface-2); font-weight: 600; }
 #erows { max-width: 100%; width: 100%; } .controls label:has(#erows) { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; white-space: nowrap; } @media (min-width: 701px) { #erows { width: auto; } }
+.pgguide { border-left: 3px solid var(--accent); background: var(--surface); padding: 10px 14px; margin: 8px 0 16px; max-width: 860px; }
+.pgguide .pg-lead { font-weight: 700; margin: 0 0 4px; } .pgguide ul { margin: 0 0 4px; padding-left: 18px; font-size: 14px; } .pgguide li { margin: 2px 0; }
+.pgguide .pg-eg { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); } .pgguide .pg-more { margin: 4px 0 0; font-size: 14px; }
 .kcmp-p { margin: 0 0 8px; } .vn-pairs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .kcmp { font: inherit; font-size: 14px; padding: 6px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; cursor: pointer; }
 .kcmp:hover { background: var(--accent); color: var(--page); }
@@ -380,7 +383,7 @@ body.demo-on { padding-bottom: 130px; }
 .vpick button[aria-pressed="true"] { border-color: var(--ink-2); color: var(--ink); background: var(--surface-2); font-weight: 600; }
 .vpick button:disabled { opacity: .45; cursor: default; }
 .ringpick select { max-width: 100%; }
-/* 諸本對照 */
+/* 版本目錄和內容對照 */
 table.edm { min-width: 0; width: auto; font-size: 13px; }
 table.edm th.edc { vertical-align: bottom; padding: 6px 2px; text-align: center; white-space: normal; }
 table.edm th.edc a { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: var(--ink-2); }
@@ -511,7 +514,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
     <button id="menu" type="button" class="hbtn" aria-expanded="false" aria-controls="nav"></button>
     <nav id="nav">
       <a href="#ring" data-v="ring" data-en="Ring calendar">環形曆</a>
-      <a href="#editions" data-v="editions" data-en="Collated editions">諸本對照</a>
+      <a href="#editions" data-v="editions" data-en="Editions and contents">版本目錄和內容對照</a>
       <a href="#calendar" data-v="calendar" data-en="Calendar">齋期日曆</a>
       <a href="#fit" data-v="fit" data-en="Practice × calendar">實踐與齋曆</a>
       <a href="#spread" data-v="spread" data-en="Edition map">版本線索圖</a>
@@ -532,15 +535,15 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <div id="daypanel" class="daypanel" hidden role="dialog" aria-modal="true" aria-label="這一天"><div class="dp-box"><div class="dp-body"></div></div></div>
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
-<script src="demo.js?v=f9697e83"></script>
-<script src="fr.js?v=1a75e4b6"></script>
-<script src="i18n.js?v=4bafe874"></script>
+<script src="demo.js?v=2183fdce"></script>
+<script src="fr.js?v=1e448390"></script>
+<script src="i18n.js?v=8193db02"></script>
 <script src="data.js?v=c14ec032"></script>
 <script src="editions-data.js?v=2ee09c7b"></script>
 <script src="kinship-data.js?v=dc738fec"></script>
 <script src="spread-data.js?v=7d06d645"></script>
 <script src="search-data.js?v=29fb70ad"></script>
-<script src="ring.js?v=fb298306"></script>
+<script src="ring.js?v=aa76eca2"></script>
 <script>
 (function () {
 'use strict';
@@ -690,7 +693,7 @@ function focusBar() {
   el.hidden = false;
   el.innerHTML = '<div class="wrap">' + (FOCUS ? L('神明聚焦：', 'Focused deity: ') + '<a href="' + focusHref() + '"><b>' + focusName() + '</b></a>' +
     (FOCUS.g ? ' <span class="muted small">' + esc(FOCUS.g) + '</span>' : '') +
-    '<span class="muted small">' + L('　各頁只突出這位神：環形曆、熱力圖、諸本對照、版本線索圖、齋期日曆', '　Every page highlights this deity: ring, heat map, collation, map, calendar') + '</span>' +
+    '<span class="muted small">' + L('　各頁只突出這位神：環形曆、熱力圖、版本目錄和內容對照、版本線索圖、齋期日曆', '　Every page highlights this deity: ring, heat map, collation, map, calendar') + '</span>' +
     ' <button type="button" class="linkbtn" data-unfocus>' + L('取消', 'Clear') + '</button>' : '') +
     (tOn ? '<span class="fb-time">' + L('年代：', 'Years: ') + '<b>' + esc(timeLabel()) + '</b><span class="muted small">' + L('（實踐與齋曆、版本線索圖、這一天）', ' (practice × calendar, map, this day)') + '</span> <button type="button" class="linkbtn" data-untime>' + L('取消', 'Clear') + '</button></span>' : '') + '</div>';
 }
@@ -1178,10 +1181,15 @@ function showTip(e, html) {
 function hideTip(force) { if (TOUCH && !force && tip.classList.contains('card')) return; tip.style.display = 'none'; tip.classList.remove('card'); TIPK = null; }
 
 function yt(s) { return s ? '<span class="yt">' + esc(s) + '</span>' : ''; }   // 史料原文（楷體）
+// 頁首的導讀：這一頁回答什麼問題、與另一頁的分工
+function pageGuide(lead, items, eg, href, more) {
+  var h1 = app.querySelector('h1'); if (!h1) return;
+  h1.insertAdjacentHTML('afterend', '<div class="pgguide"><p class="pg-lead">' + lead + '</p><ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul><p class="pg-eg">' + eg + '</p><p class="pg-more"><a href="' + href + '">' + more + ' →</a></p></div>');
+}
 function tile(n, l, s) { return '<div class="card tile"><div class="n">' + n + '</div><div class="l">' + l + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
-// ---------- 諸本對照：持齋數據庫神明 × 版本 ----------
+// ---------- 版本目錄和內容對照：持齋數據庫神明 × 版本 ----------
 var M = { q: '', type: '', only: 'any', sort: 'prac' };
-function edDeityPanel(box) {   // 諸本對照「每行一個數據庫神明」：原「版本對照」頁
+function edDeityPanel(box) {   // 版本目錄和內容對照「每行一個數據庫神明」：原「版本對照」頁
   var types = {}; D.deities.forEach(function (g) { types[g.type || '未分類'] = 1; });
   var h = L('<p class="lede small">每行一個神明（持齋研究數據庫），每列一個齋曆版本（版本對比工作簿，按年代）。格中是該神在該版本中的第一個日期（農曆），×n 爲條數，○ 爲有條目但不是具體月日；灰底列是《玉匣記》系統以外的文本。右側三列是敘事史料的條數（實踐記錄括號內爲言及持齋的條數）。神明與齋曆條目暫按名稱對應，標「待覈」者尚未覈對。點一行看神明檔案。</p>',
       '<p class="lede small">Each row is a deity of the fasting database; each column an edition of the calendars (comparison workbook, in chronological order). A cell gives the deity’s first (lunar) date in that edition; ×n is the number of entries, ○ an entry without a specific month and day; shaded columns are texts outside the <i>Yuxiaji</i> line. The three right-hand columns count narrative sources (in brackets: practice records that mention fasting). Deities are provisionally matched to calendar entries by name; “to verify” marks matches not yet checked. Click a row for the deity’s profile.</p>') +
@@ -1255,7 +1263,7 @@ function viewCalendar() {
   if (!CAL.vs) CAL.vs = calDefault();
   var lanes = CAL.vs.map(function (vi, j) { return { v: ED.versions[vi], cls: 'v-L' + j }; });
   lanes.push({ p: 1 });
-  var h = L('<h1>齋期日曆</h1><p class="lede">按月排列所選齋曆版本的神誕與齋日，最右一列是實踐記錄中的日期。把鼠標移到一個神名上，所有版本里同一個神都會高亮。神名後的綠點表示有實踐記錄對上這一條（黃點：存在偏差），鼠標移上去可看是哪幾條。點擊進入神明檔案或諸本對照。</p>',
+  var h = L('<h1>齋期日曆</h1><p class="lede">按月排列所選齋曆版本的神誕與齋日，最右一列是實踐記錄中的日期。把鼠標移到一個神名上，所有版本里同一個神都會高亮。神名後的綠點表示有實踐記錄對上這一條（黃點：存在偏差），鼠標移上去可看是哪幾條。點擊進入神明檔案或版本目錄和內容對照。</p>',
       '<h1>Fasting calendar</h1><p class="lede">Deity birthdays and fast days in the chosen editions, arranged by lunar month; the right-hand column gives dates from practice records. Hover over a deity and the same deity lights up in every column. A green dot after a name means a practice record has been matched to that entry (yellow: with deviation); hover to see which. Click to open the deity’s profile or its collation.</p>') +
     '<p class="small muted" style="margin:0 0 6px">' + L('選擇要對照的版本（最多 4 個）：', 'Choose editions to compare (up to 4):') + '</p><div class="vpick">' + EVS.map(function (v) {
       var on = CAL.vs.indexOf(v.i) >= 0;
@@ -1816,6 +1824,12 @@ function viewKinship() {
         '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanacs and the texts close to them (such as the <i>Shengjing huizuan</i> 聖經彙纂 and the <i>Chanmen risong</i> 禪門日誦) together form the largest group, the almanacs have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>') +
     '</ul></div></div></div></div>';
   app.innerHTML = h;
+  pageGuide(L('這一頁看關係：本子和本子之間有多近。', 'This page is about relationships: how close the editions are to one another.', 'Cette page porte sur les relations : la proximité des éditions entre elles.'),
+    [L('親疏網絡圖和重合度矩陣比較 ' + K.nodes.length + ' 個文本完整的版本，其餘版本不計入。', 'The network and the overlap matrix compare the ' + K.nodes.length + ' editions with a complete text; the others are left out.', 'Le réseau et la matrice comparent les ' + K.nodes.length + ' éditions au texte complet ; les autres sont exclues.'),
+      L('「共性與差異」任選兩三本，看共同收錄和各自獨有的條目，再逐條細看。', 'What editions share: pick two or three editions to see common and unique entries, then compare them entry by entry.', 'Points communs et différences : choisissez deux ou trois éditions, voyez leurs entrées communes et propres, puis comparez-les entrée par entrée.'),
+      L('少數日期的算法與「版本目錄和內容對照」相同：那裏標出某位神的日期，這裏統計某本有多少、哪些本子共有。', 'Minority dates are worked out as on the Editions and contents page: there they are marked deity by deity; here they are counted by edition and by what editions share.', 'Les dates minoritaires se calculent comme à la page Éditions et contenus : elles y sont signalées divinité par divinité ; ici on les compte par édition et selon ce que les éditions partagent.')],
+    L('比如：《新增廣》和《聖經彙纂》有多接近，各自多了什麼？', 'For example: how close are the <i>Xinzeng guang</i> and the <i>Shengjing huizuan</i>, and what does each add?', 'Par exemple : quelle est la proximité du <i>Xinzeng guang</i> et du <i>Shengjing huizuan</i>, et qu’ajoute chacun ?'),
+    '#editions', L('想查某位神、某本書記了什麼，請看「版本目錄和內容對照」', 'To look up what a deity or book records, go to Editions and contents', 'Pour consulter ce que note une divinité ou un ouvrage, allez à Éditions et contenus'));
   viewVenn(document.getElementById('kvenn'));
   var pairTip = function (p) {
     var A = NB[p.a], B = NB[p.b];
@@ -2144,7 +2158,7 @@ function viewContext() {
   app.innerHTML = h;
 }
 
-// ---------- 諸本對照（「玉匣記及其他齋曆：版本橫向對比」工作簿） ----------
+// ---------- 版本目錄和內容對照（「玉匣記及其他齋曆：版本橫向對比」工作簿） ----------
 var EDX = null;  // 索引：按規範名歸組
 function edIndex() {
   if (EDX || !ED) return EDX;
@@ -2182,8 +2196,8 @@ function viewEditions() {
   var X = edIndex();
   if (!X) { app.innerHTML = '<p>' + L('缺少 editions-data.js。', 'editions-data.js is missing.') + '</p>'; return; }
   var multi = X.list.filter(function (r) { return r.nv >= 2; }).length;
-  var h = L('<h1>諸本對照</h1><p class="lede">「玉匣記及其他齋曆：版本橫向對比」工作簿中已錄入的全部版本，逐條對照。各版本的神名照錄原文；跨版本對齊用工作簿自己的「建議規範名（對比用）」；與持齋研究數據庫神明 ID（ZS001 等；2026-10-29 前寫作 G001）的對應寫在工作簿「神明總表」的「齋庫神明ID（ZS）」欄，尚未覈對者爲程序按名稱給出的候選（待覈）。「神明編碼」（G0303 等）是另一套編號，即研究者自己的神明編碼。齋曆條目下的「實踐：P…」是對上這一條的實踐記錄。</p>',
-      '<h1>Collated editions</h1><p class="lede">Every edition entered in the workbook “<i>Yuxiaji</i> 玉匣記 and other fasting calendars: comparison across editions”, collated entry by entry. Deity names are transcribed as written in each edition; rows are aligned by the workbook’s own suggested normalized name (jianyi guifan ming 建議規範名). Links to the deity IDs of the fasting database (ZS001 etc.; written G001 before 2026-10-29) are recorded in the database ID (ZS) column of the workbook’s deity table; unverified ones are name-based candidates (to verify). The deity code (G0303 etc.) is a separate numbering, the researcher’s own deity codes. “Practice: P…” under a calendar entry links the practice records matched to it.</p>') +
+  var h = L('<h1>版本目錄和內容對照</h1><p class="lede">「玉匣記及其他齋曆：版本橫向對比」工作簿中已錄入的全部版本，逐條對照。各版本的神名照錄原文；跨版本對齊用工作簿自己的「建議規範名（對比用）」；與持齋研究數據庫神明 ID（ZS001 等；2026-10-29 前寫作 G001）的對應寫在工作簿「神明總表」的「齋庫神明ID（ZS）」欄，尚未覈對者爲程序按名稱給出的候選（待覈）。「神明編碼」（G0303 等）是另一套編號，即研究者自己的神明編碼。齋曆條目下的「實踐：P…」是對上這一條的實踐記錄。</p>',
+      '<h1>Editions and contents</h1><p class="lede">Every edition entered in the workbook “<i>Yuxiaji</i> 玉匣記 and other fasting calendars: comparison across editions”, collated entry by entry. Deity names are transcribed as written in each edition; rows are aligned by the workbook’s own suggested normalized name (jianyi guifan ming 建議規範名). Links to the deity IDs of the fasting database (ZS001 etc.; written G001 before 2026-10-29) are recorded in the database ID (ZS) column of the workbook’s deity table; unverified ones are name-based candidates (to verify). The deity code (G0303 etc.) is a separate numbering, the researcher’s own deity codes. “Practice: P…” under a calendar entry links the practice records matched to it.</p>') +
     '<div class="tiles">' + tile(ED.versions.length, L('版本', 'editions'), L('其中《玉匣記》系統 ' + ED.versions.filter(function (v) { return v.yuxia; }).length + ' 種', ED.versions.filter(function (v) { return v.yuxia; }).length + ' in the <i>Yuxiaji</i> line', ED.versions.filter(function (v) { return v.yuxia; }).length + ' dans la lignée du <i>Yuxiaji</i>')) +
     tile(ED.entries.length, L('條目', 'entries'), '') + tile(X.list.length, L('規範名', 'normalized names'), L('見於兩個以上版本的 ' + multi + ' 個', multi + ' appear in two or more editions', multi + ' figurent dans deux éditions ou plus')) + '</div>';
   h += '<h2>' + L('版本目錄', 'Catalogue of editions') + '</h2><div class="scroll"><table><thead><tr><th>' + L('年代', 'Date') + '</th><th>' + L('書名', 'Title') + '</th><th>' + L('文本類型', 'Type') + '</th><th class="num">' + L('條目', 'Entries') + '</th><th class="num">' + L('神名', 'Names') + '</th><th class="num">' + L('有持齋要求', 'Abstinence req.') + '</th><th>' + L('資料來源', 'Source') + '</th></tr></thead><tbody>' +
@@ -2201,6 +2215,12 @@ function viewEditions() {
     '<select id="esort">' + [['nv', '按出現版本數', 'by number of editions'], ['date', '按日期', 'by date'], ['name', '按名稱', 'by name']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.sort === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<span class="muted small" id="ecount"></span></div><div class="scroll"><table class="edm" id="edm"></table></div><p><button type="button" id="emore" class="morebtn"></button></p></div>';
   app.innerHTML = h;
+  pageGuide(L('這一頁查內容：某位神、某本書記了什麼。', 'This page is for looking up content: what a given deity or book records.', 'Cette page sert à consulter le contenu : ce que note telle divinité ou tel ouvrage.'),
+    [L('版本目錄列出全部版本，點進去看該本的所有條目。', 'The catalogue lists every edition; open one to see all its entries.', 'Le catalogue recense toutes les éditions ; ouvrez-en une pour voir toutes ses entrées.'),
+      L('「神明 × 版本」大表對照每位神在各本的日期，少數日期標紅。', 'The deities × editions table compares each deity’s dates across editions, with minority dates in red.', 'Le tableau divinités × éditions compare les dates de chaque divinité d’une édition à l’autre ; les dates minoritaires sont en rouge.'),
+      L('全部版本都在這裏，包括文本不全、體例不同的本子和專門單獨齋期。', 'All editions are here, including incomplete texts, works organized differently and standalone fast calendars.', 'Toutes les éditions y figurent, y compris les textes incomplets, les ouvrages de structure différente et les calendriers de jeûne spécifiques.')],
+    L('比如：觀音成道日各本作哪天？', 'For example: on which day does each edition put Guanyin’s attainment of the Way?', 'Par exemple : à quel jour chaque édition place-t-elle l’accomplissement de la Voie de Guanyin ?'),
+    '#kin', L('想看本子之間有多近，請看「版本親疏」', 'To see how close the editions are to one another, go to Edition kinship', 'Pour voir la proximité entre éditions, allez à Parenté des éditions'));
   putFocusNote(EDF.rows === 'zs' ? L('高亮它的那一行', 'its row is highlighted') : L('它的行置頂並高亮', 'its rows are moved to the top and highlighted'));
   document.getElementById('erows').onchange = function (e) { EDF.rows = e.target.value; var y = window.scrollY; viewEditions(); decorate(); window.scrollTo(0, y); };
   app.querySelectorAll('tr[data-ev]').forEach(function (tr) { tr.onclick = function () { location.hash = 'ev/' + tr.getAttribute('data-ev'); }; });
@@ -2260,7 +2280,7 @@ function viewEdGod(k) {
   var X = edIndex(), r = X && X.rows[k];
   if (!r) { app.innerHTML = '<p>' + L('找不到 ', 'Not found: ') + esc(k) + '</p>'; return; }
   var al = Object.keys(r.alias);
-  var h = '<p class="small"><a href="#editions">' + L('← 諸本對照', '← Collated editions') + '</a></p><div class="prof-head"><h1>' + N(k) + '</h1>' + focusBtn('k:' + k) + '<span class="muted">' + L('見於 ' + r.nv + ' / ' + ED.versions.length + ' 個版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions', 'dans ' + r.nv + ' éditions sur ' + ED.versions.length) + '</span></div>' +
+  var h = '<p class="small"><a href="#editions">' + L('← 版本目錄和內容對照', '← Editions and contents') + '</a></p><div class="prof-head"><h1>' + N(k) + '</h1>' + focusBtn('k:' + k) + '<span class="muted">' + L('見於 ' + r.nv + ' / ' + ED.versions.length + ' 個版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions', 'dans ' + r.nv + ' éditions sur ' + ED.versions.length) + '</span></div>' +
     '<dl class="kv">' + edCommon(k) + (al.length ? '<dt>' + L('各本寫法', 'As written') + '</dt><dd>' + al.map(function (a) { return N(a); }).join(L('、', ', ')) + '</dd>' : '') +
     (normCode(k) ? '<dt>' + L('神明編碼', 'Deity code') + '</dt><dd>' + esc(normCode(k)) + '</dd>' : '') +
     (normGs(k).filter(function (g) { return G[g]; }).length ? '<dt>' + L('神明檔案', 'Deity profile') + '</dt><dd>' + normGs(k).filter(function (g) { return G[g]; }).map(function (g) { return godLink(g) + ' <span class="muted small">' + g + '</span>'; }).join(L('、', ', ')) + (normPending(k) ? ' <span class="flag">' + L('按名稱對應，待覈', 'matched by name, to verify') + '</span>' : '') + '</dd>' : '') + '</dl>' +
@@ -2278,7 +2298,7 @@ function viewEdVersion(i, jump) {
   var v = ED && ED.versions[+i];
   if (!v) { app.innerHTML = '<p>' + L('找不到該版本。', 'Edition not found.') + '</p>'; return; }
   var es = ED.entries.filter(function (e) { return e.v === v.i; });
-  var h = '<p class="small"><a href="#editions">' + L('← 諸本對照', '← Collated editions') + '</a></p><h1>' + N(v.short) + '</h1>' +
+  var h = '<p class="small"><a href="#editions">' + L('← 版本目錄和內容對照', '← Editions and contents') + '</a></p><h1>' + N(v.short) + '</h1>' +
     '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + esc(v.era) : '') + (v.date ? '<div class="muted small">' + esc(v.date) + '</div>' : '') + '</dd>' +
     '<dt>' + L('書名', 'Title') + '</dt><dd>' + esc(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + esc(v.pub) + '</dd>' : '') +
     '<dt>' + L('文本類型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('資料來源', 'Source') + '</dt><dd class="small">' + esc(v.src) + '</dd>' +
@@ -2300,6 +2320,12 @@ function viewEdVersion(i, jump) {
 }
 
 // ---------- 環形曆：工作簿中的一個版本 ----------
+// 從環形曆打開齋期日曆：帶上當前版本（專門單獨齋期的盤對應其版本頁），日曆裏已選的版本照舊並排
+function calLink(v) {
+  var no = v.solo ? String(Math.floor(+v.no / 10)) : String(v.no);
+  var eds = [no].concat((CAL.vs || []).map(function (i) { return String(ED.versions[i].no); }).filter(function (n) { return n !== no; })).slice(0, 4);
+  return '#calendar?eds=' + eds.join(',');
+}
 function ringVersion(no) {
   var def = ED.versions.filter(function (v) { return +v.no === 6; })[0] || EVS[0];   // 默認版本：1827 合安堂本
   return (no && ED.versions.filter(function (v) { return !v.solo; }).concat(ED.solo || []).filter(function (v) { return +v.no === +no; })[0]) || def;
@@ -2328,6 +2354,7 @@ function viewRing(no) {
   var pick = document.createElement('div'); pick.className = 'controls ringpick';
   pick.innerHTML = '<label>' + L('齋曆版本：', 'Calendar edition: ') + '<select id="rv">' + EVS.filter(function (x) { return !x.solo; }).map(ropt).join('') +
     ((ED.solo || []).length ? '<optgroup label="' + L('專門單獨齋期', 'Standalone fast calendars') + '">' + ED.solo.map(ropt).join('') + '</optgroup>' : '') + '</select></label>' +
+    ' <a class="small rcal" href="' + calLink(v) + '">' + L('按月並排看 →', 'Compare side by side by month →', 'Comparer côte à côte par mois →') + '</a>' +
     (v.solo ? '<p class="small muted" style="margin:6px 0 0;flex-basis:100%">' + L('只記這一種齋期，不是一年完整的齋期表。', 'This records one particular fast only, not a full-year calendar.') +
       (v.second ? L('據 Goossaert 2024 轉述，未見原書；「每月」的日期排進十二個月。', ' Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.') : '') +
       ((ED.soloUndated || []).length ? L('《' + ED.soloUndated.join('》《') + '》的齋期文中未列具體日期，不能排入環形曆。', ' Goossaert gives no specific dates for the fasts in the ' + ED.soloUndated.map(function (b) { return '<i>' + NT(b) + '</i>'; }).join(', ') + ', so they cannot be placed here.') : '') + '</p>' : '');
@@ -2657,7 +2684,7 @@ function route(ev) {
   var v = hsh.split('/')[0];
   if (qs) { after = shareApply(v, qs); ev = null; }
   if (v === 'overview') { history.replaceState(null, '', location.pathname + location.search + '#ring'); hsh = v = 'ring'; }   // 舊網址 #overview：概覽已併入環形曆
-  if (v === 'matrix') { history.replaceState(null, '', location.pathname + location.search + '#editions'); hsh = v = 'editions'; EDF.rows = 'zs'; }   // 舊網址 #matrix：版本對照已併入諸本對照
+  if (v === 'matrix') { history.replaceState(null, '', location.pathname + location.search + '#editions'); hsh = v = 'editions'; EDF.rows = 'zs'; }   // 舊網址 #matrix：版本對照已併入版本目錄和內容對照
   if (v === 'cmp') { history.replaceState(null, '', location.pathname + location.search + '#kin' + hsh.slice(3)); hsh = 'kin' + hsh.slice(3); v = 'kin'; }   // 舊網址 #cmp/甲/乙
   var ab = v === 'kin' ? hsh.split('/').slice(1) : [], kinFast = !!(ev && ev.type === 'hashchange') && v === 'kin' && LAST_V === 'kin', keepY = false;
   LAST_V = v;

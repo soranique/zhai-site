@@ -14,7 +14,7 @@ window.ZHAI_DEMO = [
    "en": "Zooming in on the sixth month: the birthday of Leizu (6/24) amid a cluster of other deity days.",
    "fr": "Agrandissement du sixième mois : l’anniversaire de Leizu (6/24) au milieu d’autres jours divins." },
  { "url": "#editions?focus=ZS005",
-   "zh": "諸本對照裏的雷祖：各版本怎樣記這位神、記在哪一天。",
+   "zh": "版本目錄和內容對照裏的雷祖：各版本怎樣記這位神、記在哪一天。",
    "en": "Leizu across the collated editions: how each edition records this deity, and on which day.",
    "fr": "Leizu dans la collation des éditions : comment chaque édition note cette divinité, et à quel jour." },
  { "url": "#fit?v=1",

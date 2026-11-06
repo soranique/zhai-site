@@ -23,11 +23,11 @@ function lunar(m, d) { return EN() ? m + '/' + d : MN[m] + DN(d); }
 function lunarLong(m, d) { return EN() ? I18.monDay(m, d) : lunar(m, d); }
 function monthLabel(m) { return EN() ? I18.ordL(m) : MS[m] + '月'; }
 var TR = {
-  T: { lab: '道', c: '--zr-dao', pig: '石青' }, B: { lab: '佛', c: '--zr-fo', pig: '藤黃' },
-  L: { lab: '地方', c: '--zr-di', pig: '石綠' }, C: { lab: '儒', c: '--zr-ru', pig: '青蓮' },
-  Q: { lab: '其他', c: '--zr-qi', pig: '暖灰' }, U: { lab: '未定', c: '--zr-wei', pig: '鉛灰' }
+  T: { lab: '道', c: '--zr-dao', pig: '藍色' }, B: { lab: '佛', c: '--zr-fo', pig: '黃色' },
+  L: { lab: '地方', c: '--zr-di', pig: '綠色' }, C: { lab: '儒', c: '--zr-ru', pig: '紫色' },
+  Q: { lab: '其他', c: '--zr-qi', pig: '灰色' }, U: { lab: '未定', c: '--zr-wei', pig: '淺灰' }
 };
-var TR_EN = { T: ['Daoist', 'azurite'], B: ['Buddhist', 'gamboge'], L: ['Local', 'malachite'], C: ['Confucian', 'lotus purple'], Q: ['Other', 'warm gray'], U: ['Undetermined', 'lead grey'] };
+var TR_EN = { T: ['Daoist', 'blue'], B: ['Buddhist', 'yellow'], L: ['Local', 'green'], C: ['Confucian', 'purple'], Q: ['Other', 'gray'], U: ['Undetermined', 'light gray'] };
 // 着色方案：nat＝性質（道、佛、地方、儒），kind＝編碼日期類型（紀念、成就、巡察、節令、其他）
 // kind 方案沿用同一組顏色與代碼 T B L C Q U，只換名稱
 var CUR = null, LASTPT = '';

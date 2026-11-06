@@ -61,6 +61,55 @@ def day_no(s):
     return DIG[t]
 
 
+# 專門單獨齋期：照常作为版本进各页，另在环形历选单末尾按「一种斋期一盘」列出（build_rings）。
+# 一页默认一盘；汇集页有「文獻」栏，每种文献一盘，编号 = 版本目录编号 ×10 + 出现次序（新文献加在表末即可，编号不变）。
+# 一页里有几种斋期又没有「文獻」栏的，在这里写明分界（从哪条条目ID起算下一盘）
+SOLO_SPLIT = {'24': [('增訂敬信錄·司命竈君日期', ''), ('增訂敬信錄·白衣齋期', '24-0064')]}
+
+
+def book_year(pub, default=''):
+    m = re.search(r'(\d{4}) 年', pub) or re.search(r'（(\d{4})）', pub) or re.search(r'(\d{4})', pub)
+    return m.group(1) if m else default
+
+
+def build_rings(versions, entries):
+    """返回 (环形历用的盘, 没有具体日期、画不进去的文献)。"""
+    rings, undated = [], []
+
+    def ring(v, no, when, short, es):
+        rs = []
+        for e in es:
+            d = day_no(e['dy']) if e['mo'].startswith('每月') else None
+            rs += [dict(e, m=m, d=d) for m in range(1, 13)] if d else [dict(e)]   # 「每月初六」排进十二个月
+        if not any(e['m'] and e['d'] for e in rs):
+            undated.append(short)
+            return
+        rings.append({'no': str(no), 'sheet': v['sheet'], 'when': when, 'short': short, 'pub': '', 'noText': False, 'solo': True,
+                      'second': v['when'] == '彙集', 'src': v['src'], 'n': len(es), 'es': rs})
+
+    for v in versions:
+        if not v['solo']:
+            continue
+        es = [e for e in entries if e['v'] == v['i']]
+        books = {}
+        for e in es:
+            b = e['pg'].split('｜')
+            if len(b) == 3:              # 文獻｜出处｜出版信息
+                books.setdefault(b[0], []).append(e)
+        if books:
+            for i, (b, xs) in enumerate(books.items()):
+                ring(v, int(v['no']) * 10 + i + 1, book_year(xs[0]['pg'].split('｜')[2], v['when']), b, xs)
+        elif v['no'] in SOLO_SPLIT:
+            cuts = SOLO_SPLIT[v['no']]
+            for i, (name, start) in enumerate(cuts):
+                end = cuts[i + 1][1] if i + 1 < len(cuts) else '~'
+                ring(v, int(v['no']) * 10 + i + 1, v['when'], name, [e for e in es if start <= e['id'] < end])
+        else:
+            ring(v, int(v['no']) * 10 + 1, v['when'], v['short'], es)
+    rings.sort(key=lambda r: r['when'])
+    return rings, undated
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('xlsx')
@@ -98,7 +147,10 @@ def main():
             'title': clean(r[3]), 'type': clean(r[4]), 'date': clean(r[5]), 'src': clean(r[6]),
             'year': int(yr.group(1)) if yr else None, 'yuxia': '玉匣記' in sheet,
             'no': clean(r[0]), 'noText': bool(re.search(r'[識识]典', clean(r[6]))),
+            'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：环形历里另列（见 build_rings），概览时间线不列
         }
+        if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
+            v.update(when='彙集', era='據 Goossaert 2024', short='專門單獨齋期彙集', pub='')
         ws = wb[sheet]
         rows = list(ws.iter_rows(values_only=True))
         col = {clean(h): i for i, h in enumerate(rows[0])}
@@ -127,11 +179,15 @@ def main():
                 'v': v['i'], 'n': get(row, '序号'), 'mo': mo, 'dy': dy, 'm': month_no(mo), 'd': day_no(dy) if month_no(mo) else None,
                 't': '' if v['noText'] else text, 'g': god, 'k': get(row, '建議規範名（對比用）') or god, 'c': get(row, '编码日期类型'),
                 'l': get(row, '原文所标'), 'q': get(row, '持斋/戒/修持要求'), 'p': get(row, '位置'),
-                'pg': get(row, '页码/出处'), 'code': get(row, '原表编号'),
+                'pg': '｜'.join(x for x in (get(row, '文獻'), get(row, '页码/出处'),
+                                           next((get(row, h) for h in col if h.startswith('出版信息')), '')) if x),
+                'code': get(row, '原表编号'),
             })
             n += 1
         v['n'] = n
         versions.append(v)
+
+    solo, solo_undated = build_rings(versions, entries)
 
     names = [(e['k'], 'name') for e in entries if e['k']] + [(e['g'], 'name') for e in entries if e['g']]
     py = pinyin_util.build_map(names)
@@ -139,11 +195,13 @@ def main():
 
     with open(a.out, 'w', encoding='utf-8') as f:
         f.write('// 由 build_editions.py 自动生成，请勿手改\nwindow.ZHAI_ED = ')
-        json.dump({'source': a.xlsx.split('/')[-1], 'versions': versions, 'entries': entries, 'norms': norms, 'cmap': cmap,
+        json.dump({'source': a.xlsx.split('/')[-1], 'versions': versions, 'entries': entries, 'solo': solo,
+                   'soloUndated': solo_undated, 'norms': norms, 'cmap': cmap,
                    'py': py, 'pyTitle': py_title},
                   f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
     undated = sum(1 for e in entries if not e['m'])
+    print('專門單獨齋期 %d 盘（环形历）；无具体日期 %s' % (len(solo), '、'.join(solo_undated)))
     print('版本 %d、条目 %d（无法按月日排的 %d 条）、规范名 %d；接到斋库神明 ID 的规范名 %d（待核 %d）；C 编号对照 %d' % (
         len(versions), len(entries), undated, len({e['k'] for e in entries if e['k']}),
         sum(1 for v in norms.values() if v[0]), sum(1 for v in norms.values() if v[1]), len(cmap)))

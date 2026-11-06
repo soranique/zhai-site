@@ -530,13 +530,13 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=2c1506cf"></script>
-<script src="fr.js?v=f66ca4b3"></script>
-<script src="i18n.js?v=1edf15b3"></script>
-<script src="data.js?v=b163c0d3"></script>
-<script src="editions-data.js?v=6d7a0b53"></script>
-<script src="kinship-data.js?v=8d133f7e"></script>
-<script src="spread-data.js?v=0cf7e94b"></script>
-<script src="search-data.js?v=ca34c6c5"></script>
+<script src="fr.js?v=30e48091"></script>
+<script src="i18n.js?v=4bafe874"></script>
+<script src="data.js?v=c14ec032"></script>
+<script src="editions-data.js?v=2ee09c7b"></script>
+<script src="kinship-data.js?v=dc738fec"></script>
+<script src="spread-data.js?v=7d06d645"></script>
+<script src="search-data.js?v=29fb70ad"></script>
 <script src="ring.js?v=fb298306"></script>
 <script>
 (function () {
@@ -1215,7 +1215,7 @@ function vInfo(v) {
 }
 
 function drawTimeline(el) {
-  var vs = EVS;
+  var vs = EVS.filter(function (v) { return !v.solo; });   // 專門單獨齋期不在概覽列出
   var W = Math.max(el.clientWidth - 32, 300), rowH = 24, wide = I.en() && W >= 700;
   var lab = I.en() ? (wide ? Math.min(330, W * 0.42) : Math.min(120, W * 0.32)) : Math.min(190, W * 0.4), H = vs.length * rowH + 30;
   var x0 = lab + 10, x1 = W - 70, lo = 1300, hi = 1950, xu = W - 30;
@@ -1753,7 +1753,7 @@ function viewKinship() {
   var ORD = K.nodes.slice().sort(function (a, b) { return (a.year || 9999) - (b.year || 9999) || a.no - b.no; });
   ORD.forEach(function (n, i) { n.x = X0 + (i + 0.5) * (X1 - X0) / ORD.length; n.y = 20 + LANES.indexOf(n.lane) * LH + LH / 2 - 6; });
   ORD.forEach(function (n, i) { var q = ORD[i - 1]; n.up = !!(q && q.lane === n.lane && !q.up); });
-  ORD.forEach(function (n) { if (n.no === 8) n.up = true; });   // 1882、1891 兩本的標註都放在節點上方，免得壓在連線上
+  ORD.forEach(function (n) { if (n.no === 8) n.up = true; if (n.no === 9) n.up = false; });   // 1882、1891 兩本相鄰，標註一上一下，免得互相壓住
   var h = L('<h1>版本親疏</h1><p class="lede">按條目內容比較已獲完整文本的 ' + K.nodes.length + ' 個版本。每個版本取正文中有具體月日的條目，以「規範名＋編碼日期類型＋月日」爲單位；兩本之間的<b>重合度</b>爲共有條目佔兩本條目總數（並集）的比例。橫軸按年代先後等距排列，縱向按文本類型分道（據工作簿「文本類型」，空缺者暫歸，見懸停說明）。線越粗，兩本越相近；<b>重合度只說明相近，不說明誰據誰</b>。切換到「共有的少數日期」，紅線顯示兩本都作、而多數本子不作的日期（見工作簿「日期異文」頁），這類共同偏離更能提示兩本之間有直接關係。黑色箭頭是有文本依據的先後關係（實線確定，虛線候選）。</p>',
       '<h1>Edition kinship</h1><p class="lede">A comparison by content of the ' + K.nodes.length + ' editions for which a complete text is available. For each edition the dated entries of the main table are taken, with “normalized name + coded date type + month/day” as the unit; the <b>overlap</b> of two editions is the share of shared units in the union of both. Editions are spaced evenly in chronological order and placed in lanes by text type (from the workbook; missing types assigned provisionally, see hover). Thicker lines mean closer editions; <b>overlap shows closeness, not who copied whom</b>. Switch to “shared minority dates” to see, in red, dates that both editions give but most others do not (see the workbook sheet 日期異文); such shared departures point more strongly to a direct relation. Black arrows mark sequences supported by textual evidence (solid: certain; dashed: candidate).</p>', '<h1>Parenté des éditions</h1><p class="lede">Comparaison par le contenu des ' + K.nodes.length + ' éditions dont on possède le texte complet. Pour chaque édition, on retient les entrées datées de la table principale, avec pour unité « nom normalisé + type de jour codé + mois/jour » ; le <b>recouvrement</b> de deux éditions est la part des unités communes dans leur réunion. Les éditions sont espacées régulièrement par ordre chronologique et placées en couloirs selon le type de texte (d’après le classeur ; types manquants attribués provisoirement, voir au survol). Plus le trait est épais, plus les éditions sont proches ; <b>le recouvrement mesure la proximité, non qui a copié qui</b>. Passer à « dates minoritaires communes » pour voir en rouge les dates que les deux éditions donnent mais que la plupart des autres ne donnent pas (voir la feuille 日期異文 du classeur) ; ces écarts partagés indiquent plus nettement une relation directe. Les flèches noires marquent les filiations appuyées par des preuves textuelles (trait plein : certaine ; tirets : candidate).</p>') +
     '<div class="kin"><div class="controls card"><label>' + L('連線：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少數日期', 'Shared minority dates') + '</option></select></label>' +
@@ -1763,8 +1763,8 @@ function viewKinship() {
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
     '<h2>' + L('未計入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
     '<h2>' + L('讀圖須知', 'Reading notes') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' +
-      L('<li>1882 與 1891 劉誠印本同版，分作兩點，可看到同版兩印之間的差異。</li><li>「通行日期」由見證多數決定，而通書一組版本最多，所以通書各本的少數日期很少——這是樣本構成造成的，不等於它們更「標準」。</li><li>重合度受規範名歸併的影響：歸併越多，版本間越相近。</li><li>1684 文瑞堂本據截圖錄入，解析度有限，重合度可能偏低。</li>',
-        '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanac group is the largest, its editions have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>') +
+      L('<li>1882 與 1891 劉誠印本同版，分作兩點，可看到同版兩印之間的差異。</li><li>「通行日期」由見證多數決定，而通書各本與文本相近的本子（如《聖經彙纂》《禪門日誦》）合計最多，所以通書各本的少數日期較少——這是樣本構成造成的，不等於它們更「標準」。</li><li>重合度受規範名歸併的影響：歸併越多，版本間越相近。</li><li>1684 文瑞堂本據截圖錄入，解析度有限，重合度可能偏低。</li>',
+        '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanacs and the texts close to them (such as the <i>Shengjing huizuan</i> 聖經彙纂 and the <i>Chanmen risong</i> 禪門日誦) together form the largest group, the almanacs have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>') +
     '</ul></div></div></div></div>';
   app.innerHTML = h;
   document.getElementById('kcmp').onclick = function () { location.hash = 'kin/' + CMP.a + '/' + CMP.b; };
@@ -2230,7 +2230,7 @@ function viewEdVersion(i, jump) {
     '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + esc(v.era) : '') + (v.date ? '<div class="muted small">' + esc(v.date) + '</div>' : '') + '</dd>' +
     '<dt>' + L('書名', 'Title') + '</dt><dd>' + esc(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + esc(v.pub) + '</dd>' : '') +
     '<dt>' + L('文本類型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('資料來源', 'Source') + '</dt><dd class="small">' + esc(v.src) + '</dd>' +
-    '<dt>' + L('對照', 'Compare') + '</dt><dd><a href="#kin/' + esc(v.no) + '/' + (+v.no === 1 ? 9 : 1) + '">' + L('與另一版本逐條細看（版本親疏）', 'Compare entry by entry with another edition (kinship)') + '</a></dd></dl>' +
+    (v.solo ? '' : '<dt>' + L('對照', 'Compare') + '</dt><dd><a href="#kin/' + esc(v.no) + '/' + (+v.no === 1 ? 9 : 1) + '">' + L('與另一版本逐條細看（版本親疏）', 'Compare entry by entry with another edition (kinship)') + '</a></dd>') + '</dl>' +
     '<div class="controls" style="margin-top:14px"><input type="search" id="evq" placeholder="' + L('在本版本中搜索', 'Search this edition') + '"><span class="muted small" id="evc"></span></div>' +
     '<div class="scroll"><table><thead><tr><th>#</th>' + ED_HEAD() + '<th>' + L('規範名', 'Normalized name') + '</th></tr></thead><tbody id="evb"></tbody></table></div>';
   app.innerHTML = h;
@@ -2250,28 +2250,35 @@ function viewEdVersion(i, jump) {
 // ---------- 環形曆：工作簿中的一個版本 ----------
 function ringVersion(no) {
   var def = ED.versions.filter(function (v) { return +v.no === 6; })[0] || EVS[0];   // 默認版本：1827 合安堂本
-  return (no && ED.versions.filter(function (v) { return +v.no === +no; })[0]) || def;
+  return (no && ED.versions.filter(function (v) { return !v.solo; }).concat(ED.solo || []).filter(function (v) { return +v.no === +no; })[0]) || def;
 }
+// 專門單獨齋期：原文欄常只有日期或「（未見原書）」，環形曆上改用齋名
+function soloName(e) { return /未見原書/.test(e.t) ? e.l : /僅列日期/.test(e.l) ? (e.q || e.k) : e.t; }
 function ringData(v) {
-  var es = ED.entries.filter(function (e) { return e.v === v.i; });
+  var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
   var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '節令': 'C', '其他': 'Q' };
   return {
     meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + esc(v.pub) : ''),
-      sourceFile: ED.source + ' ／ ' + v.sheet, undated: es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
+      sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
       fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30] },
     entries: es.filter(function (e) { return e.m && e.d; }).map(function (e) {
       var src = /原表出處：([^｜]+)/.exec(e.pg || '');
-      return { m: e.m, d: e.d, range: e.r || '', name: e.t || e.g || e.k || e.l || '—', nat: KIND[e.c] || '?', src: src ? src[1].trim() : '',
+      return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: KIND[e.c] || '?', src: src ? src[1].trim() : '',
         note: '', code: e.id, god: e.k || '', suf: '' };
     })
   };
 }
 function viewRing(no) {
   var v = ringVersion(no);
-  var pick = document.createElement('div'); pick.className = 'controls ringpick';
-  pick.innerHTML = '<label>' + L('齋曆版本：', 'Calendar edition: ') + '<select id="rv">' + EVS.map(function (x) {
+  var ropt = function (x) {
     return '<option value="' + esc(x.no) + '"' + (x === v ? ' selected' : '') + '>' + esc(x.when) + ' ' + esc(I.en() ? NT(x.short) : x.short) + L('（' + x.n + ' 條）', ' (' + x.n + ')', ' (' + x.n + ')') + '</option>';
-  }).join('') + '</select></label>';
+  };
+  var pick = document.createElement('div'); pick.className = 'controls ringpick';
+  pick.innerHTML = '<label>' + L('齋曆版本：', 'Calendar edition: ') + '<select id="rv">' + EVS.filter(function (x) { return !x.solo; }).map(ropt).join('') +
+    ((ED.solo || []).length ? '<optgroup label="' + L('專門單獨齋期', 'Standalone fast calendars') + '">' + ED.solo.map(ropt).join('') + '</optgroup>' : '') + '</select></label>' +
+    (v.solo ? '<p class="small muted" style="margin:6px 0 0;flex-basis:100%">' + L('只記這一種齋期，不是一年完整的齋期表。', 'This records one particular fast only, not a full-year calendar.') +
+      (v.second ? L('據 Goossaert 2024 轉述，未見原書；「每月」的日期排進十二個月。', ' Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.') : '') +
+      ((ED.soloUndated || []).length ? L('《' + ED.soloUndated.join('》《') + '》的齋期文中未列具體日期，不能排入環形曆。', ' Goossaert gives no specific dates for the fasts in the ' + ED.soloUndated.map(function (b) { return '<i>' + NT(b) + '</i>'; }).join(', ') + ', so they cannot be placed here.') : '') + '</p>' : '');
   app.innerHTML = '';
   ZhaiRing.mount(app, ringData(v), { headExtra: pick, onDay: openDay,
     focus: FOCUS ? { names: Object.keys(FOCUS.norms), label: NT(FOCUS.name), note: focusNote(L('只有它的條目亮起，其餘變淡；本版本無此神時曆盤全淡', 'only its entries stay lit; if this edition lacks it, the whole disc fades')) } : null });

@@ -54,6 +54,8 @@ for fn, var in (('data.js', 'ZHAI'), ('editions-data.js', 'ZHAI_ED'), ('kinship-
         key = var + '.' + k
         if key in SKIP:
             new[k] = [conv(r, SKIP[key]) for r in v]
+        elif key == 'ZHAI_ED.solo':
+            new[k] = [dict(conv(r, ('es',)), es=[conv(x, SKIP['ZHAI_ED.entries']) for x in r['es']]) for r in v]
         elif k in ('py', 'pyTitle'):   # 拼音表：简体、繁体两种写法都留，原文写法也查得到
             new[k] = {**v, **{S(a): b for a, b in v.items()}}
         else:

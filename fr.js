@@ -172,7 +172,7 @@ window.ZHAI_FR = {
   "Share of the entries of the 1607 Daozang text found in each edition.": "Part des entrées du texte du Daozang de 1607 retrouvées dans chaque édition.",
   "Editions not included": "Éditions non retenues",
   "Reading notes": "Notes de lecture",
-  "<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanac group is the largest, its editions have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>": "<li>Les éditions de 1882 et de 1891 de Liu Chengyin 劉誠印 sont tirées des mêmes planches ; elles sont gardées séparées pour montrer les différences entre deux tirages.</li><li>Les « dates usuelles » sont fixées à la majorité des témoins ; comme le groupe des almanachs est le plus nombreux, ses éditions ont peu de dates minoritaires — un effet de l’échantillon, non le signe qu’elles seraient plus « standard ».</li><li>Le recouvrement dépend de la normalisation des noms : plus on fusionne, plus les éditions se rapprochent.</li><li>L’édition de 1684 du Wenrui tang 文瑞堂 a été saisie d’après des captures d’écran de résolution limitée ; son recouvrement est peut-être sous-estimé.</li>",
+  "<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanacs and the texts close to them (such as the <i>Shengjing huizuan</i> 聖經彙纂 and the <i>Chanmen risong</i> 禪門日誦) together form the largest group, the almanacs have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>": "<li>Les éditions de 1882 et de 1891 de Liu Chengyin 劉誠印 sont tirées des mêmes planches ; elles sont gardées séparées pour montrer les différences entre deux tirages.</li><li>Les « dates usuelles » sont fixées à la majorité des témoins ; comme les almanachs et les textes qui leur sont proches (tels que le <i>Shengjing huizuan</i> 聖經彙纂 et le <i>Chanmen risong</i> 禪門日誦) forment ensemble le groupe le plus nombreux, les almanachs ont peu de dates minoritaires — un effet de l’échantillon, non le signe qu’elles seraient plus « standard ».</li><li>Le recouvrement dépend de la normalisation des noms : plus on fusionne, plus les éditions se rapprochent.</li><li>L’édition de 1684 du Wenrui tang 文瑞堂 a été saisie d’après des captures d’écran de résolution limitée ; son recouvrement est peut-être sous-estimé.</li>",
   "Shared minority dates: ": "Dates minoritaires communes : ",
   "Edition kinship network": "Réseau de parenté des éditions",
   "← earlier": "← plus ancien",
@@ -617,6 +617,13 @@ window.ZHAI_FR = {
   "No.: ": "N° : ",
   "In: ": "Dans : ",
   "Prevailing date: ": "Date usuelle : ",
+  "Monastic liturgy book": "Livre de liturgie monastique",
+  "Standalone fast calendars": "Calendriers de jeûne spécifiques",
+  "This records one particular fast only, not a full-year calendar.": "Ne note qu’un jeûne particulier, et non un calendrier annuel complet.",
+  " Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.": " D’après Goossaert 2024, l’ouvrage n’a pas été vu ; les dates mensuelles sont répétées sur les douze mois.",
+  "Standalone fast calendar": "Calendrier de jeûne spécifique",
+  "Standalone fast calendar (in a morality book)": "Calendrier de jeûne spécifique (dans un livre de morale)",
+  "Standalone fast calendars (secondhand)": "Calendriers de jeûne spécifiques (de seconde main)",
   "Copy link": "Copier le lien",
   "▶︎ Present": "▶︎ Présenter"
 };

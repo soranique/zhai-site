@@ -284,8 +284,11 @@ svg.venn circle { fill-opacity: .2; stroke-width: 2; }
 .pgguide { border-left: 3px solid var(--accent); background: var(--surface); padding: 10px 14px; margin: 8px 0 16px; max-width: 860px; }
 .pgguide .pg-lead { font-weight: 700; margin: 0 0 4px; } .pgguide ul { margin: 0 0 4px; padding-left: 18px; font-size: 14px; } .pgguide li { margin: 2px 0; }
 .pgguide .pg-eg { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); } .pgguide .pg-more { margin: 4px 0 0; font-size: 14px; }
+.top nav a.ng { margin-left: 9px; position: relative; } .top nav a.ng::before { content: ''; position: absolute; left: -5px; top: 18%; bottom: 18%; width: 1px; background: var(--muted); opacity: .55; }
+@media (max-width: 700px) { .top nav a.ng { margin-left: 0; } .top nav a.ng::before { display: none; } }
 .kcmp-p { margin: 0 0 8px; } .vn-pairs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .kcmp { font: inherit; font-size: 14px; padding: 6px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; cursor: pointer; }
+a.kcmp { display: inline-block; text-decoration: none; font-weight: 600; } a.rcal { margin-left: 4px; background: var(--accent); color: var(--page); } a.rcal:hover { filter: brightness(1.1); background: var(--accent); }
 .kcmp:hover { background: var(--accent); color: var(--page); }
 @media (max-width: 700px) { .cmppanel { padding: 0; } .cp-box { max-height: 100vh; height: 100%; border-radius: 0; } .cp-body { padding: 0 14px 30px; } }
 .daypanel { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.28); display: flex; justify-content: flex-end; }
@@ -514,13 +517,13 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
     <button id="menu" type="button" class="hbtn" aria-expanded="false" aria-controls="nav"></button>
     <nav id="nav">
       <a href="#ring" data-v="ring" data-en="Ring calendar">環形曆</a>
-      <a href="#editions" data-v="editions" data-en="Editions and contents">版本目錄和內容對照</a>
       <a href="#calendar" data-v="calendar" data-en="Calendar">齋期日曆</a>
-      <a href="#fit" data-v="fit" data-en="Practice × calendar">實踐與齋曆</a>
-      <a href="#spread" data-v="spread" data-en="Edition map">版本線索圖</a>
-      <a href="#kin" data-v="kin" data-en="Edition kinship">版本親疏</a>
+      <a class="ng" href="#editions" data-v="editions" data-en="Editions and contents">版本目錄和內容對照</a>
       <a href="#gods" data-v="gods" data-en="Deities">神明檔案</a>
-      <a href="#context" data-v="context" data-en="Sources &amp; framework">源流與框架</a>
+      <a class="ng" href="#kin" data-v="kin" data-en="Edition kinship">版本親疏</a>
+      <a href="#spread" data-v="spread" data-en="Edition map">版本線索圖</a>
+      <a class="ng" href="#fit" data-v="fit" data-en="Practice × calendar">實踐與齋曆</a>
+      <a class="ng" href="#context" data-v="context" data-en="Sources &amp; framework">源流與框架</a>
       <a href="#gaps" data-v="gaps" data-en="Gaps">缺口</a>
     </nav>
     <div class="gsearch"><input type="search" id="gs" autocomplete="off" placeholder="搜索（/）" data-en-ph="Search (press /)" aria-label="全站搜索"><div id="gsr" class="gs-r" hidden></div></div>
@@ -536,14 +539,14 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=2183fdce"></script>
-<script src="fr.js?v=1e448390"></script>
+<script src="fr.js?v=6a5ee078"></script>
 <script src="i18n.js?v=8193db02"></script>
 <script src="data.js?v=c14ec032"></script>
 <script src="editions-data.js?v=2ee09c7b"></script>
 <script src="kinship-data.js?v=dc738fec"></script>
 <script src="spread-data.js?v=7d06d645"></script>
 <script src="search-data.js?v=29fb70ad"></script>
-<script src="ring.js?v=aa76eca2"></script>
+<script src="ring.js?v=fee60a59"></script>
 <script>
 (function () {
 'use strict';
@@ -1937,7 +1940,7 @@ function viewGod(id, jump) {
   if (!b.nCal) {
     h += '<p class="muted">' + L('齋曆（版本對比工作簿）中尚未對應到本神：神明總表裏沒有填本神的齋庫神明 ID，或程序按名稱找不到同名的規範名。', 'Not yet matched to any calendar entry: the deity table of the workbook has no database ID for this deity, or no normalized name with the same spelling was found.') + '</p>';
   } else {
-    h += '<p class="small muted">' + L('按規範名 ', 'Matched via the normalized name ') + nm.map(function (k) { return '<a href="#ed/' + encodeURIComponent(k) + '">' + N(k) + '</a>'; }).join(L('、', ', ')) +
+    h += '<p class="small muted">' + L('這一頁併列齋曆條目和實踐、史料；點下面的規範名，看只列齋曆條目的逐本頁面。', 'This page sets calendar entries beside practice and other sources; click a normalized name below for the calendar entries edition by edition.', 'Cette page réunit les entrées de calendrier, les pratiques et les sources ; cliquez sur un nom normalisé ci-dessous pour les entrées de calendrier édition par édition.') + '</p><p class="small muted">' + L('按規範名 ', 'Matched via the normalized name ') + nm.map(function (k) { return '<a href="#ed/' + encodeURIComponent(k) + '">' + N(k) + '</a>'; }).join(L('、', ', ')) +
       (b.pending ? L(' 按名稱對應，<span class="flag">待覈</span>（覈對後在工作簿「神明總表」填「齋庫神明ID（ZS）」欄）。', ' by name, <span class="flag">to verify</span> (confirm by filling the database ID (ZS) column in the workbook’s deity table).') : L(' 對應（已核）。', ' (verified).')) +
       (nm.some(normCode) ? L(' 神明編碼：', ' Deity code: ') + nm.filter(normCode).map(function (k) { return esc(normCode(k)); }).filter(function (x, i, a) { return a.indexOf(x) === i; }).join(L('、', ', ')) + '。' : '') + '</p>' +
       '<div class="scroll"><table><thead><tr><th>' + L('版本', 'Edition') + '</th><th>' + L('日期', 'Date') + '</th><th>' + L('原文', 'Original text') + '</th><th>' + L('原文所標', 'Label') + '</th><th>' + L('編碼', 'Code') + '</th><th>' + L('持齋／戒／修持要求', 'Abstinence / precepts') + '</th><th>' + L('條目ID', 'Entry ID') + '</th><th>' + L('對上的實踐記錄', 'Matched practice') + '</th></tr></thead><tbody>';
@@ -2281,6 +2284,9 @@ function viewEdGod(k) {
   if (!r) { app.innerHTML = '<p>' + L('找不到 ', 'Not found: ') + esc(k) + '</p>'; return; }
   var al = Object.keys(r.alias);
   var h = '<p class="small"><a href="#editions">' + L('← 版本目錄和內容對照', '← Editions and contents') + '</a></p><div class="prof-head"><h1>' + N(k) + '</h1>' + focusBtn('k:' + k) + '<span class="muted">' + L('見於 ' + r.nv + ' / ' + ED.versions.length + ' 個版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions', 'dans ' + r.nv + ' éditions sur ' + ED.versions.length) + '</span></div>' +
+    '<p class="small muted" style="margin:0 0 8px">' + (normGs(k).filter(function (g) { return G[g]; }).length ?
+      L('這是工作簿規範名的頁面，只列齋曆條目。實踐記錄和史料見神明檔案：', 'This page is for a workbook normalized name and lists calendar entries only. For practice records and other sources, see the deity profile: ', 'Cette page porte sur un nom normalisé du classeur et ne liste que des entrées de calendrier. Pour les témoignages et les sources, voir la fiche : ') + normGs(k).filter(function (g) { return G[g]; }).map(godLink).join(L('、', ', ')) + L('。', '.', '.') :
+      L('這是工作簿規範名的頁面，只列齋曆條目。此名尚未接到持齋數據庫，所以沒有神明檔案。', 'This page is for a workbook normalized name and lists calendar entries only. The name is not yet linked to the fasting database, so it has no deity profile.', 'Cette page porte sur un nom normalisé du classeur et ne liste que des entrées de calendrier. Ce nom n’est pas encore relié à la base : il n’a pas de fiche.')) + '</p>' +
     '<dl class="kv">' + edCommon(k) + (al.length ? '<dt>' + L('各本寫法', 'As written') + '</dt><dd>' + al.map(function (a) { return N(a); }).join(L('、', ', ')) + '</dd>' : '') +
     (normCode(k) ? '<dt>' + L('神明編碼', 'Deity code') + '</dt><dd>' + esc(normCode(k)) + '</dd>' : '') +
     (normGs(k).filter(function (g) { return G[g]; }).length ? '<dt>' + L('神明檔案', 'Deity profile') + '</dt><dd>' + normGs(k).filter(function (g) { return G[g]; }).map(function (g) { return godLink(g) + ' <span class="muted small">' + g + '</span>'; }).join(L('、', ', ')) + (normPending(k) ? ' <span class="flag">' + L('按名稱對應，待覈', 'matched by name, to verify') + '</span>' : '') + '</dd>' : '') + '</dl>' +
@@ -2354,7 +2360,7 @@ function viewRing(no) {
   var pick = document.createElement('div'); pick.className = 'controls ringpick';
   pick.innerHTML = '<label>' + L('齋曆版本：', 'Calendar edition: ') + '<select id="rv">' + EVS.filter(function (x) { return !x.solo; }).map(ropt).join('') +
     ((ED.solo || []).length ? '<optgroup label="' + L('專門單獨齋期', 'Standalone fast calendars') + '">' + ED.solo.map(ropt).join('') + '</optgroup>' : '') + '</select></label>' +
-    ' <a class="small rcal" href="' + calLink(v) + '">' + L('按月並排看 →', 'Compare side by side by month →', 'Comparer côte à côte par mois →') + '</a>' +
+    ' <a class="kcmp rcal" href="' + calLink(v) + '">' + L('按月並排看 →', 'Compare side by side by month →', 'Comparer côte à côte par mois →') + '</a>' +
     (v.solo ? '<p class="small muted" style="margin:6px 0 0;flex-basis:100%">' + L('只記這一種齋期，不是一年完整的齋期表。', 'This records one particular fast only, not a full-year calendar.') +
       (v.second ? L('據 Goossaert 2024 轉述，未見原書；「每月」的日期排進十二個月。', ' Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.') : '') +
       ((ED.soloUndated || []).length ? L('《' + ED.soloUndated.join('》《') + '》的齋期文中未列具體日期，不能排入環形曆。', ' Goossaert gives no specific dates for the fasts in the ' + ED.soloUndated.map(function (b) { return '<i>' + NT(b) + '</i>'; }).join(', ') + ', so they cannot be placed here.') : '') + '</p>' : '');
@@ -2362,6 +2368,9 @@ function viewRing(no) {
   ZhaiRing.mount(app, ringData(v), { headExtra: pick, onDay: openDay,
     focus: FOCUS ? { names: Object.keys(FOCUS.norms), label: NT(FOCUS.name), note: focusNote(L('只有它的條目亮起，其餘變淡；本版本無此神時曆盤全淡', 'only its entries stay lit; if this edition lacks it, the whole disc fades')) } : null });
   pick.querySelector('select').onchange = function (e) { location.hash = 'ring/' + e.target.value; };
+  var go = function (href, t) { return '<a href="' + href + '">' + t + '</a>'; };
+  app.insertAdjacentHTML('afterbegin', '<div class="pgguide siteintro"><p class="pg-lead">' + L('本站把《玉匣記》及其他齋曆的各版本（元代至民國）逐條對照，並與實踐記錄、《申報》等史料互看。', 'This site collates the editions of the <i>Yuxiaji</i> 玉匣記 and other fasting calendars, from the Yuan to the Republic, entry by entry, and reads them beside practice records, the <i>Shenbao</i> 申報 and other sources.', 'Ce site collationne entrée par entrée les éditions du <i>Yuxiaji</i> 玉匣記 et d’autres calendriers de jeûne, des Yuan à la République, et les lit à côté des témoignages de pratique, du <i>Shenbao</i> 申報 et d’autres sources.') + '</p><p class="pg-eg">' +
+    L('本頁看一本齋曆的全年。查某位神或某本書：', 'This page shows the whole year of one calendar. To look up a deity or book: ', 'Cette page montre l’année entière d’un calendrier. Pour consulter une divinité ou un ouvrage : ') + go('#editions', L('版本目錄和內容對照', 'Editions and contents', 'Éditions et contenus')) + L('；比本子遠近：', '; to compare how close editions are: ', ' ; pour comparer la proximité des éditions : ') + go('#kin', L('版本親疏', 'Edition kinship', 'Parenté des éditions')) + L('；看實際持齋：', '; to see actual fasting: ', ' ; pour voir le jeûne pratiqué : ') + go('#fit', L('實踐與齋曆', 'Practice × calendar', 'Pratique × calendrier')) + L('。', '.', '.') + '</p></div>');
 }
 
 // ---------- 可分享的鏈接：把各頁的篩選狀態寫進網址 ----------

@@ -272,6 +272,14 @@ td.edc[data-day]:hover { outline: 1.5px solid var(--ink-2); outline-offset: -2px
 body.cmpopen { overflow: hidden; }
 .cc-l { display: none; font-size: 13px; font-weight: 600; color: var(--ink-2); margin: 8px 0 4px; }
 @media (max-width: 760px) { .cc-l { display: block; } .cp-box .cmp-head { display: none; } }
+.venn-g { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 18px; align-items: center; }
+@media (max-width: 860px) { .venn-g { grid-template-columns: minmax(0, 1fr); } }
+svg.venn { width: 100%; height: auto; display: block; }
+svg.venn circle { fill-opacity: .2; stroke-width: 2; }
+.vn-l { font-size: 13px; font-weight: 600; fill: var(--ink); } .vn-s { font-weight: 400; font-size: 12px; fill: var(--ink-2); }
+.vn-n { font-size: 15px; font-weight: 600; fill: var(--ink); pointer-events: none; } .vn-n.on { font-size: 18px; font-weight: 700; }
+.vn-d { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; }
+.vn-t tr.on td { background: var(--surface-2); font-weight: 600; }
 .kcmp-p { margin: 0 0 8px; }
 .kcmp { font: inherit; font-size: 14px; padding: 6px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; cursor: pointer; }
 .kcmp:hover { background: var(--accent); color: var(--page); }
@@ -1633,6 +1641,135 @@ function viewSpread() {
 
 
 // ---------- 視圖：版本親疏（數據見 kinship-data.js，由 build_kinship.py 從版本對比工作簿生成） ----------
+// ---------- 版本親疏：兩三本的共性與差異（交疊圖） ----------
+// 單位與「兩本細看」相同：規範名＋編碼日期類型＋月日（跨幾天的按日拆開）；另可只比神名。圓面積按單位數，兩兩重疊按比例
+var VN = { v: [1, 6, 17], unit: 'date', sel: 0 };
+var VN_C = ['var(--cat1)', 'var(--cat4)', 'var(--cat3)'];
+function vennUnits(v, unit) {
+  var U = {};
+  ED.entries.forEach(function (e) {
+    if (e.v !== v.i || !e.k || (e.p && e.p !== '正文' && e.p !== '專門單獨齋期')) return;
+    var md = kDays(e);
+    if (unit === 'god') { (U[e.k] = U[e.k] || { k: e.k, es: [] }).es.push(e); return; }
+    if (!md) return;
+    md[1].forEach(function (d) {
+      var u = e.k + '|' + (e.c || '其他') + '|' + md[0] + '|' + d;
+      (U[u] = U[u] || { k: e.k, c: e.c, m: md[0], d: d, es: [] }).es.push(e);
+    });
+  });
+  return U;
+}
+function vennLens(a, b, d) {   // 半徑 a、b，圓心距 d 的兩圓重疊面積
+  if (d >= a + b) return 0;
+  if (d <= Math.abs(a - b)) return Math.PI * Math.min(a, b) * Math.min(a, b);
+  var x = (d * d + a * a - b * b) / (2 * d * a), y = (d * d + b * b - a * a) / (2 * d * b);
+  return a * a * Math.acos(x) + b * b * Math.acos(y) - Math.sqrt((-d + a + b) * (d + a - b) * (d - a + b) * (d + a + b)) / 2;
+}
+function vennDist(a, b, ov) {
+  if (ov <= 0) return a + b + Math.min(a, b) * 0.08;
+  if (ov >= Math.PI * Math.min(a, b) * Math.min(a, b)) return Math.abs(a - b);
+  var lo = Math.abs(a - b), hi = a + b;
+  for (var i = 0; i < 40; i++) { var m = (lo + hi) / 2; if (vennLens(a, b, m) > ov) lo = m; else hi = m; }
+  return (lo + hi) / 2;
+}
+function vennLayout(n, ab, W, H, pad) {   // n：各本單位數；ab：兩兩共有數（鍵 '01' '02' '12'）
+  var r = n.map(function (x) { return Math.sqrt(x / Math.PI); }), C = [{ x: 0, y: 0 }];
+  var d01 = vennDist(r[0], r[1], ab['01']);
+  C.push({ x: d01, y: 0 });
+  if (n.length > 2) {
+    var d02 = vennDist(r[0], r[2], ab['02']), d12 = vennDist(r[1], r[2], ab['12']);
+    var x = d01 ? (d02 * d02 - d12 * d12 + d01 * d01) / (2 * d01) : 0;
+    C.push({ x: x, y: -Math.sqrt(Math.max(0, d02 * d02 - x * x)) });
+  }
+  var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  C.forEach(function (c, i) { x0 = Math.min(x0, c.x - r[i]); x1 = Math.max(x1, c.x + r[i]); y0 = Math.min(y0, c.y - r[i]); y1 = Math.max(y1, c.y + r[i]); });
+  var k = Math.min((W - 2 * pad) / (x1 - x0), (H - 2 * pad) / (y1 - y0));
+  var ox = (W - (x1 - x0) * k) / 2 - x0 * k, oy = (H - (y1 - y0) * k) / 2 - y0 * k;
+  return C.map(function (c, i) { return { x: c.x * k + ox, y: c.y * k + oy, r: r[i] * k }; });
+}
+function vennMask(C, x, y) { var m = 0; C.forEach(function (c, i) { if (Math.hypot(x - c.x, y - c.y) < c.r) m |= 1 << i; }); return m; }
+function viewVenn(el) {
+  var pool = EVS.filter(function (v) { return Object.keys(vennUnits(v, 'date')).length; });
+  var byNo = function (no) { return pool.filter(function (v) { return +v.no === +no; })[0]; };
+  var vs = VN.v.map(byNo).filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; });
+  while (vs.length < 2) { vs.push(pool.filter(function (v) { return vs.indexOf(v) < 0; })[0]); }
+  VN.v = vs.map(function (v) { return +v.no; });
+  var nm = function (v) { return esc(v.when.replace(/^(\d{4}).*$/, '$1')) + ' ' + esc(I.en() ? NT(edSh(v)) : edSh(v)); };
+  var opt = function (sel, none) {
+    return (none ? '<option value="">' + L('（不選）', '(none)', '(aucune)') + '</option>' : '') + pool.map(function (v) { return '<option value="' + esc(v.no) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v.when) + ' ' + esc(I.en() ? NT(v.short) : v.short) + '</option>'; }).join('');
+  };
+  var Us = vs.map(function (v) { return vennUnits(v, VN.unit); }), n = vs.length, all = {};
+  Us.forEach(function (U, i) { Object.keys(U).forEach(function (u) { all[u] = all[u] || { m: 0, x: U[u], by: [] }; all[u].m |= 1 << i; all[u].by[i] = U[u]; }); });
+  var keys = Object.keys(all), reg = {}, full = (1 << n) - 1;
+  for (var mk = 1; mk <= full; mk++) reg[mk] = [];
+  keys.forEach(function (u) { reg[all[u].m].push(all[u]); });
+  var size = Us.map(function (U) { return Object.keys(U).length; });
+  var inter = function (i, j) { return keys.filter(function (u) { return (all[u].m >> i & 1) && (all[u].m >> j & 1); }).length; };
+  var ab = { '01': inter(0, 1) }; if (n > 2) { ab['02'] = inter(0, 2); ab['12'] = inter(1, 2); }
+  if (!VN.sel || VN.sel > full || !reg[VN.sel]) VN.sel = full;
+  var W = 620, H = 400, CC = vennLayout(size, ab, W, H, 64);
+  var cx = CC.reduce(function (s, c) { return s + c.x; }, 0) / n, cy = CC.reduce(function (s, c) { return s + c.y; }, 0) / n;
+  var rname = function (m) {
+    var ns = vs.filter(function (v, i) { return m >> i & 1; }).map(nm);
+    if (ns.length === 1) return L('只見於 ', 'Only in ', 'Seulement dans ') + ns[0];
+    return ns.join(' ∩ ') + (ns.length === n && n > 2 ? L('（三本共有）', ' (all three)', ' (les trois)') : L(' 共有', ' shared', ' en commun'));
+  };
+  var unitL = VN.unit === 'god' ? L('位神', 'deities', 'divinités') : L('個單位', 'units', 'unités');
+  // 每個區塊取離邊界最遠的點放數字
+  var pole = {};
+  for (var gx = 0; gx <= W; gx += 5) for (var gy = 0; gy <= H; gy += 5) {
+    var m = vennMask(CC, gx, gy); if (!m) continue;
+    var dd = Math.min.apply(null, CC.map(function (c) { return Math.abs(Math.hypot(gx - c.x, gy - c.y) - c.r); }));
+    if (!pole[m] || dd > pole[m].d) pole[m] = { x: gx, y: gy, d: dd };
+  }
+  var s = '<svg class="venn" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + L('版本交疊圖', 'Overlap diagram of editions', 'Diagramme de recoupement des éditions') + '">';
+  CC.forEach(function (c, i) { s += '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="' + c.r.toFixed(1) + '" style="fill:' + VN_C[i] + ';stroke:' + VN_C[i] + '"/>'; });
+  CC.forEach(function (c, i) {
+    var a = Math.atan2(c.y - cy, c.x - cx), ca = Math.cos(a), sa = Math.sin(a), lx = c.x + ca * (c.r + 8), ly = c.y + sa * (c.r + 12);
+    lx = Math.max(6, Math.min(W - 6, lx)); ly = Math.max(16, Math.min(H - 20, ly));
+    var an = ca > 0.35 ? 'start' : ca < -0.35 ? 'end' : 'middle';
+    if (an === 'start' && lx > W - 90) { an = 'end'; lx = W - 6; } if (an === 'end' && lx < 90) { an = 'start'; lx = 6; }
+    s += '<text class="vn-l" x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="' + an + '">' + nm(vs[i]) + '<tspan class="vn-s" x="' + lx.toFixed(1) + '" dy="15">' + size[i] + ' ' + unitL + '</tspan></text>';
+  });
+  Object.keys(pole).forEach(function (m) { if (pole[m].d >= 9) s += '<text class="vn-n' + (+m === VN.sel ? ' on' : '') + '" x="' + pole[m].x + '" y="' + (pole[m].y + 5) + '" text-anchor="middle">' + reg[m].length + '</text>'; });
+  s += '</svg>';
+  var order = Object.keys(reg).map(Number).sort(function (a, b) { var ca = a.toString(2).split('1').length, cb = b.toString(2).split('1').length; return cb - ca || a - b; });
+  var t = '<table class="vn-t"><thead><tr><th>' + L('區塊', 'Region', 'Zone') + '</th><th class="num">' + L('數量', 'Count', 'Nombre') + '</th><th class="num">' + L('佔全部', 'Share', 'Part') + '</th></tr></thead><tbody>' +
+    order.map(function (m) {
+      var dots = vs.map(function (v, i) { return m >> i & 1 ? '<i class="vn-d" style="background:' + VN_C[i] + '"></i>' : ''; }).join('');
+      return '<tr class="row' + (m === VN.sel ? ' on' : '') + '" data-m="' + m + '" tabindex="0"><td>' + dots + ' ' + rname(m) + '</td><td class="num">' + reg[m].length + '</td><td class="num">' + (keys.length ? Math.round(reg[m].length / keys.length * 100) : 0) + '%</td></tr>';
+    }).join('') + '</tbody></table>';
+  var picked = reg[VN.sel].slice().sort(function (a, b) { return (a.x.m || 0) - (b.x.m || 0) || (a.x.d || 0) - (b.x.d || 0) || (a.x.k < b.x.k ? -1 : 1); });
+  var cols = vs.map(function (v, i) { return VN.sel >> i & 1 ? i : -1; }).filter(function (i) { return i >= 0; });
+  var cap = 300, shown = picked.slice(0, VN.more ? picked.length : cap);
+  var cell = function (u) {
+    if (!u) return '<td></td>';
+    return '<td class="small">' + u.es.slice(0, VN.unit === 'god' ? 4 : 2).map(function (e) {
+      return '<a href="#ev/' + e.v + '/' + esc(e.id) + '">' + esc(e.id) + '</a> ' + (VN.unit === 'god' ? esc((e.mo || '') + (e.dy || '')) + ' ' : '') + '<span class="yt">' + esc(e.t || e.g || '') + '</span>';
+    }).join('<br>') + (u.es.length > (VN.unit === 'god' ? 4 : 2) ? ' …' : '') + '</td>';
+  };
+  var list = '<h3 style="margin:18px 0 6px">' + rname(VN.sel) + '：' + picked.length + '</h3>' + (picked.length ? '<div class="scroll"><table><thead><tr>' + (VN.unit === 'god' ? '' : '<th>' + L('日期', 'Date') + '</th>') + '<th>' + L('規範名', 'Normalized name') + '</th>' + cols.map(function (i) { return '<th>' + nm(vs[i]) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    shown.map(function (r) { return '<tr>' + (VN.unit === 'god' ? '' : '<td class="dlink" data-day="' + r.x.m + '/' + r.x.d + '">' + dayName(r.x.m, r.x.d) + '</td>') + '<td>' + N(r.x.k) + (VN.unit === 'god' || !r.x.c ? '' : ' <span class="muted small">' + esc(C(r.x.c)) + '</span>') + '</td>' + cols.map(function (i) { return cell(r.by[i]); }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+    (picked.length > cap && !VN.more ? '<p><button type="button" id="vnmore" class="morebtn">' + L('再顯示 ' + (picked.length - cap) + ' 條', 'Show ' + (picked.length - cap) + ' more', 'Afficher ' + (picked.length - cap) + ' de plus') + '</button></p>' : '') : '');
+  el.innerHTML = '<div class="controls"><label>' + L('甲', 'A') + ' <select id="vn0">' + opt(vs[0]) + '</select></label><label>' + L('乙', 'B') + ' <select id="vn1">' + opt(vs[1]) + '</select></label><label>' + L('丙', 'C') + ' <select id="vn2">' + opt(vs[2], true) + '</select></label>' +
+    '<label>' + L('比較：', 'Compare: ', 'Comparer : ') + '<select id="vnu"><option value="date"' + (VN.unit === 'date' ? ' selected' : '') + '>' + L('神＋日期', 'Deity + date', 'Divinité + date') + '</option><option value="god"' + (VN.unit === 'god' ? ' selected' : '') + '>' + L('只比神名', 'Deity names only', 'Noms de divinités seulement') + '</option></select></label></div>' +
+    '<div class="venn-g"><div>' + s + '</div><div>' + t + '</div></div>' + list;
+  ['vn0', 'vn1', 'vn2'].forEach(function (id, i) {
+    document.getElementById(id).onchange = function (e) { var a = VN.v.slice(); a[i] = e.target.value ? +e.target.value : null; VN.v = a.filter(Boolean); VN.sel = 0; VN.more = false; viewVenn(el); };
+  });
+  document.getElementById('vnu').onchange = function (e) { VN.unit = e.target.value; VN.sel = 0; VN.more = false; viewVenn(el); };
+  var pickR = function (m) { VN.sel = m; VN.more = false; viewVenn(el); };
+  el.querySelectorAll('.vn-t tr[data-m]').forEach(function (tr) {
+    tr.onclick = function () { pickR(+tr.getAttribute('data-m')); };
+    tr.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickR(+tr.getAttribute('data-m')); } };
+  });
+  var svg = el.querySelector('svg.venn'), at = function (e) { var b = svg.getBoundingClientRect(); return vennMask(CC, (e.clientX - b.left) / b.width * W, (e.clientY - b.top) / b.height * H); };
+  svg.addEventListener('mousemove', function (e) { var m = at(e); svg.style.cursor = m ? 'pointer' : ''; if (m) showTip(e, '<b>' + rname(m) + '</b><div>' + reg[m].length + ' ' + unitL + '</div>'); else hideTip(); });
+  svg.addEventListener('mouseleave', hideTip);
+  svg.addEventListener('click', function (e) { var m = at(e); if (m) { hideTip(); pickR(m); } });
+  var more = document.getElementById('vnmore'); if (more) more.onclick = function () { VN.more = true; viewVenn(el); };
+  if (el.isConnected) decorate();
+}
 var KIN = { mode: 'j', thr: 0.4, dir: true };
 function viewKinship() {
   var K = window.ZHAI_KIN;
@@ -1655,7 +1792,9 @@ function viewKinship() {
     '<div class="kin"><div class="controls card"><label>' + L('連線：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少數日期', 'Shared minority dates') + '</option></select></label>' +
     '<label id="kthrw">' + L('只顯示重合度 ≥ ', 'Only overlap ≥ ') + '<input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + KIN.thr + '"> <b id="kthrv">' + KIN.thr.toFixed(2) + '</b></label>' +
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('顯示有依據的先後關係', 'Show evidenced sequences') + '</label></div>' +
-    '<div class="card" id="knet"></div><div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('格中數字爲重合度（×100）；鼠標移上去看雙向包含比例與共有的少數日期，點格子逐條細看這兩本。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.') + '</p><p class="kcmp-p"><button type="button" class="kcmp" id="kcmp">' + L('⇄ 選兩個版本逐條細看', '⇄ Compare two editions entry by entry') + '</button></p><div class="card scroll" id="khm"></div></div><div>' +
+    '<div class="card" id="knet"></div>' +
+    '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目。比較單位與「兩本細看」相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries. The unit is the same as in the two-edition view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées. L’unité est celle de la vue à deux éditions ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
+    '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('格中數字爲重合度（×100）；鼠標移上去看雙向包含比例與共有的少數日期，點格子逐條細看這兩本。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.') + '</p><p class="kcmp-p"><button type="button" class="kcmp" id="kcmp">' + L('⇄ 選兩個版本逐條細看', '⇄ Compare two editions entry by entry') + '</button></p><div class="card scroll" id="khm"></div></div><div>' +
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
     '<h2>' + L('未計入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
     '<h2>' + L('讀圖須知', 'Reading notes') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' +
@@ -1664,6 +1803,7 @@ function viewKinship() {
     '</ul></div></div></div></div>';
   app.innerHTML = h;
   document.getElementById('kcmp').onclick = function () { location.hash = 'kin/' + CMP.a + '/' + CMP.b; };
+  viewVenn(document.getElementById('kvenn'));
   var pairTip = function (p) {
     var A = NB[p.a], B = NB[p.b];
     return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b><div>' + L('重合度 ', 'Overlap ') + '<b>' + (p.j * 100).toFixed(0) + '</b>' +
@@ -2211,8 +2351,8 @@ var SHARE = {
     set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; }
   },
   kin: {
-    get: function () { return { mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', dir: KIN.dir ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
-    set: function (o) { KIN.mode = o.mode === 'sv' ? 'sv' : 'j'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.dir = o.dir !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
+    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', dir: KIN.dir ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
+    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' ? 'sv' : 'j'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.dir = o.dir !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
   },
   ring: {
     get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null; return r ? { month: r.zoom || '', layers: r.layers } : {}; },

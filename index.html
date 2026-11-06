@@ -286,6 +286,7 @@ svg.venn circle { fill-opacity: .2; stroke-width: 2; }
 .pgguide .pg-eg { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); } .pgguide .pg-more { margin: 4px 0 0; font-size: 14px; }
 .kcmp-p { margin: 0 0 8px; } .vn-pairs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
 .kcmp { font: inherit; font-size: 14px; padding: 6px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; cursor: pointer; }
+a.kcmp { display: inline-block; text-decoration: none; font-weight: 600; } a.rcal { margin-left: 4px; background: var(--accent); color: var(--page); } a.rcal:hover { filter: brightness(1.1); background: var(--accent); }
 .kcmp:hover { background: var(--accent); color: var(--page); }
 @media (max-width: 700px) { .cmppanel { padding: 0; } .cp-box { max-height: 100vh; height: 100%; border-radius: 0; } .cp-body { padding: 0 14px 30px; } }
 .daypanel { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.28); display: flex; justify-content: flex-end; }
@@ -2354,7 +2355,7 @@ function viewRing(no) {
   var pick = document.createElement('div'); pick.className = 'controls ringpick';
   pick.innerHTML = '<label>' + L('齋曆版本：', 'Calendar edition: ') + '<select id="rv">' + EVS.filter(function (x) { return !x.solo; }).map(ropt).join('') +
     ((ED.solo || []).length ? '<optgroup label="' + L('專門單獨齋期', 'Standalone fast calendars') + '">' + ED.solo.map(ropt).join('') + '</optgroup>' : '') + '</select></label>' +
-    ' <a class="small rcal" href="' + calLink(v) + '">' + L('按月並排看 →', 'Compare side by side by month →', 'Comparer côte à côte par mois →') + '</a>' +
+    ' <a class="kcmp rcal" href="' + calLink(v) + '">' + L('按月並排看 →', 'Compare side by side by month →', 'Comparer côte à côte par mois →') + '</a>' +
     (v.solo ? '<p class="small muted" style="margin:6px 0 0;flex-basis:100%">' + L('只記這一種齋期，不是一年完整的齋期表。', 'This records one particular fast only, not a full-year calendar.') +
       (v.second ? L('據 Goossaert 2024 轉述，未見原書；「每月」的日期排進十二個月。', ' Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.') : '') +
       ((ED.soloUndated || []).length ? L('《' + ED.soloUndated.join('》《') + '》的齋期文中未列具體日期，不能排入環形曆。', ' Goossaert gives no specific dates for the fasts in the ' + ED.soloUndated.map(function (b) { return '<i>' + NT(b) + '</i>'; }).join(', ') + ', so they cannot be placed here.') : '') + '</p>' : '');

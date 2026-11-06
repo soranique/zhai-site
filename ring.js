@@ -54,6 +54,11 @@ function nEntries(n) { return L(n + ' 條', n + (n === 1 ? ' entry' : ' entries'
 var TEN_LAB = function () { return L('十齋日', 'ten fast days'); };
 var SIX_LAB = function () { return L('六齋日', 'six fast days', 'six jours de jeûne'); };
 // 某日屬於哪種齋日的標籤；六齋日的六天都在十齋日之內
+// 十齋日、六齋日並列：各用一色，兩者重合的日子各佔一半
+var FAST_UID = 0;
+function fastCss(D, d, a, b) { var t = D.TEN.indexOf(d) >= 0, s = D.SIX.indexOf(d) >= 0; return t && s ? 'linear-gradient(135deg,var(' + a + ') 50%,var(' + b + ') 50%)' : t ? 'var(' + a + ')' : s ? 'var(' + b + ')' : ''; }
+function fastGrad(svg, a, b, side) { var id = 'zr-both-' + (++FAST_UID), defs = svgEl('defs', {}, svg), g = svgEl('linearGradient', { id: id, x1: 0, y1: 0, x2: 1, y2: side ? 0 : 1 }, defs);
+  [[0, a], [0.5, a], [0.5, b], [1, b]].forEach(function (s) { svgEl('stop', { offset: s[0], 'stop-color': 'var(' + s[1] + ')' }, g); }); return 'url(#' + id + ')'; }
 function fastLab(D, d) { var t = D.TEN.indexOf(d) >= 0, s = D.SIX.indexOf(d) >= 0; return t && s ? L('十齋日・六齋日', 'ten and six fast days', 'dix et six jours de jeûne') : t ? TEN_LAB() : s ? SIX_LAB() : ''; }
 function one(c) { return c === 'N' || c === 'O' ? 'Q' : (TR[c] ? c : 'U'); }
 function parts(n) { n = (n || '').replace('？', '?').trim(); if (!n || n === '?') return ['U']; return n.split('&').map(one); }
@@ -112,8 +117,8 @@ function prepare(data) {
 function disc(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec';
   sec.innerHTML = '<div class="zr-hero"><div class="zr-disc"><svg viewBox="0 0 800 800" role="img" aria-label="' + L('曆盤：十二個月扇區乘三十日環，每格顯示當日的神聖日條目', 'Calendar disc: twelve month sectors by thirty day rings; each cell shows that day’s sacred-day entries') + '"></svg><button type="button" class="zr-back" hidden>' + L('← 返回全年', '← Whole year') + '</button><div class="zr-steps" role="group" aria-label="' + L('選擇顯示的日子', 'Choose which days to show') + '"></div></div><aside class="zr-panel" aria-live="polite"></aside></div>' +
-    '<p class="zr-hint">' + L('十二個月是十二個扇區，從內到外是初一到三十；一格是一天，格中每一色塊是一條神聖日條目。泥金色底格是十齋日，其中深金色的也是六齋日。移動或點按一格查看當日；點擊某個月可放大該月，再點其他月份切換，點盤外或按 Esc 返回全年。下方按鈕可單獨開關各類日子並任意疊加：「空白之年」全部關閉，「全部」全部打開。',
-      'The twelve lunar months are twelve sectors; days 1 to 30 run from the inside out. Each cell is a day, and each coloured block in it is one sacred-day entry. Cells with a gold ground are the ten fast days (shizhai ri 十齋日); the deeper gold ones are also the six fast days (liuzhai ri 六齋日). Hover over or tap a cell to see that day; click a month to zoom in on it, click another month to switch, and click outside the disc or press Esc to return to the whole year. The buttons below switch each kind of day on or off and can be combined; “An empty year” turns everything off and “All” turns everything on.') + '</p>';
+    '<p class="zr-hint">' + L('十二個月是十二個扇區，從內到外是初一到三十；一格是一天，格中每一色塊是一條神聖日條目。泥金色底格是十齋日，石青色底格是六齋日；兩者重合的格子各佔一半。移動或點按一格查看當日；點擊某個月可放大該月，再點其他月份切換，點盤外或按 Esc 返回全年。下方按鈕可單獨開關各類日子並任意疊加：「空白之年」全部關閉，「全部」全部打開。',
+      'The twelve lunar months are twelve sectors; days 1 to 30 run from the inside out. Each cell is a day, and each coloured block in it is one sacred-day entry. Cells with a gold ground are the ten fast days (shizhai ri 十齋日) and cells with a blue ground the six fast days (liuzhai ri 六齋日); where they coincide, each takes half the cell. Hover over or tap a cell to see that day; click a month to zoom in on it, click another month to switch, and click outside the disc or press Esc to return to the whole year. The buttons below switch each kind of day on or off and can be combined; “An empty year” turns everything off and “All” turns everything on.') + '</p>';
   root.appendChild(sec);
   var svg = sec.querySelector('svg'), panel = sec.querySelector('.zr-panel'), stepsEl = sec.querySelector('.zr-steps'), backBtn = sec.querySelector('.zr-back');
   var C = 400, RI = 122, RO = 352, DR = (RO - RI) / 30, TOPGAP = 5.5, GAP = 0.9, MW = (360 - TOPGAP - 11 * GAP) / 12;
@@ -125,6 +130,7 @@ function disc(root, D) {
     return 'M' + f(p1[0]) + ',' + f(p1[1]) + 'A' + r2 + ',' + r2 + ' 0 ' + lg + ' 1 ' + f(p2[0]) + ',' + f(p2[1]) + 'L' + f(p3[0]) + ',' + f(p3[1]) + 'A' + r1 + ',' + r1 + ' 0 ' + lg + ' 0 ' + f(p4[0]) + ',' + f(p4[1]) + 'Z';
   }
   var cells = {}, slices = [], rngEls = [];
+  var BOTH = fastGrad(svg, '--zr-fast', '--zr-six');
   var gC = svgEl('g', {}, svg), gS = svgEl('g', {}, svg);
   // 每個月的格子、色塊、月名、跨日細條各放一組，懸停／放大時按月變灰
   var MG = [[]];
@@ -204,7 +210,7 @@ function disc(root, D) {
       var k = b.getAttribute('data-k');
       b.setAttribute('aria-pressed', k === 'none' ? noneOn() : k === 'all' ? allOn() : !!on[k]);
     });
-    Object.keys(cells).forEach(function (k) { cells[k].setAttribute('fill', on.six && D.SIX.indexOf(k % 100) >= 0 ? 'var(--zr-six)' : on.fast && D.TEN.indexOf(k % 100) >= 0 ? 'var(--zr-fast)' : 'var(--zr-cell)'); });
+    Object.keys(cells).forEach(function (k) { var t10 = on.fast && D.TEN.indexOf(k % 100) >= 0, t6 = on.six && D.SIX.indexOf(k % 100) >= 0; cells[k].setAttribute('fill', t10 && t6 ? BOTH : t6 ? 'var(--zr-six)' : t10 ? 'var(--zr-fast)' : 'var(--zr-cell)'); });
     var F = focusOn();
     slices.forEach(function (o) { var v = t.indexOf(o.t) >= 0; o.el.style.opacity = !v ? 0 : !F || isFocus(o.r) ? 1 : 0.1; });
     rngEls.forEach(function (o) { var v = visible(o.r, t); o.el.setAttribute('opacity', !v ? 0 : !F || isFocus(o.r) ? 1 : 0.1); });
@@ -220,7 +226,7 @@ function disc(root, D) {
   }
   function legend() {
     return '<div class="zr-legend"><div>' + ORDER.map(function (k) { return '<span><i class="zr-sw" style="background:var(' + TR[k].c + ')"></i>' + trLab(k) + '<span class="zr-hint">' + trPig(k) + '</span></span>'; }).join('') +
-      '</div><div><span><i class="zr-sw" style="background:var(--zr-fast);outline:1px solid var(--zr-gold)"></i>' + L('十齋日', 'Ten fast days') + '</span><span><i class="zr-sw" style="background:var(--zr-six);outline:1px solid var(--zr-six-ink)"></i>' + L('六齋日', 'Six fast days', 'Six jours de jeûne') + '</span>' + (SCHEME === 'kind' ? '' : '<span><i class="zr-sw" style="background:linear-gradient(135deg,var(--zr-dao) 50%,var(--zr-di) 50%)"></i>' + L('複合（內外兩半）', 'Composite (inner / outer half)') + '</span>') + '</div></div>';
+      '</div><div><span><i class="zr-sw" style="background:var(--zr-fast);outline:1px solid var(--zr-gold)"></i>' + L('十齋日', 'Ten fast days') + '</span><span><i class="zr-sw" style="background:var(--zr-six);outline:1px solid var(--zr-six-ink)"></i>' + L('六齋日', 'Six fast days', 'Six jours de jeûne') + '</span><span><i class="zr-sw" style="background:linear-gradient(135deg,var(--zr-fast) 50%,var(--zr-six) 50%)"></i>' + L('兩者重合（各半）', 'Both (half each)', 'Les deux (moitié chacun)') + '</span>' + (SCHEME === 'kind' ? '' : '<span><i class="zr-sw" style="background:linear-gradient(135deg,var(--zr-dao) 50%,var(--zr-di) 50%)"></i>' + L('複合（內外兩半）', 'Composite (inner / outer half)') + '</span>') + '</div></div>';
   }
   function item(r) {
     return '<li><i class="zr-sw" style="background:' + swatchCss(r.p) + '"></i><div><div class="zr-nm">' + NH(r.name) +
@@ -237,7 +243,7 @@ function disc(root, D) {
         L(nEntries(total) + ' · ' + days.length + ' 個神聖日', nEntries(total) + ' · ' + days.length + ' sacred days', nEntries(total) + ' · ' + days.length + ' jours sacrés') + '</div></div>' +
         '<ul class="zr-mlist">' + days.map(function (x) {
           var l = D.byDay[zoom * 100 + x];
-          return '<li><i class="zr-sw" style="background:' + (D.TEN.indexOf(x) >= 0 ? (D.SIX.indexOf(x) >= 0 ? 'var(--zr-six-ink)' : 'var(--zr-gold)') : 'var(--zr-wei)') + '"></i><div><div class="zr-nm">' + lunarLong(zoom, x) + '<span class="zr-chip">' + nEntries(l.length) + '</span></div><div class="zr-sub">' + l.map(function (r) { return NH(r.name); }).join(L('、', '; ')) + '</div></div></li>';
+          return '<li><i class="zr-sw" style="background:' + (fastCss(D, x, '--zr-gold', '--zr-six-ink') || 'var(--zr-wei)') + '"></i><div><div class="zr-nm">' + lunarLong(zoom, x) + '<span class="zr-chip">' + nEntries(l.length) + '</span></div><div class="zr-sub">' + l.map(function (r) { return NH(r.name); }).join(L('、', '; ')) + '</div></div></li>';
         }).join('') + '</ul><p class="zr-hint">' + L('移到某一格看當日詳情；點盤外或按 Esc 返回全年。', 'Hover over a cell for that day; click outside the disc or press Esc to return.') + '</p>' + legend();
       return;
     }
@@ -316,7 +322,7 @@ function disc(root, D) {
       var p = P(RI + (d - 0.5) * DR, a), ten = D.TEN.indexOf(d) >= 0;
       // 用 style 而非屬性：網站的全局 CSS「svg text」會蓋過 font-size、fill 屬性
       svgEl('text', { x: p[0], y: p[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'class': 'zr-daylab',
-        style: 'font-size:' + fs.toFixed(2) + 'px;fill:' + (ten ? (D.SIX.indexOf(d) >= 0 ? 'var(--zr-six-ink)' : 'var(--zr-gold)') : 'var(--zr-ink-2)') + ';font-weight:' + (ten ? 700 : 400) }, dayLabs).textContent = d;
+        style: 'font-size:' + fs.toFixed(2) + 'px;fill:' + (ten ? 'var(--zr-gold)' : D.SIX.indexOf(d) >= 0 ? 'var(--zr-six-ink)' : 'var(--zr-ink-2)') + ';font-weight:' + (ten || D.SIX.indexOf(d) >= 0 ? 700 : 400) }, dayLabs).textContent = d;
     }
     var lp = P(RO + 8 / px + fs, ae);
     svgEl('text', { x: lp[0], y: lp[1], 'text-anchor': 'middle', 'dominant-baseline': 'central', 'class': 'zr-daylab',
@@ -431,10 +437,10 @@ function treemap(root, D) {
 function dom(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec';
   sec.innerHTML = '<div class="zr-eyebrow">' + L('檢驗 · 週期齋戒的底層節奏', 'Test · the underlying rhythm of periodic fasting') + '</div><h2 style="margin:0">' + L('每月第幾日最擁擠', 'Which day of the month is most crowded') + '</h2><p class="zr-lede">' +
-    L('三十根柱子是一月三十日，泥金色是十齋日，其中深色的也是六齋日，虛線是平均值。', 'Thirty bars for the thirty days of a lunar month; gold bars are the ten fast days, and the darker ones are also the six fast days; the dashed line is the average.') +
-    '</p><div class="zr-chart"><svg viewBox="0 0 960 300" role="img" aria-label="' + L('每月各日的條目數，十齋日以金色標出，六齋日以深金色標出', 'Entries per day of the month, ten fast days in gold, six fast days in dark gold') + '"></svg></div><p class="zr-finding"></p>';
+    L('三十根柱子是一月三十日，泥金色是十齋日，石青色是六齋日（日期下另有短線），兩者重合的柱子各佔一半；虛線是平均值。', 'Thirty bars for the thirty days of a lunar month; gold marks the ten fast days and blue the six fast days (also underlined below the date); bars on days in both are half of each. The dashed line is the average.') +
+    '</p><div class="zr-chart"><svg viewBox="0 0 960 300" role="img" aria-label="' + L('每月各日的條目數，十齋日以金色、六齋日以石青色標出', 'Entries per day of the month, ten fast days in gold, six fast days in blue') + '"></svg></div><p class="zr-finding"></p>';
   root.appendChild(sec);
-  var S = sec.querySelector('svg'), cnt = []; for (var i = 0; i <= 30; i++) cnt[i] = 0;
+  var S = sec.querySelector('svg'), BARB = fastGrad(S, '--zr-gold', '--zr-six-ink', true), cnt = []; for (var i = 0; i <= 30; i++) cnt[i] = 0;
   D.daily.forEach(function (r) { cnt[r.d]++; });
   var mx = Math.max.apply(null, cnt), max = Math.ceil((mx + 2) / 5) * 5;
   var W = 960, H = 300, ml = 36, mr = 8, mt = 28, mb = 44, bw = (W - ml - mr) / 30;
@@ -444,12 +450,13 @@ function dom(root, D) {
     svgEl('text', { x: ml - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = v;
   }
   for (var d = 1; d <= 30; d++) (function (d) {
-    var on = D.TEN.indexOf(d) >= 0, x = ml + (d - 1) * bw + 3, w = bw - 6, top = y(cnt[d]), rr = Math.min(3, w / 2, y(0) - top);
-    svgEl('path', { d: 'M' + x + ',' + y(0) + 'V' + (top + rr) + 'Q' + x + ',' + top + ' ' + (x + rr) + ',' + top + 'H' + (x + w - rr) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + rr) + 'V' + y(0) + 'Z', fill: on ? (D.SIX.indexOf(d) >= 0 ? 'var(--zr-six-ink)' : 'var(--zr-gold)') : 'var(--zr-wei)' }, S);
+    var on = D.TEN.indexOf(d) >= 0, six = D.SIX.indexOf(d) >= 0, x = ml + (d - 1) * bw + 3, w = bw - 6, top = y(cnt[d]), rr = Math.min(3, w / 2, y(0) - top);
+    svgEl('path', { d: 'M' + x + ',' + y(0) + 'V' + (top + rr) + 'Q' + x + ',' + top + ' ' + (x + rr) + ',' + top + 'H' + (x + w - rr) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + rr) + 'V' + y(0) + 'Z', fill: on && six ? BARB : on ? 'var(--zr-gold)' : six ? 'var(--zr-six-ink)' : 'var(--zr-wei)' }, S);
     var hit = svgEl('rect', { x: ml + (d - 1) * bw, y: mt, width: bw, height: H - mt - mb, fill: 'transparent' }, S);
-    hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + nEntries(cnt[d]) + (on ? ' · ' + fastLab(D, d) : '')); });
+    hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + nEntries(cnt[d]) + (on || six ? ' · ' + fastLab(D, d) : '')); });
     hit.addEventListener('pointerleave', hideTip);
-    svgEl('text', { x: ml + (d - 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: on ? (D.SIX.indexOf(d) >= 0 ? 'var(--zr-six-ink)' : 'var(--zr-gold)') : 'var(--zr-muted)', 'font-weight': on ? 700 : 400 }, S).textContent = DN(d).replace('初', '');
+    svgEl('text', { x: ml + (d - 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: on ? 'var(--zr-gold)' : six ? 'var(--zr-six-ink)' : 'var(--zr-muted)', 'font-weight': on || six ? 700 : 400 }, S).textContent = DN(d).replace('初', '');
+    if (six) svgEl('rect', { x: ml + (d - 0.5) * bw - 7, y: H - mb + 25, width: 14, height: 3, rx: 1.5, fill: 'var(--zr-six-ink)' }, S);
     if (on || cnt[d] >= 13) svgEl('text', { x: ml + (d - 0.5) * bw, y: top - 7, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S).textContent = cnt[d];
   })(d);
   var avg = D.daily.length / 30;

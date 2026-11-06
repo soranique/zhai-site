@@ -57,7 +57,23 @@ function parts(n) { n = (n || '').replace('？', '?').trim(); if (!n || n === '?
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function swatchCss(p) { return p.length > 1 ? 'linear-gradient(135deg,var(' + TR[p[0]].c + ') 50%,var(' + TR[p[1]].c + ') 50%)' : 'var(' + TR[p[0]].c + ')'; }
 function tradLabel(r) { return r.p.map(trLab).join(L('＋', ' + ')); }
-function rangeOf(r) { var a = r.range.split(/[;；]/)[0].split('-').map(function (x) { return x.split('/').map(Number); }); return a; }
+function rangesOf(r) {
+  var seen = {};
+  return r.range.split(/[;；]/).map(function (seg) {
+    var a = seg.trim().split('-').map(function (x) { return x.split('/').map(Number); });
+    var s = a[0], e = a[1] || s;
+    if (a.length > 2 || s.length !== 2 || e.length !== 2 || s[0] !== e[0] ||
+        !Number.isInteger(s[0]) || s[0] < 1 || s[0] > 12 ||
+        !Number.isInteger(s[1]) || !Number.isInteger(e[1]) || s[1] < 1 || e[1] > 30 || s[1] > e[1]) return null;
+    var key = s.join('/') + '-' + e.join('/');
+    if (seen[key]) return null;
+    seen[key] = true;
+    return [s, e];
+  }).filter(Boolean);
+}
+function rangeHas(r, m, d) {
+  return rangesOf(r).some(function (a) { return m === a[0][0] && d >= a[0][1] && d <= a[1][1]; });
+}
 function svgEl(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
 
 // 共用的懸停提示
@@ -137,9 +153,11 @@ function disc(root, D) {
     svgEl('text', { x: C, y: C - (RI + (d - 0.5) * DR), 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 11, 'font-weight': 600, fill: 'var(--zr-ink-2)' }, topDays).textContent = d;
   });
   D.ranges.forEach(function (r) {
-    var a = rangeOf(r), s = a[0], e = a[1] || a[0], st = mStart(s[0]);
-    var el = svgEl('path', { d: wedge(RI + (s[1] - 1) * DR, RI + e[1] * DR, st - 0.82, st - 0.08), fill: 'var(--zr-gold)', opacity: 0, 'class': 'zr-mg', style: 'transition:opacity .5s' }, svg);
-    rngEls.push(el); MG[s[0]].push(el);
+    rangesOf(r).forEach(function (a) {
+      var s = a[0], e = a[1], st = mStart(s[0]);
+      var el = svgEl('path', { d: wedge(RI + (s[1] - 1) * DR, RI + e[1] * DR, st - 0.82, st - 0.08), fill: 'var(--zr-gold)', opacity: 0, 'class': 'zr-mg', style: 'transition:opacity .5s' }, svg);
+      rngEls.push({ el: el, r: r }); MG[s[0]].push(el);
+    });
   });
   svgEl('circle', { cx: C, cy: C, r: RI - 10, fill: 'none', stroke: 'var(--zr-line)' }, svg);
   var c1 = svgEl('text', { x: C, y: C - 8, 'text-anchor': 'middle', 'font-size': 28, 'font-weight': 700, fill: 'var(--zr-ink)' }, svg);
@@ -184,7 +202,7 @@ function disc(root, D) {
     Object.keys(cells).forEach(function (k) { cells[k].setAttribute('fill', on.fast && D.TEN.indexOf(k % 100) >= 0 ? 'var(--zr-fast)' : 'var(--zr-cell)'); });
     var F = focusOn();
     slices.forEach(function (o) { var v = t.indexOf(o.t) >= 0; o.el.style.opacity = !v ? 0 : !F || isFocus(o.r) ? 1 : 0.1; });
-    rngEls.forEach(function (e, i) { var v = visible(D.ranges[i], t); e.setAttribute('opacity', !v ? 0 : !F || isFocus(D.ranges[i]) ? 1 : 0.1); });
+    rngEls.forEach(function (o) { var v = visible(o.r, t); o.el.setAttribute('opacity', !v ? 0 : !F || isFocus(o.r) ? 1 : 0.1); });
     // 聚焦神明所在的格子加描邊
     Object.keys(cells).forEach(function (k) { var on = F && (D.byDay[k] || []).some(isFocus); cells[k].setAttribute('stroke', on ? 'var(--zr-ink)' : 'none'); cells[k].setAttribute('stroke-width', on ? 1.2 : 0); });
     if (!sel) {
@@ -238,7 +256,7 @@ function disc(root, D) {
       return;
     }
     var m = Math.floor(sel / 100), d = sel % 100, list = D.byDay[sel] || [];
-    var inR = D.ranges.filter(function (r) { var a = rangeOf(r), s = a[0], e = a[1] || a[0]; return m === s[0] && d >= s[1] && d <= e[1]; });
+    var inR = D.ranges.filter(function (r) { return rangeHas(r, m, d); });
     panel.innerHTML = '<div><div class="zr-pd">' + lunarLong(m, d) + '</div><div class="zr-pmeta">' + nEntries(list.length) + (D.TEN.indexOf(d) >= 0 ? ' · ' + TEN_LAB() : '') + '</div></div>' +
       (list.length || inR.length ? '<ul>' + list.map(item).join('') + inR.map(item).join('') + '</ul>' : '<p class="zr-hint">' + L('此日沒有條目。', 'No entries on this day.') + '</p>') +
       (OPT.onDay ? '<p><button type="button" class="zr-openday">' + L('打開「這一天」：各版本對照實踐記錄', 'Open “this day”: editions beside practice') + '</button></p>' : '') + legend();

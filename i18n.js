@@ -10,8 +10,9 @@
 var KEY = 'zhai-lang', lang = 'zh';
 try {
   var q = new URLSearchParams(location.search).get('lang');
-  if (q === 'en' || q === 'zh' || q === 'fr') { lang = q; localStorage.setItem(KEY, q); }
-  else { var s = localStorage.getItem(KEY); if (s === 'en' || s === 'zh' || s === 'fr') lang = s; }
+  // 隱私窗口等環境下 localStorage 可能不可用，讀寫都包在 try 裏
+  if (q === 'en' || q === 'zh' || q === 'fr') { lang = q; try { localStorage.setItem(KEY, q); } catch (e) {} }
+  else { var s = null; try { s = localStorage.getItem(KEY); } catch (e) {} if (s === 'en' || s === 'zh' || s === 'fr') lang = s; }
 } catch (e) {}
 
 var PY = {}, TITLE = {};

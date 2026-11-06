@@ -2320,6 +2320,12 @@ function viewEdVersion(i, jump) {
 }
 
 // ---------- 環形曆：工作簿中的一個版本 ----------
+// 從環形曆打開齋期日曆：帶上當前版本（專門單獨齋期的盤對應其版本頁），日曆裏已選的版本照舊並排
+function calLink(v) {
+  var no = v.solo ? String(Math.floor(+v.no / 10)) : String(v.no);
+  var eds = [no].concat((CAL.vs || []).map(function (i) { return String(ED.versions[i].no); }).filter(function (n) { return n !== no; })).slice(0, 4);
+  return '#calendar?eds=' + eds.join(',');
+}
 function ringVersion(no) {
   var def = ED.versions.filter(function (v) { return +v.no === 6; })[0] || EVS[0];   // 默認版本：1827 合安堂本
   return (no && ED.versions.filter(function (v) { return !v.solo; }).concat(ED.solo || []).filter(function (v) { return +v.no === +no; })[0]) || def;
@@ -2348,6 +2354,7 @@ function viewRing(no) {
   var pick = document.createElement('div'); pick.className = 'controls ringpick';
   pick.innerHTML = '<label>' + L('齋曆版本：', 'Calendar edition: ') + '<select id="rv">' + EVS.filter(function (x) { return !x.solo; }).map(ropt).join('') +
     ((ED.solo || []).length ? '<optgroup label="' + L('專門單獨齋期', 'Standalone fast calendars') + '">' + ED.solo.map(ropt).join('') + '</optgroup>' : '') + '</select></label>' +
+    ' <a class="small rcal" href="' + calLink(v) + '">' + L('按月並排看 →', 'Compare side by side by month →', 'Comparer côte à côte par mois →') + '</a>' +
     (v.solo ? '<p class="small muted" style="margin:6px 0 0;flex-basis:100%">' + L('只記這一種齋期，不是一年完整的齋期表。', 'This records one particular fast only, not a full-year calendar.') +
       (v.second ? L('據 Goossaert 2024 轉述，未見原書；「每月」的日期排進十二個月。', ' Taken from Goossaert 2024, the book itself not seen; monthly dates are repeated across the twelve months.') : '') +
       ((ED.soloUndated || []).length ? L('《' + ED.soloUndated.join('》《') + '》的齋期文中未列具體日期，不能排入環形曆。', ' Goossaert gives no specific dates for the fasts in the ' + ED.soloUndated.map(function (b) { return '<i>' + NT(b) + '</i>'; }).join(', ') + ', so they cannot be placed here.') : '') + '</p>' : '');

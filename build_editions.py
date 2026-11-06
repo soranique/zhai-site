@@ -147,7 +147,7 @@ def main():
             'title': clean(r[3]), 'type': clean(r[4]), 'date': clean(r[5]), 'src': clean(r[6]),
             'year': int(yr.group(1)) if yr else None, 'yuxia': '玉匣記' in sheet,
             'no': clean(r[0]), 'noText': bool(re.search(r'[識识]典', clean(r[6]))),
-            'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：环形历里另列（见 build_rings），概览时间线不列
+            'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：环形历里另列（见 build_rings）
         }
         if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
             v.update(when='彙集', era='據 Goossaert 2024', short='專門單獨齋期彙集', pub='')

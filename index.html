@@ -542,11 +542,11 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="fr.js?v=6a5ee078"></script>
 <script src="i18n.js?v=8193db02"></script>
 <script src="data.js?v=c14ec032"></script>
-<script src="editions-data.js?v=2ee09c7b"></script>
-<script src="kinship-data.js?v=dc738fec"></script>
+<script src="editions-data.js?v=83d93381"></script>
+<script src="kinship-data.js?v=b49c30f0"></script>
 <script src="spread-data.js?v=7d06d645"></script>
 <script src="search-data.js?v=29fb70ad"></script>
-<script src="ring.js?v=fee60a59"></script>
+<script src="ring.js?v=711b490d"></script>
 <script>
 (function () {
 'use strict';
@@ -968,10 +968,10 @@ function timeBarSync() {
 var CMP = { main: true, undated: false, a: 1, b: 9 };
 var KCN = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
 var KMON = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12, '冬': 11, '臘': 12, '臘': 12 };
-var KDAY = '(?:初[一二三四五六七八九十]|廿[一二三四五六七八九]?|卅|三十|二十[一二三四五六七八九]?|十[一二三四五六七八九]?|朔|望|晦|元日)';
+var KDAY = '(?:初日|初[一二三四五六七八九十]|廿[一二三四五六七八九]?|卅|三十|二十[一二三四五六七八九]?|十[一二三四五六七八九]?|朔|望|晦|元日)';
 function kDnum(s) {
   s = s.replace(/日/g, '');
-  if (s === '朔' || s === '元' || s === '初日') return 1;
+  if (s === '朔' || s === '元' || s === '初') return 1;
   if (s === '望') return 15;
   if (s === '晦' || s === '卅' || s === '三十') return 30;
   if (s[0] === '初') return s.slice(1) === '十' ? 10 : KCN[s.slice(1)];
@@ -2417,7 +2417,8 @@ var SHARE = {
 };
 var RING_SET = null, FIT_ZOOM = 1;
 try { FIT_ZOOM = +localStorage.getItem('zhai-fitzoom') || 1; } catch (e) {}
-function qsParse(s) { var o = {}; (s || '').split('&').forEach(function (kv) { if (!kv) return; var i = kv.indexOf('='); o[decodeURIComponent(i < 0 ? kv : kv.slice(0, i))] = i < 0 ? '1' : decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' ')); }); return o; }
+function safeDecode(s) { try { return decodeURIComponent(s); } catch (e) { return s; } }
+function qsParse(s) { var o = {}; (s || '').split('&').forEach(function (kv) { if (!kv) return; var i = kv.indexOf('='); o[safeDecode(i < 0 ? kv : kv.slice(0, i))] = i < 0 ? '1' : safeDecode(kv.slice(i + 1).replace(/\+/g, ' ')); }); return o; }
 function qsBuild(o) { return Object.keys(o).filter(function (k) { return o[k] !== '' && o[k] != null; }).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(o[k]).replace(/%2F/g, '/').replace(/%2C/g, ','); }).join('&'); }
 // 讀入網址裏的狀態（route 調用）；返回之後要做的動作（打開「這一天」、播放等）
 function shareApply(v, o) {
@@ -2541,7 +2542,7 @@ function cardKey(el) {
   if ((m = /^#g\/(ZS\d+)$/.exec(h))) return m[1];
   if ((m = /^#ev\/(\d+)\/([\d-]+)$/.exec(h))) return m[2];
   if ((m = /^#ev\/(\d+)$/.exec(h))) return 'ev:' + m[1];
-  if ((m = /^#ed\/(.+)$/.exec(h))) return 'k:' + decodeURIComponent(m[1]);
+  if ((m = /^#ed\/(.+)$/.exec(h))) return 'k:' + safeDecode(m[1]);
   return '';
 }
 function crow(lab, val) { return val ? '<div><span class="muted">' + lab + '</span>' + val + '</div>' : ''; }
@@ -2703,9 +2704,9 @@ function route(ev) {
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === navV); });
   menuLabel(); menuOpen(false);
   if (v === 'g') viewGod(hsh.split('/')[1], hsh.split('/')[2]);
-  else if (v === 'fit') { if (hsh.split('/')[1]) FIT.q = decodeURIComponent(hsh.split('/')[1]); viewFit(); }
+  else if (v === 'fit') { if (hsh.split('/')[1]) FIT.q = safeDecode(hsh.split('/')[1]); viewFit(); }
   else if (v === 'editions') viewEditions();
-  else if (v === 'ed') viewEdGod(decodeURIComponent(hsh.slice(3)));
+  else if (v === 'ed') viewEdGod(safeDecode(hsh.slice(3)));
   else if (v === 'ev') viewEdVersion(hsh.split('/')[1], hsh.split('/')[2]);
   else if (v === 'calendar') viewCalendar();
   else if (v === 'gods') viewGods();

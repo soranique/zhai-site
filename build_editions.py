@@ -38,7 +38,7 @@ def month_no(s):
 
 def day_no(s):
     s = s.strip()
-    if s in ('元日', '朔', '朔日'):
+    if s in ('元日', '初日', '朔', '朔日'):
         return 1
     if s in ('望', '望日'):
         return 15

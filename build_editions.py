@@ -31,6 +31,9 @@ def clean(v):
     return '' if v is None else str(v).strip()
 
 
+SOURCE_NAME = '玉匣記版本對比'   # 网站显示的数据来源名称，与工作簿文件名无关
+
+
 def month_no(s):
     m = re.match(r'(閏|闰)?(十一|十二|[正一二三四五六七八九十冬臘腊])月', s)
     return MONTHS[m.group(2)] if m else None
@@ -195,7 +198,7 @@ def main():
 
     with open(a.out, 'w', encoding='utf-8') as f:
         f.write('// 由 build_editions.py 自动生成，请勿手改\nwindow.ZHAI_ED = ')
-        json.dump({'source': a.xlsx.split('/')[-1], 'versions': versions, 'entries': entries, 'solo': solo,
+        json.dump({'source': SOURCE_NAME, 'versions': versions, 'entries': entries, 'solo': solo,
                    'soloUndated': solo_undated, 'norms': norms, 'cmap': cmap,
                    'py': py, 'pyTitle': py_title},
                   f, ensure_ascii=False, separators=(',', ':'))

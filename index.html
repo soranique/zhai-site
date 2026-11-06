@@ -280,6 +280,7 @@ svg.venn circle { fill-opacity: .2; stroke-width: 2; }
 .vn-n { font-size: 15px; font-weight: 600; fill: var(--ink); pointer-events: none; } .vn-n.on { font-size: 18px; font-weight: 700; }
 .vn-d { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 2px; }
 .vn-t tr.on td { background: var(--surface-2); font-weight: 600; }
+#erows { max-width: 100%; width: 100%; } .controls label:has(#erows) { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; white-space: nowrap; } @media (min-width: 701px) { #erows { width: auto; } }
 .kcmp-p { margin: 0 0 8px; }
 .kcmp { font: inherit; font-size: 14px; padding: 6px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; cursor: pointer; }
 .kcmp:hover { background: var(--accent); color: var(--page); }
@@ -510,7 +511,6 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
     <button id="menu" type="button" class="hbtn" aria-expanded="false" aria-controls="nav"></button>
     <nav id="nav">
       <a href="#ring" data-v="ring" data-en="Ring calendar">環形曆</a>
-      <a href="#matrix" data-v="matrix" data-en="Editions">版本對照</a>
       <a href="#editions" data-v="editions" data-en="Collated editions">諸本對照</a>
       <a href="#calendar" data-v="calendar" data-en="Calendar">齋期日曆</a>
       <a href="#fit" data-v="fit" data-en="Practice × calendar">實踐與齋曆</a>
@@ -533,7 +533,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=f9697e83"></script>
-<script src="fr.js?v=4461dee1"></script>
+<script src="fr.js?v=47cc7cc5"></script>
 <script src="i18n.js?v=4bafe874"></script>
 <script src="data.js?v=c14ec032"></script>
 <script src="editions-data.js?v=2ee09c7b"></script>
@@ -690,7 +690,7 @@ function focusBar() {
   el.hidden = false;
   el.innerHTML = '<div class="wrap">' + (FOCUS ? L('神明聚焦：', 'Focused deity: ') + '<a href="' + focusHref() + '"><b>' + focusName() + '</b></a>' +
     (FOCUS.g ? ' <span class="muted small">' + esc(FOCUS.g) + '</span>' : '') +
-    '<span class="muted small">' + L('　各頁只突出這位神：環形曆、熱力圖、諸本對照、版本線索圖、版本對照、齋期日曆', '　Every page highlights this deity: ring, heat map, collation, map, editions, calendar') + '</span>' +
+    '<span class="muted small">' + L('　各頁只突出這位神：環形曆、熱力圖、諸本對照、版本線索圖、齋期日曆', '　Every page highlights this deity: ring, heat map, collation, map, calendar') + '</span>' +
     ' <button type="button" class="linkbtn" data-unfocus>' + L('取消', 'Clear') + '</button>' : '') +
     (tOn ? '<span class="fb-time">' + L('年代：', 'Years: ') + '<b>' + esc(timeLabel()) + '</b><span class="muted small">' + L('（實踐與齋曆、版本線索圖、這一天）', ' (practice × calendar, map, this day)') + '</span> <button type="button" class="linkbtn" data-untime>' + L('取消', 'Clear') + '</button></span>' : '') + '</div>';
 }
@@ -1179,13 +1179,14 @@ function hideTip(force) { if (TOUCH && !force && tip.classList.contains('card'))
 
 function yt(s) { return s ? '<span class="yt">' + esc(s) + '</span>' : ''; }   // 史料原文（楷體）
 function tile(n, l, s) { return '<div class="card tile"><div class="n">' + n + '</div><div class="l">' + l + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
-// ---------- 視圖：版本對照矩陣 ----------
+// ---------- 諸本對照：持齋數據庫神明 × 版本 ----------
 var M = { q: '', type: '', only: 'any', sort: 'prac' };
-function viewMatrix() {
+function edDeityPanel(box) {   // 諸本對照「每行一個數據庫神明」：原「版本對照」頁
   var types = {}; D.deities.forEach(function (g) { types[g.type || '未分類'] = 1; });
-  var h = L('<h1>版本對照</h1><p class="lede">每行一個神明（持齋研究數據庫），每列一個齋曆版本（版本對比工作簿，按年代）。格中是該神在該版本中的第一個日期（農曆），×n 爲條數，○ 爲有條目但不是具體月日；灰底列是《玉匣記》系統以外的文本。右側三列是敘事史料的條數（實踐記錄括號內爲言及持齋的條數）。神明與齋曆條目暫按名稱對應，標「待覈」者尚未覈對。點一行看神明檔案。</p>',
-      '<h1>Editions compared</h1><p class="lede">Each row is a deity of the fasting database; each column an edition of the calendars (comparison workbook, in chronological order). A cell gives the deity’s first (lunar) date in that edition; ×n is the number of entries, ○ an entry without a specific month and day; shaded columns are texts outside the <i>Yuxiaji</i> line. The three right-hand columns count narrative sources (in brackets: practice records that mention fasting). Deities are provisionally matched to calendar entries by name; “to verify” marks matches not yet checked. Click a row for the deity’s profile.</p>') +
+  var h = L('<p class="lede small">每行一個神明（持齋研究數據庫），每列一個齋曆版本（版本對比工作簿，按年代）。格中是該神在該版本中的第一個日期（農曆），×n 爲條數，○ 爲有條目但不是具體月日；灰底列是《玉匣記》系統以外的文本。右側三列是敘事史料的條數（實踐記錄括號內爲言及持齋的條數）。神明與齋曆條目暫按名稱對應，標「待覈」者尚未覈對。點一行看神明檔案。</p>',
+      '<p class="lede small">Each row is a deity of the fasting database; each column an edition of the calendars (comparison workbook, in chronological order). A cell gives the deity’s first (lunar) date in that edition; ×n is the number of entries, ○ an entry without a specific month and day; shaded columns are texts outside the <i>Yuxiaji</i> line. The three right-hand columns count narrative sources (in brackets: practice records that mention fasting). Deities are provisionally matched to calendar entries by name; “to verify” marks matches not yet checked. Click a row for the deity’s profile.</p>') +
     '<div class="controls">' +
+    '<select id="mf">' + [['all', '全部文本', 'all texts'], ['yx', '只看《玉匣記》系統', 'Yuxiaji line only']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.fam === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<input type="search" id="mq" placeholder="' + L('搜神名或異名', 'Search name or alias (Chinese or pinyin)') + '" value="' + esc(M.q) + '">' +
     '<select id="mt"><option value="">' + L('全部類型', 'All types') + '</option>' + Object.keys(types).map(function (t) { return '<option value="' + esc(t) + '"' + (M.type === t ? ' selected' : '') + '>' + esc(C(t)) + '</option>'; }).join('') + '</select>' +
     '<select id="mo">' +
@@ -1193,8 +1194,8 @@ function viewMatrix() {
       .map(function (o) { return '<option value="' + o[0] + '"' + (M.only === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') +
     '</select><span class="muted small" id="mcount"></span></div>' +
     '<div class="scroll"><table class="edm" id="mtab"></table></div>';
-  app.innerHTML = h;
-  putFocusNote(L('高亮它的那一行', 'its row is highlighted'));
+  box.innerHTML = h;
+  var cols = EVS.filter(function (v) { return EDF.fam === 'all' || v.yuxia; });
   var fill = function () {
     var q = M.q.trim().toLowerCase();
     var rows = D.deities.filter(function (g) {
@@ -1218,12 +1219,12 @@ function viewMatrix() {
     rows.sort(function (a, b) { var ka = key(a), kb = key(b); return ka < kb ? -1 : ka > kb ? 1 : (a.id < b.id ? -1 : 1); });
     document.getElementById('mcount').textContent = L(rows.length + ' 個神明', rows.length + ' deities', rows.length + ' divinités');
     var head = '<thead><tr><th class="edn sortable" data-s="name">' + L('神明', 'Deity') + '</th><th>' + L('類型', 'Type') + '</th>' +
-      EVS.map(function (v) { return edHead(v).replace('<th class="edc', '<th data-s="v' + v.i + '" class="sortable edc'); }).join('') +
+      cols.map(function (v) { return edHead(v).replace('<th class="edc', '<th data-s="v' + v.i + '" class="sortable edc'); }).join('') +
       '<th class="sortable num" data-s="prac">' + L('實踐', 'Practice') + '</th><th class="sortable num" data-s="sb">' + L('申報', '<i>Shenbao</i>') + '</th><th class="sortable num" data-s="fs">' + L('風俗志', 'Customs') + '</th></tr></thead>';
     var body = rows.map(function (g) {
       var b = byG[g.id], fp = fastPrac(b).length;
       return '<tr class="row' + (FOCUS && FOCUS.g === g.id ? ' focus' : '') + '" data-g="' + g.id + '"><td class="edn"><b>' + N(g.name) + '</b>' + pendTag(b) + (fp && !b.ed[V0] ? '<br><span class="flag">' + L('道藏本未收', 'not in Daozang ed.') + '</span>' : '') + '</td><td class="small muted">' + esc(C(g.type)) + '</td>' +
-        EVS.map(function (v) { return edCell(v, b.ed[v.i]); }).join('') +
+        cols.map(function (v) { return edCell(v, b.ed[v.i], edJudged(v) && (b.ed[v.i] || []).some(edMinor) ? ' dv' : ''); }).join('') +
         '<td class="num">' + (b.prac.length ? b.prac.length + ' <span class="muted">(' + fp + ')</span>' : '<span class="cell-empty">0</span>') + '</td>' +
         '<td class="num">' + (b.sb.length || '<span class="cell-empty">0</span>') + '</td>' +
         '<td class="num">' + (b.fs.length || '<span class="cell-empty">0</span>') + '</td></tr>';
@@ -1233,6 +1234,7 @@ function viewMatrix() {
     document.querySelectorAll('#mtab th.sortable').forEach(function (th) { th.onclick = function (e) { e.preventDefault(); M.sort = th.getAttribute('data-s'); fill(); }; });
   };
   fill();
+  document.getElementById('mf').onchange = function (e) { EDF.fam = e.target.value; edDeityPanel(box); decorate(); };
   document.getElementById('mq').oninput = function (e) { M.q = e.target.value; fill(); };
   document.getElementById('mt').onchange = function (e) { M.type = e.target.value; fill(); };
   document.getElementById('mo').onchange = function (e) { M.only = e.target.value; fill(); };
@@ -2164,7 +2166,7 @@ function edMinorNote(e) {
 function edDate(e) { return e.m && e.d ? (I.en() ? e.m + '/' + e.d : esc(e.mo + e.dy)) : esc(DT((e.mo || '') + (e.dy || '')) || '—'); }
 function edV(v, long) { return (long ? N(v.short) : esc(v.short)) + (v.pub && v.pub !== '待填' ? ' <span class="muted small">' + esc(v.pub) + '</span>' : ''); }
 function edWhen(v) { return esc(I.en() ? v.when.replace('暫定', L('', ' (prov.)', ' (prov.)')).replace('待覈', L('', ' (to verify)', ' (à vérifier)')).replace('前後', L('', ' approx.', ' env.')).replace('待填', L('', 'n.d.', 's. d.')) : v.when); }
-var EDF = { q: '', min: '2', fam: 'all', sort: 'nv', limit: 150 };
+var EDF = { rows: 'k', q: '', min: '2', fam: 'all', sort: 'nv', limit: 150 };
 function viewEditions() {
   var X = edIndex();
   if (!X) { app.innerHTML = '<p>' + L('缺少 editions-data.js。', 'editions-data.js is missing.') + '</p>'; return; }
@@ -2179,15 +2181,17 @@ function viewEditions() {
       es.forEach(function (e) { if (e.k) nm[e.k] = 1; });
       return '<tr class="row" data-ev="' + v.i + '"><td>' + edWhen(v) + (v.era ? '<br><span class="muted small">' + esc(v.era) + '</span>' : '') + '</td><td><b>' + N(v.short) + '</b>' + (v.yuxia ? '' : ' <span class="tag">' + L('非玉匣記系統', 'not Yuxiaji line') + '</span>') + '<br><span class="muted small">' + esc(v.title) + '</span></td><td class="small">' + esc(C(v.type)) + '</td><td class="num">' + es.length + '</td><td class="num">' + Object.keys(nm).length + '</td><td class="num">' + es.filter(function (e) { return e.q; }).length + '</td><td class="small muted">' + esc(v.src.length > 90 ? v.src.slice(0, 90) + '…' : v.src) + '</td></tr>';
     }).join('') + '</tbody></table></div><p class="small muted">' + L('點一行看該版本的全部條目。', 'Click a row for all entries of that edition.') + '</p>';
-  h += '<h2>' + L('神明 × 版本', 'Deities × editions') + '</h2><p class="lede small">' + L('格中是該神在該版本中的第一個日期（農曆），×n 表示該版本有 n 條，○ 表示有條目但日期不是具體月日（如「每月」「六十甲子日」）。<span style="color:var(--accent)">紅字</span>表示該格含「少數日期」：在已獲完整文本的版本中，持此日期的不到該神見證的一半（該神須見於 ≥3 個見證；1882、1891 兩本算一個見證；一本內同類日期超過 3 個的多日期神不判），與「<a href="#kin">版本親疏</a>」及工作簿「日期異文」頁同一算法；格中只顯示第一個日期，紅字可能來自同一格的其他條目，懸停可見。未納入比較的版本不標紅。灰底的列是《玉匣記》系統以外的文本。點一行看各版本的原文。',
+  h += '<h2>' + L('神明 × 版本', 'Deities × editions', 'Divinités × éditions') + '</h2><div class="controls"><label>' + L('每行：', 'Each row: ', 'Chaque ligne : ') + '<select id="erows"><option value="k"' + (EDF.rows === 'k' ? ' selected' : '') + '>' + L('工作簿規範名（' + X.list.length + '，全部神名）', 'workbook normalized name (' + X.list.length + ', all names)', 'nom normalisé du classeur (' + X.list.length + ', tous les noms)') + '</option><option value="zs"' + (EDF.rows === 'zs' ? ' selected' : '') + '>' + L('持齋數據庫神明（' + D.deities.length + '，並列實踐、申報、風俗志）', 'deity of the fasting database (' + D.deities.length + ', with practice and press counts)', 'divinité de la base (' + D.deities.length + ', avec pratiques et presse)') + '</option></select></label></div><div id="ezs" hidden></div><div id="ekn">' +
+    '<p class="lede small">' + L('格中是該神在該版本中的第一個日期（農曆），×n 表示該版本有 n 條，○ 表示有條目但日期不是具體月日（如「每月」「六十甲子日」）。<span style="color:var(--accent)">紅字</span>表示該格含「少數日期」：在已獲完整文本的版本中，持此日期的不到該神見證的一半（該神須見於 ≥3 個見證；1882、1891 兩本算一個見證；一本內同類日期超過 3 個的多日期神不判），與「<a href="#kin">版本親疏</a>」及工作簿「日期異文」頁同一算法；格中只顯示第一個日期，紅字可能來自同一格的其他條目，懸停可見。未納入比較的版本不標紅。灰底的列是《玉匣記》系統以外的文本。點一行看各版本的原文。',
       'Each cell gives the first (lunar) date of the deity in that edition; ×n means n entries in that edition; ○ means an entry whose date is not a specific month and day (e.g. “every month”, the sixty jiazi days). <span style="color:var(--accent)">Red</span> marks a cell containing a “minority date”: among the editions with a complete text, fewer than half of the deity’s witnesses give that date (the deity must appear in ≥3 witnesses; the 1882 and 1891 editions count as one witness; deities with more than 3 dates of one type in an edition are not judged). This is the same rule as on the <a href="#kin">Edition kinship</a> page and the workbook sheet 日期異文. Only the first date is shown, so the red may come from another entry in the cell (see hover). Editions outside the comparison are never marked. Shaded columns are texts outside the <i>Yuxiaji</i> line. Click a row for the original entries.') + '</p>' +
     '<div class="controls"><input type="search" id="eq" placeholder="' + L('搜神名（漢字或拼音）', 'Search name (Chinese or pinyin)') + '" value="' + esc(EDF.q) + '">' +
     '<select id="emin">' + [['1', '全部', 'all'], ['2', '見於 ≥2 個版本', 'in ≥2 editions'], ['5', '見於 ≥5 個版本', 'in ≥5 editions'], ['10', '見於 ≥10 個版本', 'in ≥10 editions']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.min === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<select id="efam">' + [['all', '全部文本', 'all texts'], ['yx', '只看《玉匣記》系統', 'Yuxiaji line only']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.fam === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<select id="esort">' + [['nv', '按出現版本數', 'by number of editions'], ['date', '按日期', 'by date'], ['name', '按名稱', 'by name']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.sort === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
-    '<span class="muted small" id="ecount"></span></div><div class="scroll"><table class="edm" id="edm"></table></div><p><button type="button" id="emore" class="morebtn"></button></p>';
+    '<span class="muted small" id="ecount"></span></div><div class="scroll"><table class="edm" id="edm"></table></div><p><button type="button" id="emore" class="morebtn"></button></p></div>';
   app.innerHTML = h;
-  putFocusNote(L('它的行置頂並高亮', 'its rows are moved to the top and highlighted'));
+  putFocusNote(EDF.rows === 'zs' ? L('高亮它的那一行', 'its row is highlighted') : L('它的行置頂並高亮', 'its rows are moved to the top and highlighted'));
+  document.getElementById('erows').onchange = function (e) { EDF.rows = e.target.value; var y = window.scrollY; viewEditions(); decorate(); window.scrollTo(0, y); };
   app.querySelectorAll('tr[data-ev]').forEach(function (tr) { tr.onclick = function () { location.hash = 'ev/' + tr.getAttribute('data-ev'); }; });
   var cols = function () { return X.order.filter(function (v) { return EDF.fam === 'all' || v.yuxia; }); };
   var fill = function () {
@@ -2228,6 +2232,7 @@ function viewEditions() {
   document.getElementById('esort').onchange = function (e) { EDF.sort = e.target.value; fill(); };
   document.getElementById('emore').onclick = function () { EDF.limit += 150; fill(); };
   document.getElementById('edm').onclick = function (e) { var tr = e.target.closest('tr[data-k]'); if (tr && !e.target.closest('a')) location.hash = 'ed/' + encodeURIComponent(tr.getAttribute('data-k')); };
+  if (EDF.rows === 'zs') { document.getElementById('ekn').hidden = true; var zb = document.getElementById('ezs'); zb.hidden = false; edDeityPanel(zb); }
 }
 function edEntryRow(e, withV) {
   var v = ED.versions[e.v];
@@ -2343,8 +2348,12 @@ var SHARE = {
     set: function (o) { CAL.weak = !!o.weak; CAL.vs = o.eds ? o.eds.split(',').map(function (n) { var v = ED.versions.filter(function (x) { return +x.no === +n; })[0]; return v ? v.i : -1; }).filter(function (i) { return i >= 0; }).slice(0, 4) : null; if (CAL.vs && !CAL.vs.length) CAL.vs = null; }
   },
   editions: {
-    get: function () { return { q: EDF.q, min: EDF.min !== '2' ? EDF.min : '', fam: EDF.fam !== 'all' ? EDF.fam : '', sort: EDF.sort !== 'nv' ? EDF.sort : '' }; },
-    set: function (o) { EDF.q = o.q || ''; EDF.min = o.min || '2'; EDF.fam = o.fam || 'all'; EDF.sort = o.sort || 'nv'; EDF.limit = 150; }
+    get: function () {
+      var o = { fam: EDF.fam !== 'all' ? EDF.fam : '' };
+      if (EDF.rows === 'zs') { o.rows = 'zs'; o.mq = M.q; o.type = M.type; o.only = M.only !== 'any' ? M.only : ''; o.msort = M.sort !== 'prac' ? M.sort : ''; return o; }
+      o.q = EDF.q; o.min = EDF.min !== '2' ? EDF.min : ''; o.sort = EDF.sort !== 'nv' ? EDF.sort : ''; return o;
+    },
+    set: function (o) { EDF.rows = o.rows === 'zs' ? 'zs' : 'k'; if (o.rows === 'zs') { M.q = o.mq || ''; M.type = o.type || ''; M.only = o.only || 'any'; M.sort = o.msort || 'prac'; } EDF.q = o.q || ''; EDF.min = o.min || '2'; EDF.fam = o.fam || 'all'; EDF.sort = o.sort || 'nv'; EDF.limit = 150; }
   },
   spread: {
     get: function () { return { off: Object.keys(SP.on).filter(function (k) { return !SP.on[k]; }).join(','), modern: SP.modern ? 1 : '' }; },
@@ -2637,6 +2646,7 @@ function route(ev) {
   var v = hsh.split('/')[0];
   if (qs) { after = shareApply(v, qs); ev = null; }
   if (v === 'overview') { history.replaceState(null, '', location.pathname + location.search + '#ring'); hsh = v = 'ring'; }   // 舊網址 #overview：概覽已併入環形曆
+  if (v === 'matrix') { history.replaceState(null, '', location.pathname + location.search + '#editions'); hsh = v = 'editions'; EDF.rows = 'zs'; }   // 舊網址 #matrix：版本對照已併入諸本對照
   if (v === 'cmp') { history.replaceState(null, '', location.pathname + location.search + '#kin' + hsh.slice(3)); hsh = 'kin' + hsh.slice(3); v = 'kin'; }   // 舊網址 #cmp/甲/乙
   var ab = v === 'kin' ? hsh.split('/').slice(1) : [], kinFast = !!(ev && ev.type === 'hashchange') && v === 'kin' && LAST_V === 'kin', keepY = false;
   LAST_V = v;
@@ -2647,7 +2657,6 @@ function route(ev) {
   menuLabel(); menuOpen(false);
   if (v === 'g') viewGod(hsh.split('/')[1], hsh.split('/')[2]);
   else if (v === 'fit') { if (hsh.split('/')[1]) FIT.q = decodeURIComponent(hsh.split('/')[1]); viewFit(); }
-  else if (v === 'matrix') viewMatrix();
   else if (v === 'editions') viewEditions();
   else if (v === 'ed') viewEdGod(decodeURIComponent(hsh.slice(3)));
   else if (v === 'ev') viewEdVersion(hsh.split('/')[1], hsh.split('/')[2]);

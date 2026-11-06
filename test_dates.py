@@ -22,4 +22,5 @@ for label, expected in [('初日', 1), ('初一日', 1), ('元日', 1), ('初十
 assert kin['days_of']('九月', '初一日至初九日；初十日') == (9, set(range(1, 11)))
 assert kin['strict_day']('九月', '初一日至初九日；初十日') is None
 assert ed['day_no']('不詳') is None
-print('PASS: 23 Python parser assertions; single-day and interval methods remain distinct')
+assert ed['SOURCE_NAME'] == kin['SOURCE_NAME']
+print('PASS: 24 Python parser assertions; single-day and interval methods remain distinct')

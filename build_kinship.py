@@ -23,6 +23,7 @@ from itertools import combinations
 import openpyxl
 
 # ---- 设定（随研究改） ----
+SOURCE_NAME = '玉匣記版本對比'   # 网站显示的数据来源名称，与工作簿文件名无关
 INCL = [12, 13, 1, 14, 3, 15, 4, 16, 17, 5, 22, 20, 6, 8, 9, 10, 21, 23, 11, 18]   # 版本目录编号：已获完整文本，按年代
 EXCL = {2: '无逐月神诞表，只有六十甲子日', 7: '两处缺页', 19: '无具体月日的神诞', 24: '只有灶君、白衣两种专门单独斋期',
         25: '专门单独斋期汇集，据 Goossaert 2024 转述，未见原书'}
@@ -105,8 +106,11 @@ def main(path):
     E = defaultdict(lambda: defaultdict(set))   # (规范名, 类型) → 版本 → {(月, 日)}
     J = defaultdict(lambda: defaultdict(set))   # 同上，但只含单一月日（判定通行、少数日期用，与「日期异文」同）
     EID = defaultdict(list)                     # (规范名, 类型, 版本, 月, 日) → [条目ID]
+    OMIT = []                                   # 条目ID：网站有神名、但不计入比较的条目（没有建議規範名，或在 SKIP 里）
     for no in INCL:
         for r in wb[vers[no]].iter_rows(min_row=2, values_only=True):
+            if r[16] and r[9] in (None, '正文') and (r[15] or r[4]) and (not r[15] or r[12] in SKIP.get(no, ())):
+                OMIT.append(r[16])
             if not r[15] or not r[16] or r[9] not in (None, '正文'):
                 continue
             if r[12] in SKIP.get(no, ()):
@@ -170,7 +174,7 @@ def main(path):
         if BASE in (p['a'], p['b']):
             ret[p['b'] if p['a'] == BASE else p['a']] = p['ca'] if p['a'] == BASE else p['cb']
     excl = ['%s（编号%d）：%s' % (' '.join((vers[k].split('_') + [''])[i] for i in (0, 2)).strip(), k, why) for k, why in EXCL.items() if k in vers]
-    out = dict(source=path.split('/')[-1], nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
+    out = dict(source=SOURCE_NAME, omit=OMIT, nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
                incl=INCL, minor=minor_e, common=common)
     with open('kinship-data.js', 'w', encoding='utf-8') as f:
         f.write('// 由 build_kinship.py 自动生成，请勿手改\nwindow.ZHAI_KIN = ')

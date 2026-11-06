@@ -966,6 +966,7 @@ function timeBarSync() {
 // ---------- 兩本細看：「版本親疏」頁上的浮窗（網址 #kin/甲/乙） ----------
 // 比較單位與 build_kinship.py 相同：建議規範名＋編碼日期類型＋月＋日；「初一至初九」等拆成逐日；位置空白者算正文
 var CMP = { main: true, undated: false, a: 1, b: 9 };
+var KOMIT = {}; ((window.ZHAI_KIN && window.ZHAI_KIN.omit) || []).forEach(function (id) { KOMIT[id] = 1; });   // 不計入「版本親疏」比較的條目，由 build_kinship.py 給出
 var KCN = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
 var KMON = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12, '冬': 11, '臘': 12, '臘': 12 };
 var KDAY = '(?:初日|初[一二三四五六七八九十]|廿[一二三四五六七八九]?|卅|三十|二十[一二三四五六七八九]?|十[一二三四五六七八九]?|朔|望|晦|元日)';
@@ -1029,7 +1030,7 @@ function renderCmp(a, b) {
   var want = '#kin/' + A.no + '/' + B.no;
   if (location.hash !== want) history.replaceState(null, '', location.pathname + location.search + want);
   var opt = function (sel) { return EVS.map(function (v) { return '<option value="' + esc(v.no) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v.when) + ' ' + esc(I.en() ? NT(v.short) : v.short) + '</option>'; }).join(''); };
-  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && e.id && (!CMP.main || !e.p || e.p === '正文'); }); };
+  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && e.id && !KOMIT[e.id] && (!CMP.main || !e.p || e.p === '正文'); }); };
   var EA = take(A), EB = take(B);
   var ident = function (e) { return e.k + '|' + (e.c || '其他'); };
   // 每個比較單位：{u, e, m, d}；一條「初一至初九」的條目拆成九個單位
@@ -1661,7 +1662,7 @@ var VN_C = ['var(--cat1)', 'var(--cat4)', 'var(--cat3)'];
 function vennUnits(v, unit) {
   var U = {};
   ED.entries.forEach(function (e) {
-    if (e.v !== v.i || !e.k || (e.p && e.p !== '正文' && e.p !== '專門單獨齋期')) return;
+    if (e.v !== v.i || !e.k || KOMIT[e.id] || (e.p && e.p !== '正文' && e.p !== '專門單獨齋期')) return;
     var md = kDays(e);
     if (unit === 'god') { (U[e.k] = U[e.k] || { k: e.k, es: [] }).es.push(e); return; }
     if (!md) return;

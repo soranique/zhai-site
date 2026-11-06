@@ -1,10 +1,6 @@
 // 演示模式的默認步驟：每步一個畫面（網址，含篩選狀態）和一句說明（中／英／法）
 // 網址可在網站上用「複製鏈接」得到（只取 # 之後的部分）；也可以在演示條上「編輯步驟」→「導出」後整段貼回這裏
 window.ZHAI_DEMO = [
- { "url": "#overview?v=1",
-   "zh": "八十四位神、二十個齋曆版本、兩百多條實踐記錄：規範文本與敘事史料放在一起看。",
-   "en": "Eighty-four deities, twenty calendar editions, over two hundred practice records: normative texts read beside narrative sources.",
-   "fr": "Quatre-vingt-quatre divinités, vingt éditions de calendriers, plus de deux cents témoignages de pratique : textes normatifs et sources narratives lus ensemble." },
  { "url": "#ring?v=1",
    "zh": "一個版本的全部神聖日排成一個農曆年：十二個月是十二個扇區，每格一天。",
    "en": "All the sacred days of one edition laid out as a lunar year: twelve months as twelve sectors, one cell per day.",

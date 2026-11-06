@@ -558,7 +558,6 @@ window.ZHAI_FR = {
   "Korean peninsula": "Péninsule coréenne",
   "Akō (Japan)": "Akō (Japon)",
   "Theme": "Thème",
-  "Overview": "Vue d’ensemble",
   "Editions": "Éditions comparées",
   "Collated editions": "Collation des éditions",
   "Calendar": "Calendrier",

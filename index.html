@@ -69,10 +69,6 @@ a:hover { color: var(--accent); text-decoration-color: currentColor; }
 
 .yt, .q, .zr .zr-nm { font-family: var(--font-src); }   /* 史料原文：楷體；研究者的說明爲黑體 */
 .yt { color: var(--ink); }
-.ovhero { margin: 8px 0 28px; } .ovhero .zr-hint, .ovhero .zr-steps { display: none; } .ovhero .zr-sec { margin: 0; }
-.ovhero { display: flex; flex-direction: column; } .ovhero figcaption { order: -1; color: var(--ink-2); font-size: 15px; max-width: 760px; margin: 0 0 10px; }
-.ovhero .zr .zr-hero { grid-template-columns: minmax(0, 600px) minmax(0, 320px); justify-content: start; }
-@media (max-width: 900px) { .ovhero .zr .zr-hero { grid-template-columns: minmax(0, 1fr); } }
 header.top {
   border-bottom: 1px solid var(--grid); background: var(--surface);
   position: sticky; top: 0; z-index: 10;
@@ -505,12 +501,11 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
     <div class="brand" data-en="Deity-Day Fasting Calendars<small>Periodic fasting in Jiangnan 江南</small>">神誕齋期版本對照<small>江南週期性持齋研究</small></div>
     <button id="menu" type="button" class="hbtn" aria-expanded="false" aria-controls="nav"></button>
     <nav id="nav">
-      <a href="#overview" data-v="overview" data-en="Overview">概覽</a>
+      <a href="#ring" data-v="ring" data-en="Ring calendar">環形曆</a>
       <a href="#matrix" data-v="matrix" data-en="Editions">版本對照</a>
       <a href="#editions" data-v="editions" data-en="Collated editions">諸本對照</a>
       <a href="#calendar" data-v="calendar" data-en="Calendar">齋期日曆</a>
       <a href="#fit" data-v="fit" data-en="Practice × calendar">實踐與齋曆</a>
-      <a href="#ring" data-v="ring" data-en="Ring calendar">環形曆</a>
       <a href="#spread" data-v="spread" data-en="Edition map">版本線索圖</a>
       <a href="#kin" data-v="kin" data-en="Edition kinship">版本親疏</a>
       <a href="#gods" data-v="gods" data-en="Deities">神明檔案</a>
@@ -529,8 +524,8 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <div id="daypanel" class="daypanel" hidden role="dialog" aria-modal="true" aria-label="這一天"><div class="dp-box"><div class="dp-body"></div></div></div>
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
-<script src="demo.js?v=2c1506cf"></script>
-<script src="fr.js?v=30e48091"></script>
+<script src="demo.js?v=f9697e83"></script>
+<script src="fr.js?v=4461dee1"></script>
 <script src="i18n.js?v=4bafe874"></script>
 <script src="data.js?v=c14ec032"></script>
 <script src="editions-data.js?v=2ee09c7b"></script>
@@ -1174,107 +1169,8 @@ function showTip(e, html) {
 }
 function hideTip(force) { if (TOUCH && !force && tip.classList.contains('card')) return; tip.style.display = 'none'; tip.classList.remove('card'); TIPK = null; }
 
-// ---------- 視圖：概覽 ----------
-function viewOverview() {
-  var strong = D.practice.filter(function (p) { return p.ev !== NOFAST; }).length;
-  var linked = Object.keys(byG).filter(function (id) { return byG[id].nCal; }).length;
-  var pendN = Object.keys(byG).filter(function (id) { return byG[id].nCal && byG[id].pending; }).length;
-  var nDev = LINKED.filter(isDev).length;
-  var RV = ringVersion();
-  var h = '<div class="eyebrow">' + L('江南週期性持齋研究', 'Periodic fasting in Jiangnan 江南') + '</div>' + L('<h1>神明在齋期表各版本中的記載</h1>', '<h1>How deities appear across editions of fasting calendars</h1>') +
-    '<figure class="ovhero"><div id="ovring"></div><figcaption>' + L('《' + RV.short + '》（' + RV.when + '）一年裏的全部神聖日：十二個月是十二個扇區，從內到外是初一到三十；每一色塊是一條神誕或齋日，顏色是日期類型（紀念、成就、巡察、節令），金底格是十齋日。',
-      'All the sacred days in one year of the ' + NT(RV.short) + ' (' + RV.when + '): twelve months as twelve sectors, days 1 to 30 from the inside out; each coloured block is one deity day or fast day, coloured by type of day (commemoration, attainment, inspection, seasonal festival), and gold cells are the ten fast days.',
-      'Tous les jours sacrés d’une année du ' + NT(RV.short) + ' (' + RV.when + ') : douze mois en douze secteurs, jours 1 à 30 de l’intérieur vers l’extérieur ; chaque bloc coloré est un jour divin ou un jour de jeûne, coloré selon le type de jour (commémoration, accomplissement, inspection, fête saisonnière), et les cases dorées sont les dix jours de jeûne.') +
-      ' <a href="#ring">' + L('打開環形曆 →', 'Open the ring calendar →', 'Ouvrir le calendrier circulaire →') + '</a></figcaption></figure>' +
-    L('<p class="lede">以神明爲單位，對照：①各版本齋曆（「玉匣記版本對比」工作簿）記了哪些神、哪天、要不要齋；②實踐記錄、《申報》、風俗志中這些神的齋是否真的有人守（「' + esc(D.source) + '」）。</p>',
-      '<p class="lede">Organized by deity, the site compares (1) which gods, which days, and whether fasting is required in each edition of the fasting calendars (the comparison workbook of <i>Yuxiaji</i> 玉匣記 editions), and (2) whether people actually kept these gods’ fasts, according to practice records, the <i>Shenbao</i> 申報 and records of local customs (“' + esc(D.source) + '”).</p>', '<p class="lede">Organisé par divinité, le site confronte (1) les dieux, les jours et l’obligation ou non de jeûner dans chaque édition des calendriers de jeûne (le classeur de comparaison des éditions du <i>Yuxiaji</i> 玉匣記), et (2) la question de savoir si ces jeûnes étaient réellement observés, d’après les témoignages de pratique, le <i>Shenbao</i> 申報 et les descriptions de coutumes locales (« ' + esc(D.source) + ' »).</p>') +
-    '<h2>' + L('資料規模', 'The material in numbers', 'Le corpus en chiffres') + '</h2><div class="tiles">' +
-    tile(D.deities.length, L('神明（神明表）', 'Deities (register)'), L('其中 ' + linked + ' 個已接到齋曆條目' + (pendN ? '（' + pendN + ' 個待覈）' : '（已核）'), linked + ' linked to calendar entries' + (pendN ? ' (' + pendN + ' to verify)' : ' (verified)'), linked + ' rattachées à des entrées des calendriers' + (pendN ? ' (' + pendN + ' à vérifier)' : ' (vérifiées)'))) +
-    tile(EVS.length, L('已錄入的齋曆版本', 'Calendar editions entered'), L('數據庫文獻表另登記 ' + MISSING.length + ' 種未取得', MISSING.length + ' more registered in the database, not obtained', MISSING.length + ' autres enregistrées dans la base, non obtenues')) +
-    tile(ED.entries.length, L('齋曆條目', 'Calendar entries'), L('來自版本對比工作簿', 'from the comparison workbook')) +
-    tile(D.practice.length, L('實踐記錄', 'Practice records'), L('其中言及持齋 ' + strong + ' 條', strong + ' mention fasting', strong + ' mentionnent le jeûne')) +
-    tile('<a href="#fit">' + LINKED.length + '</a>', L('實踐記錄對上齋曆條目', 'Practice records matched to a calendar entry'), L('其中存在偏差 ' + nDev + ' 條；見「實踐與齋曆」', nDev + ' with deviations; see Practice × calendar', nDev + ' avec écart ; voir Pratique × calendrier')) +
-    tile(D.shenbao.length, L('《申報》中有神名的篇目', '<i>Shenbao</i> 申報 articles naming a deity'), '') +
-    '</div>';
-  h += L('<h2>齋曆版本</h2><p class="lede small">按年代排列。實心點是《玉匣記》系統，空心是其他齋曆。點圓點進入該版本；逐條對照見 <a href="#editions">諸本對照</a>。年代不詳的放在右側。</p>',
-    '<h2>Calendar editions</h2><p class="lede small">In chronological order. Filled dots: the <i>Yuxiaji</i> line; hollow: other calendars. Click a dot to open the edition; for entry-by-entry collation see <a href="#editions">Collated editions</a>. Undated texts sit on the right.</p>') +
-    '<div class="card" id="vtl"></div>';
-  h += L('<h2>實踐記錄最多的神明</h2>', '<h2>Deities with the most practice records</h2>') + '<div class="legend">' +
-    '<span><span class="sw e1"></span>' + C('明確') + '</span><span><span class="sw e2"></span>' + C('可推斷') + '</span><span><span class="sw e3"></span>' + L('僅日期巧合（未言齋）', 'Date coincidence only (no fasting mentioned)') + '</span></div>' +
-    '<div class="card" id="topbar"></div>';
-  app.innerHTML = h;
-  if (window.ZhaiRing) ZhaiRing.mount(document.getElementById('ovring'), ringData(RV), { title: false, sections: ['disc'], onDay: openDay });
-  drawTimeline(document.getElementById('vtl'));
-  drawTopBar(document.getElementById('topbar'));
-}
 function yt(s) { return s ? '<span class="yt">' + esc(s) + '</span>' : ''; }   // 史料原文（楷體）
 function tile(n, l, s) { return '<div class="card tile"><div class="n">' + n + '</div><div class="l">' + l + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
-function vInfo(v) {
-  return '<b>' + N(v.short) + '</b> ' + edWhen(v) + (v.pub && v.pub !== '待填' ? ' · ' + esc(v.pub) : '') + '<br>' + esc(v.title) + '<br>' + esc(C(v.type) || '') + (v.type ? ' · ' : '') + L(v.n + ' 條', v.n + ' entries', v.n + ' entrées') +
-    (v.date ? '<br><span class="muted">' + esc(v.date) + '</span>' + zhNote() : '');
-}
-
-function drawTimeline(el) {
-  var vs = EVS.filter(function (v) { return !v.solo; });   // 專門單獨齋期不在概覽列出
-  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, wide = I.en() && W >= 700;
-  var lab = I.en() ? (wide ? Math.min(330, W * 0.42) : Math.min(120, W * 0.32)) : Math.min(190, W * 0.4), H = vs.length * rowH + 30;
-  var x0 = lab + 10, x1 = W - 70, lo = 1300, hi = 1950, xu = W - 30;
-  var sx = function (yr) { return x0 + (yr - lo) / (hi - lo) * (x1 - x0); };
-  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="' + L('齋曆版本時間線', 'Timeline of calendar editions') + '">';
-  for (var t = 1300; t <= 1950; t += (W < 500 ? 200 : 50)) s += '<line class="gridl" x1="' + sx(t) + '" x2="' + sx(t) + '" y1="0" y2="' + (H - 22) + '"/>' + (t % 100 === 0 || W >= 900 ? '<text x="' + sx(t) + '" y="' + (H - 6) + '" text-anchor="middle">' + t + '</text>' : '');
-  s += '<text x="' + xu + '" y="' + (H - 6) + '" text-anchor="middle">' + L('未定', 'n.d.') + '</text>';
-  vs.forEach(function (v, i) {
-    var y = i * rowH + 14, cx = v.year ? sx(v.year) : xu;
-    var nm = wide ? NT(v.short) : v.short, cap = wide ? 40 : I.en() ? 14 : 10;
-    var name = (nm.length > cap ? nm.slice(0, cap - 1) + '…' : nm) + ' ' + v.when.replace(/^(\d{4}).*$/, '$1');
-    s += '<g data-v="' + v.i + '" style="cursor:pointer">' +
-      '<rect x="0" y="' + (y - 11) + '" width="' + W + '" height="' + rowH + '" fill="transparent"/>' +
-      '<text x="' + lab + '" y="' + (y + 4) + '" text-anchor="end" style="font-size:' + (wide ? 11.5 : 12) + 'px;' + (v.yuxia ? 'fill:var(--ink);font-weight:600' : '') + '">' + esc(name) + ' (' + v.n + ')</text>' +
-      '<line class="gridl" x1="' + x0 + '" x2="' + cx + '" y1="' + y + '" y2="' + y + '" stroke-dasharray="2 3"/>' +
-      '<circle cx="' + cx + '" cy="' + y + '" r="6" stroke-width="2" style="fill:' + (v.yuxia ? 'var(--v1)' : 'var(--surface)') + ';stroke:' + (v.yuxia ? 'var(--surface)' : 'var(--v1)') + '"/></g>';
-  });
-  s += '</svg>';
-  el.innerHTML = s;
-  el.querySelectorAll('g[data-v]').forEach(function (g) {
-    var html = vInfo(ED.versions[+g.getAttribute('data-v')]);
-    g.addEventListener('mousemove', function (e) { showTip(e, html); });
-    g.addEventListener('mouseleave', hideTip);
-    g.addEventListener('click', function () { hideTip(); location.hash = 'ev/' + g.getAttribute('data-v'); });
-  });
-}
-
-function drawTopBar(el) {
-  var rows = Object.keys(byG).map(function (id) {
-    var b = byG[id], c = { '明確': 0, '可推斷': 0, '僅日期巧合': 0 };
-    b.prac.forEach(function (p) { if (c[p.ev] != null) c[p.ev]++; });
-    return { id: id, c: c, t: b.prac.length };
-  }).filter(function (r) { return r.t > 0; }).sort(function (a, b) { return b.t - a.t; }).slice(0, 15);
-  var W = Math.max(el.clientWidth - 32, 300), rowH = 24, lab = I.en() ? Math.min(190, W * 0.45) : 90, H = rows.length * rowH + 24;
-  var max = rows[0].t, sx = function (n) { return n / max * (W - lab - 40); };
-  var keys = ['明確', '可推斷', '僅日期巧合'], fills = ['var(--ev1)', 'var(--ev2)', 'var(--ev3)'];
-  var s = '<svg width="' + W + '" height="' + H + '" role="img" aria-label="' + L('實踐記錄最多的神明', 'Deities with the most practice records') + '">';
-  rows.forEach(function (r, i) {
-    var y = i * rowH + 4, x = lab;
-    s += '<text x="' + (lab - 8) + '" y="' + (y + 14) + '" text-anchor="end" style="fill:var(--ink);font-size:' + (I.en() ? 12 : 13) + 'px">' + esc(NT(gName(r.id))) + '</text>';
-    keys.forEach(function (k, j) {
-      var w = sx(r.c[k]); if (!w) return;
-      s += '<rect data-g="' + r.id + '" x="' + x + '" y="' + y + '" width="' + Math.max(w - 2, 1) + '" height="16" rx="3" style="fill:' + fills[j] + ';cursor:pointer"/>';
-      x += w;
-    });
-    s += '<text x="' + (x + 4) + '" y="' + (y + 13) + '">' + r.t + '</text>';
-  });
-  s += '</svg>';
-  el.innerHTML = s;
-  el.querySelectorAll('rect').forEach(function (rc) {
-    var r = rows.filter(function (q) { return q.id === rc.getAttribute('data-g'); })[0];
-    rc.addEventListener('mousemove', function (e) {
-      showTip(e, '<b>' + N(gName(r.id)) + '</b><br>' + C('明確') + ' ' + r.c['明確'] + ' · ' + C('可推斷') + ' ' + r.c['可推斷'] + ' · ' + C('僅日期巧合') + ' ' + r.c['僅日期巧合'] + '<br><span class="muted">' + L('點擊看檔案', 'Click for profile') + '</span>');
-    });
-    rc.addEventListener('mouseleave', hideTip);
-    rc.addEventListener('click', function () { hideTip(); location.hash = 'g/' + r.id; });
-  });
-}
-
 // ---------- 視圖：版本對照矩陣 ----------
 var M = { q: '', type: '', only: 'any', sort: 'prac' };
 function viewMatrix() {
@@ -2345,7 +2241,7 @@ function shareApply(v, o) {
 }
 // 當前畫面的網址（「複製鏈接」與演示步驟用）
 function shareURL(withBase) {
-  var hsh = location.hash.replace(/^#/, '').split('?')[0] || 'overview', v = hsh.split('/')[0];
+  var hsh = location.hash.replace(/^#/, '').split('?')[0] || 'ring', v = hsh.split('/')[0];
   var o = {};
   if (FOCUS) o.focus = FOCUS.key;
   if (TIME.mode === 'period') o.t = TIME.period; else if (TIME.mode === 'range') o.t = TIME.lo + '-' + TIME.hi;
@@ -2401,7 +2297,7 @@ function tableRows(t) {
   }).filter(function (r) { return r.join('').trim(); });
 }
 function csvName(t) {   // 只用英文字母與數字：中文文件名在部分瀏覽器（尤其離線打開時）會變成「download」
-  var v = (location.hash.replace(/^#/, '').split('?')[0] || 'overview').replace(/[^\w-]+/g, '-').replace(/-+$/, '');
+  var v = (location.hash.replace(/^#/, '').split('?')[0] || 'ring').replace(/[^\w-]+/g, '-').replace(/-+$/, '');
   var all = [].slice.call(document.querySelectorAll('#app table, #cmppanel table')), n = all.indexOf(t) + 1;
   return 'zhai_' + v + '_' + (t.id || t.className.split(' ')[0] || 't') + (n > 1 ? n : '') + '_' + new Date().toISOString().slice(0, 10);
 }
@@ -2537,7 +2433,7 @@ function demoGo(i) {
   try { sessionStorage.setItem('zhai-demo-on', String(DEMO.i)); } catch (e) {}
   document.body.classList.add('demo-on');
   closeDay(); closeCmp(true); hcHide(); hideTip(true);
-  var u = s[DEMO.i].url || '#overview';
+  var u = s[DEMO.i].url || '#ring';
   if (location.hash === u) route(); else location.hash = u.replace(/^#/, '');
   demoRender();
 }
@@ -2596,10 +2492,11 @@ function demoEdit() {
 function route(ev) {
   hideTip(true); hcHide(); closeDay();
   if (window.ZhaiRing) ZhaiRing.hideTip();
-  var hsh = location.hash.replace(/^#/, '') || 'overview', qi = hsh.indexOf('?'), qs = null, after = {};
-  if (qi >= 0) { qs = qsParse(hsh.slice(qi + 1)); hsh = hsh.slice(0, qi) || 'overview'; history.replaceState(null, '', location.pathname + location.search + '#' + hsh); }   // 帶狀態的鏈接：讀入後從地址欄去掉
+  var hsh = location.hash.replace(/^#/, '') || 'ring', qi = hsh.indexOf('?'), qs = null, after = {};
+  if (qi >= 0) { qs = qsParse(hsh.slice(qi + 1)); hsh = hsh.slice(0, qi) || 'ring'; history.replaceState(null, '', location.pathname + location.search + '#' + hsh); }   // 帶狀態的鏈接：讀入後從地址欄去掉
   var v = hsh.split('/')[0];
   if (qs) { after = shareApply(v, qs); ev = null; }
+  if (v === 'overview') { history.replaceState(null, '', location.pathname + location.search + '#ring'); hsh = v = 'ring'; }   // 舊網址 #overview：概覽已併入環形曆
   if (v === 'cmp') { history.replaceState(null, '', location.pathname + location.search + '#kin' + hsh.slice(3)); hsh = 'kin' + hsh.slice(3); v = 'kin'; }   // 舊網址 #cmp/甲/乙
   var ab = v === 'kin' ? hsh.split('/').slice(1) : [], kinFast = !!(ev && ev.type === 'hashchange') && v === 'kin' && LAST_V === 'kin', keepY = false;
   LAST_V = v;
@@ -2621,7 +2518,7 @@ function route(ev) {
   else if (v === 'ring') viewRing(hsh.split('/')[1]);
   else if (v === 'spread') viewSpread();
   else if (v === 'kin') { if (!(kinFast && app.querySelector('.kin'))) viewKinship(); else keepY = true; }
-  else viewOverview();
+  else viewRing();
   if (!keepY) window.scrollTo(0, 0);
   if (ab[0]) openCmp(ab[0], ab[1]);
   if (v === 'ring' && RING_SET && window.ZhaiRing) { var rs = RING_SET; RING_SET = null; setTimeout(function () { ZhaiRing.set(rs); }, 30); }
@@ -2632,7 +2529,7 @@ function route(ev) {
 }
 var LAST_V = '';
 window.addEventListener('hashchange', route);
-var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { var v = location.hash; if (!v || v === '#overview' || /^#g\/[^\/]+$/.test(v)) route(); }, 200); });
+var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { var v = location.hash; if (/^#g\/[^\/]+$/.test(v)) route(); }, 200); });
 function footer() {
   var gs = document.getElementById('gs');
   gs.placeholder = L('搜索（/）', 'Search (press /)');

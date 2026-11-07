@@ -386,6 +386,9 @@ body.demo-on { padding-bottom: 130px; }
 .vpick button { font: inherit; font-size: 12.5px; background: none; border: 1px solid var(--axis); color: var(--ink-2); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
 .vpick button[aria-pressed="true"] { border-color: var(--ink-2); color: var(--ink); background: var(--surface-2); font-weight: 600; }
 .vpick button:disabled { opacity: .45; cursor: default; }
+.vall { font: inherit; font-size: 12px; background: none; border: 1px solid var(--axis); color: var(--ink-2); border-radius: 6px; padding: 1px 8px; margin-left: 4px; cursor: pointer; }
+.vall:hover:not(:disabled) { border-color: var(--ink-2); color: var(--ink); }
+.vall:disabled { opacity: .45; cursor: default; }
 .ringpick select { max-width: 100%; }
 /* 版本目錄和內容對照 */
 table.edm { min-width: 0; width: auto; font-size: 13px; }
@@ -923,13 +926,15 @@ function timePlay() {
   if (TIME.play) { timeStop(); return; }
   var w = timeWindow(), lo = w[0] === TY0 ? 1500 : w[0], hi = Math.min(w[1], TY1);
   if (TIME.mode === 'all') { TIME.lo = lo; TIME.hi = hi; }
-  var step = Math.max(1, Math.round((hi - lo) / 70));
+  // 實踐與齋曆頁播放加快：約 36 幀 × 0.16 秒（全程約 6 秒）；版本線索圖仍爲約 70 幀 × 0.26 秒
+  var fast = /^#fit/.test(location.hash), frames = fast ? 36 : 70, tick = fast ? 160 : 260;
+  var step = Math.max(1, Math.round((hi - lo) / frames));
   TIME.cur = lo;
   TIME.play = setInterval(function () {
     TIME.cur = Math.min(hi, TIME.cur + step);
     timeRedraw();
     if (TIME.cur >= hi) { clearInterval(TIME.play); TIME.play = null; if (TIME.mode === 'all') TIME.mode = 'range'; timeSave(); focusBar(); timeRedraw(); }
-  }, 260);
+  }, tick);
   focusBar(); timeRedraw();
 }
 // 年代控件：放在「實踐與齋曆」「版本線索圖」頁首；狀態全站共用
@@ -1266,13 +1271,14 @@ function calDefault() {
 }
 function viewCalendar() {
   if (!CAL.vs) CAL.vs = calDefault();
-  var lanes = CAL.vs.map(function (vi, j) { return { v: ED.versions[vi], cls: 'v-L' + j }; });
+  var lanes = CAL.vs.map(function (vi, j) { return { v: ED.versions[vi], cls: 'v-L' + (j % 4) }; });   // 超過 4 欄時顏色循環，以欄頭書名爲準
   lanes.push({ p: 1 });
   var h = L('<h1>齋期日曆</h1><p class="lede">按月排列所選齋曆版本的神誕與齋日，最右一列是實踐記錄中的日期。把鼠標移到一個神名上，所有版本里同一個神都會高亮。神名後的綠點表示有實踐記錄對上這一條（黃點：存在偏差），鼠標移上去可看是哪幾條。點擊進入神明檔案或版本目錄和內容對照。</p>',
       '<h1>Fasting calendar</h1><p class="lede">Deity birthdays and fast days in the chosen editions, arranged by lunar month; the right-hand column gives dates from practice records. Hover over a deity and the same deity lights up in every column. A green dot after a name means a practice record has been matched to that entry (yellow: with deviation); hover to see which. Click to open the deity’s profile or its collation.</p>') +
-    '<p class="small muted" style="margin:0 0 6px">' + L('選擇要對照的版本（最多 4 個）：', 'Choose editions to compare (up to 4):') + '</p><div class="vpick">' + EVS.map(function (v) {
+    '<p class="small muted" style="margin:0 0 6px">' + L('選擇要對照的版本（已選 ' + CAL.vs.length + ' / ' + EVS.length + '；超過 4 個時表格可左右滑動）：', 'Choose editions to compare (' + CAL.vs.length + ' / ' + EVS.length + ' selected; with more than 4 the table scrolls sideways):', 'Choisir les éditions à comparer (' + CAL.vs.length + ' / ' + EVS.length + ' choisies ; au-delà de 4, le tableau défile horizontalement) :') +
+      ' <button type="button" class="vall" data-all="1"' + (CAL.vs.length === EVS.length ? ' disabled' : '') + '>' + L('全選', 'Select all', 'Tout sélectionner') + '</button> <button type="button" class="vall" data-all="0"' + (CAL.vs.length ? '' : ' disabled') + '>' + L('全不選', 'Select none', 'Tout désélectionner') + '</button></p><div class="vpick">' + EVS.map(function (v) {
       var on = CAL.vs.indexOf(v.i) >= 0;
-      return '<button type="button" data-v="' + v.i + '" aria-pressed="' + on + '"' + (!on && CAL.vs.length >= 4 ? ' disabled' : '') + '>' + edWhen(v) + ' ' + N(v.short) + '</button>';
+      return '<button type="button" data-v="' + v.i + '" aria-pressed="' + on + '">' + edWhen(v) + ' ' + N(v.short) + '</button>';
     }).join('') + '</div>' +
     '<div class="controls"><label><input type="checkbox" id="weak"' + (CAL.weak ? ' checked' : '') + '> ' + L('實踐記錄也顯示「僅日期巧合」（未言齋）的條目（虛線）', 'Also show practice records that only coincide with the date (no fasting mentioned; dotted)') + '</label></div>' +
     '<div class="legend">' + lanes.filter(function (l) { return l.v; }).map(function (l) { return '<span>' + vSw(l.cls) + edWhen(l.v) + ' ' + N(l.v.short) + '</span>'; }).join('') + '<span><span class="sw" style="background:var(--ink-2)"></span>' + L('實踐記錄', 'Practice records') + '</span></div>' +
@@ -1315,10 +1321,13 @@ function viewCalendar() {
   app.querySelectorAll('.vpick button').forEach(function (b) {
     b.onclick = function () {
       var vi = +b.getAttribute('data-v'), k = CAL.vs.indexOf(vi);
-      if (k >= 0) { if (CAL.vs.length > 1) CAL.vs.splice(k, 1); } else if (CAL.vs.length < 4) CAL.vs.push(vi);
+      if (k >= 0) CAL.vs.splice(k, 1); else CAL.vs.push(vi);
       CAL.vs.sort(function (a, c) { return EVS.indexOf(ED.versions[a]) - EVS.indexOf(ED.versions[c]); });
       viewCalendar();
     };
+  });
+  app.querySelectorAll('.vall').forEach(function (b) {
+    b.onclick = function () { CAL.vs = b.getAttribute('data-all') === '1' ? EVS.map(function (v) { return v.i; }) : []; viewCalendar(); };
   });
   var grid = app.querySelector('.cal');
   grid.addEventListener('mouseover', function (e) {
@@ -2406,8 +2415,8 @@ var SHARE = {
     set: function (o) { M.q = o.q || ''; M.type = o.type || ''; M.only = o.only || 'any'; M.sort = o.sort || 'prac'; }
   },
   calendar: {
-    get: function () { return { eds: CAL.vs ? CAL.vs.map(function (i) { return ED.versions[i].no; }).join(',') : '', weak: CAL.weak ? 1 : '' }; },
-    set: function (o) { CAL.weak = !!o.weak; CAL.vs = o.eds ? o.eds.split(',').map(function (n) { var v = ED.versions.filter(function (x) { return +x.no === +n; })[0]; return v ? v.i : -1; }).filter(function (i) { return i >= 0; }).slice(0, 4) : null; if (CAL.vs && !CAL.vs.length) CAL.vs = null; }
+    get: function () { return { eds: CAL.vs ? (CAL.vs.length ? CAL.vs.map(function (i) { return ED.versions[i].no; }).join(',') : 'none') : '', weak: CAL.weak ? 1 : '' }; },
+    set: function (o) { CAL.weak = !!o.weak; if (o.eds === 'none') { CAL.vs = []; return; } CAL.vs = o.eds ? o.eds.split(',').map(function (n) { var v = ED.versions.filter(function (x) { return +x.no === +n; })[0]; return v ? v.i : -1; }).filter(function (i) { return i >= 0; }) : null; if (CAL.vs && !CAL.vs.length) CAL.vs = null; }
   },
   editions: {
     get: function () {

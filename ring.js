@@ -456,17 +456,27 @@ function dom(root, D) {
     var days = []; for (var d = 1; d <= 30; d++) if (DOM_ALL || !isFast(d)) days.push(d);
     var tot = days.reduce(function (s, d) { return s + cnt[d]; }, 0), avg = tot / days.length;
     var mx = Math.max.apply(null, days.map(function (d) { return cnt[d]; })), max = Math.ceil((mx + 2) / 5) * 5;
-    var W = 960, H = 300, ml = 36, mr = 8, mt = 28, mb = 44, bw = (W - ml - mr) / days.length;
+    var W = 960, H = 300, ml = 36, mr = 8, mt = 28, mb = 44, bw = (W - ml - mr) / 30;   // 始終排滿一月三十日；「不含」時齋日留空位、不計入
     function y(v) { return mt + (H - mt - mb) * (1 - v / max); }
     lede.textContent = DOM_ALL ? L('三十根柱子是一月三十日，泥金色是十齋日，石青色是六齋日（日期下另有短線），兩者重合的柱子各佔一半；其餘日子中高於平均的是朱色；虛線是平均值。', 'Thirty bars for the thirty days of a lunar month; gold marks the ten fast days and blue the six fast days (also underlined below the date); bars on days in both are half of each. Among the other days, those above average are in vermilion. The dashed line is the average.', 'Trente barres pour les trente jours du mois lunaire ; l’or marque les dix jours de jeûne et le bleu les six jours de jeûne (aussi soulignés sous la date) ; les barres des jours communs aux deux sont mi-partie. Parmi les autres jours, ceux au-dessus de la moyenne sont en vermillon. La ligne pointillée est la moyenne.')
-      : L('不含十齋日、六齋日（六齋日都在十齋日之內），只比較其餘二十天；朱色是高於平均的日子，虛線是這二十天的平均值。', 'The ten and six fast days are left out (the six all fall within the ten), comparing only the other twenty days; days above average are in vermilion, and the dashed line is their average.', 'Les dix et six jours de jeûne sont exclus (les six sont tous compris dans les dix) ; on ne compare que les vingt autres jours ; les jours au-dessus de la moyenne sont en vermillon, et la ligne pointillée est leur moyenne.');
+      : L('不含十齋日、六齋日（六齋日都在十齋日之內），一月三十日照列，十齋日留作淺色空位、不計入，只比較其餘二十天（沒有條目的日子柱高爲 0）；朱色是高於平均的日子，虛線是這二十天的平均值。', 'All thirty days of the month are shown; the ten and six fast days (the six all fall within the ten) are left as pale empty slots and not counted, so only the other twenty days are compared (a day with no entries has a bar of 0). Days above average are in vermilion, and the dashed line is the average of those twenty days.', 'Les trente jours du mois sont affichés ; les dix et six jours de jeûne (les six sont tous compris dans les dix) restent des cases pâles non comptées, et l’on ne compare que les vingt autres jours (un jour sans entrée a une barre de 0). Les jours au-dessus de la moyenne sont en vermillon, et la ligne pointillée est la moyenne de ces vingt jours.');
     S.setAttribute('aria-label', DOM_ALL ? L('每月各日的條目數，十齋日以金色、六齋日以石青色標出', 'Entries per day of the month, ten fast days in gold, six fast days in blue', 'Entrées par jour du mois, dix jours de jeûne en or, six jours de jeûne en bleu') : L('十齋日、六齋日以外各日的條目數', 'Entries per day of the month, fast days left out', 'Entrées par jour du mois, hors jours de jeûne'));
     for (var v = 0; v <= max; v += max > 20 ? 10 : 5) {
       svgEl('line', { x1: ml, x2: W - mr, y1: y(v), y2: y(v), stroke: 'var(--zr-line)' }, S);
       svgEl('text', { x: ml - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = v;
     }
-    days.forEach(function (d, k) {
-      var on = D.TEN.indexOf(d) >= 0, six = D.SIX.indexOf(d) >= 0, up = !on && !six && cnt[d] > avg, x = ml + k * bw + 3, w = bw - 6, top = y(cnt[d]), rr = Math.min(3, w / 2, y(0) - top);
+    for (var dd = 1; dd <= 30; dd++) (function (d) {
+      var k = d - 1, on = D.TEN.indexOf(d) >= 0, six = D.SIX.indexOf(d) >= 0;
+      if (!DOM_ALL && (on || six)) {
+        // 不計入的齋日：淡底空位，日期淡色，懸停可看條目數
+        svgEl('rect', { x: ml + k * bw + 1, y: mt, width: bw - 2, height: H - mt - mb, fill: 'var(--zr-cell)', rx: 2 }, S);
+        var gh = svgEl('rect', { x: ml + k * bw, y: mt, width: bw, height: H - mt - mb, fill: 'transparent' }, S);
+        gh.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + fastLab(D, d) + L(' · 不計入（' + cnt[d] + ' 條）', ' · not counted (' + cnt[d] + ')', ' · non compté (' + cnt[d] + ')')); });
+        gh.addEventListener('pointerleave', hideTip);
+        svgEl('text', { x: ml + (k + 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-muted)', opacity: 0.55 }, S).textContent = DN(d).replace('初', '');
+        return;
+      }
+      var up = !on && !six && cnt[d] > avg, x = ml + k * bw + 3, w = bw - 6, top = y(cnt[d]), rr = Math.min(3, w / 2, y(0) - top);
       svgEl('path', { d: 'M' + x + ',' + y(0) + 'V' + (top + rr) + 'Q' + x + ',' + top + ' ' + (x + rr) + ',' + top + 'H' + (x + w - rr) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + rr) + 'V' + y(0) + 'Z', fill: on && six ? BARB : on ? 'var(--zr-gold)' : six ? 'var(--zr-six-ink)' : up ? 'var(--zr-hi)' : 'var(--zr-wei)' }, S);
       var hit = svgEl('rect', { x: ml + k * bw, y: mt, width: bw, height: H - mt - mb, fill: 'transparent' }, S);
       hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + nEntries(cnt[d]) + (on || six ? ' · ' + fastLab(D, d) : up ? L(' · 高於平均', ' · above average', ' · au-dessus de la moyenne') : '')); });
@@ -474,7 +484,7 @@ function dom(root, D) {
       svgEl('text', { x: ml + (k + 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: on ? 'var(--zr-gold)' : six ? 'var(--zr-six-ink)' : up ? 'var(--zr-hi)' : 'var(--zr-muted)', 'font-weight': on || six || up ? 700 : 400 }, S).textContent = DN(d).replace('初', '');
       if (six) svgEl('rect', { x: ml + (k + 0.5) * bw - 7, y: H - mb + 25, width: 14, height: 3, rx: 1.5, fill: 'var(--zr-six-ink)' }, S);
       if (!DOM_ALL || on || cnt[d] >= 13) svgEl('text', { x: ml + (k + 0.5) * bw, y: top - 7, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S).textContent = cnt[d];
-    });
+    })(dd);
     svgEl('line', { x1: ml, x2: W - mr, y1: y(avg), y2: y(avg), stroke: 'var(--zr-muted)', 'stroke-dasharray': '3 4' }, S);
     svgEl('text', { x: W - mr, y: y(avg) - 6, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = L('平均 ', 'average ', 'moyenne ') + avg.toFixed(1);
     if (!DOM_ALL) {

@@ -161,6 +161,8 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; } }
 :root[data-theme="dark"] .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; }
 .spread .sgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.spread .sbelow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; margin-top: 16px; }
+@media (max-width: 700px) { .spread .sbelow { grid-template-columns: 1fr; } }
 @media (max-width: 900px) { .spread .sgrid { grid-template-columns: 1fr; } }
 .spread svg.smap { width: 100%; height: auto; display: block; border-radius: 8px; }
 .spread .sea { fill: var(--sea); } .spread .land { fill: var(--land); stroke: var(--coast); stroke-width: .7; }
@@ -932,8 +934,8 @@ function timePlay() {
   if (TIME.play) { timeStop(); return; }
   var w = timeWindow(), lo = w[0] === TY0 ? 1500 : w[0], hi = Math.min(w[1], TY1);
   if (TIME.mode === 'all') { TIME.lo = lo; TIME.hi = hi; }
-  // 實踐與齋曆頁播放加快：約 36 幀 × 0.16 秒（全程約 6 秒）；版本線索圖仍爲約 70 幀 × 0.26 秒
-  var fast = /^#fit/.test(location.hash), frames = fast ? 36 : 70, tick = fast ? 160 : 260;
+  // 按年代播放：約 36 幀 × 0.16 秒（全程約 6 秒），實踐與齋曆、版本線索圖相同
+  var frames = 36, tick = 160;
   var step = Math.max(1, Math.round((hi - lo) / frames));
   TIME.cur = lo;
   TIME.play = setInterval(function () {
@@ -1573,9 +1575,12 @@ function viewSpread() {
       Object.keys(M.fam).map(function (k) { return '<label><input type="checkbox" data-k="' + k + '"' + (SP.on[k] ? ' checked' : '') + '> <span class="ssw" style="border-color:' + M.fam[k][1] + '"></span> ' + famName(k) + '</label>'; }).join('') +
       '<label class="small" style="margin-top:6px"><input type="checkbox" id="smod"' + (SP.modern ? ' checked' : '') + '> ' + L('顯示 1949 年以後的版本（台灣、北京、武當山）', 'Show editions after 1949 (Taiwan, Beijing, Wudangshan)') + '</label></div></div>' +
     (FOCUS ? '<div class="card" style="margin-top:12px" id="sfoc"></div>' : '') +
-    '<div class="card" style="margin-top:12px"><h2 style="margin-top:0">' + L('連線的依據', 'Evidence for each line') + '</h2><ul class="sev" id="sev"></ul></div>' +
-    '<div class="card" style="margin-top:12px"><h2 style="margin-top:0">' + L('刊刻地不明，未上圖', 'Place of printing unknown (not mapped)') + '</h2><ul class="small" style="padding-left:18px;margin:0">' + M.unk.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
-    '</div></div></div>';
+    '</div></div>' +
+    // 連線的依據、刊刻地不明兩欄並排放在地圖下方
+    '<div class="sbelow">' +
+    '<div class="card"><h2 style="margin-top:0">' + L('連線的依據', 'Evidence for each line') + '</h2><ul class="sev" id="sev"></ul></div>' +
+    '<div class="card"><h2 style="margin-top:0">' + L('刊刻地不明，未上圖', 'Place of printing unknown (not mapped)') + '</h2><ul class="small" style="padding-left:18px;margin:0">' + M.unk.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
+    '</div></div>';
   app.innerHTML = h;
   putFocusNote(L('標出收錄它的版本的相關地點', 'places linked to editions that include it are marked'));
   function curve(e, ins) {

@@ -2374,10 +2374,8 @@ function ringVersion(no) {
 // 專門單獨齋期：原文欄常只有日期或「（未見原書）」，環形曆上改用齋名
 function soloName(e) { return /未見原書/.test(e.t) ? e.l : /僅列日期/.test(e.l) ? (e.q || e.k) : e.t; }
 // 齋期規則：把一個版本的條目分成年度定日、每月週期、多日齋期、不能排入月日四類，並展開到一年 12 個月 × 30 日
-// 「明言齋戒」：原文、說明或日期類型欄裏有持齋、齋戒、齋素、吃素等字；設齋、修齋、撿齋、齋醮、齋僧等儀式用語不算。專門單獨齋期整本都算
-var FAST_IN = /持齋|齋戒|戒齋|齋素|喫素|吃素|食素|茹素|持素|齋期|齋日|白衣齋|雷齋|斗齋|準提齋|准提齋|十王齋|辛齋|大齋|十齋|六齋|三短齋|十直齋|^齋/;
-var FAST_OUT = /設齋|修齋|建齋|撿齋|檢齋|齋醮|設醮|建醮|齋僧|齋衆|齋眾|齋供/;
-function saysFast(e) { return [e.q, e.l, e.t].some(function (x) { return x && FAST_IN.test(x) && !FAST_OUT.test(x); }); }
+// 齋曆整體就是持齋日程（序言等處推薦持齋），所以凡能排入月日的神聖日都計入，不逐條看是否寫明持齋
+var RKIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
 function rangeCells(r) {
   var out = [];
   String(r).split(/[；;]/).forEach(function (seg) {
@@ -2398,9 +2396,23 @@ function ringRules(v) {
       type = cells.length ? 'month' : 'none';
     } else if (e.m && e.d && e.d <= 30) { type = 'year'; cells = [e.m * 100 + e.d]; }
     var lab = e.l && !/^（/.test(e.l) ? e.l : '';
-    return { id: e.id, type: type, cells: cells, fast: !!v.solo || saysFast(e), mo: e.mo || '', dy: e.dy || '',
+    return { id: e.id, type: type, cells: cells, kind: RKIND[e.c] || 'U', mo: e.mo || '', dy: e.dy || '',
       name: e.k ? e.k + (lab ? '・' + lab : '') : (lab || e.t || e.g || '—'), t: v.solo ? soloName(e) : (e.t || '') };
   });
+}
+// 各版本的齋期總長：每年、每月有多少天，按日期類型分。同一天有幾類時歸入順序在前的一類：
+// 紀念、成就、巡察、集會、節令、其他、未標（「其他」多是十齋日這類泛稱齋日，讓位給具體的神聖日）
+var RALL = null;
+function ringAll() {
+  if (RALL) return RALL;
+  RALL = EVS.filter(function (x) { return !x.solo; }).concat(ED.solo || []).map(function (v) {
+    var day = {};
+    ringRules(v).forEach(function (x) { if (x.type !== 'none') x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; }); });
+    var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
+    Object.keys(day).forEach(function (c) { var k = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'].filter(function (x) { return day[c][x]; })[0], mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
+    return { no: String(v.no), label: v.when + ' ' + v.short, solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon };
+  });
+  return RALL;
 }
 function ringData(v) {
   var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
@@ -2408,7 +2420,7 @@ function ringData(v) {
   return {
     meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + esc(v.pub) : ''),
       sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
-      fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30], rules: ringRules(v), solo: !!v.solo },
+      fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30], rules: ringRules(v), solo: !!v.solo, ruleAll: ringAll(), no: String(v.no) },
     entries: es.filter(function (e) { return e.m && e.d; }).map(function (e) {
       var src = /原表出處：([^｜]+)/.exec(e.pg || '');
       return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: KIND[e.c] || '?', src: src ? src[1].trim() : '',

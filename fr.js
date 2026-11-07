@@ -623,6 +623,7 @@ window.ZHAI_FR = {
   "Standalone fast calendar": "Calendrier de jeûne spécifique",
   "Standalone fast calendar (in a morality book)": "Calendrier de jeûne spécifique (dans un livre de morale)",
   "Standalone fast calendars (secondhand)": "Calendriers de jeûne spécifiques (de seconde main)",
+  "Standalone fast calendars (secondhand and from the books)": "Calendriers de jeûne spécifiques (de seconde main et d’après les ouvrages)",
   "Copy link": "Copier le lien",
   "▶︎ Present": "▶︎ Présenter"
 };

@@ -88,7 +88,8 @@ def build_rings(versions, entries):
             undated.append(short)
             return
         rings.append({'no': str(no), 'sheet': v['sheet'], 'when': when, 'short': short, 'pub': '', 'noText': False, 'solo': True,
-                      'second': v['when'] == '彙集', 'src': v['src'], 'n': len(es), 'es': rs})
+                      'second': v['when'] == '彙集' and all(e['t'] == '（未見原書）' for e in es),   # 只據二手轉述、未見原書的盤
+                      'src': v['src'], 'n': len(es), 'es': rs})
 
     for v in versions:
         if not v['solo']:
@@ -153,7 +154,7 @@ def main():
             'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：环形历里另列（见 build_rings）
         }
         if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
-            v.update(when='彙集', era='據 Goossaert 2024', short='專門單獨齋期彙集', pub='')
+            v.update(when='彙集', era='據 Goossaert 2024 及原書', short='專門單獨齋期彙集', pub='')
         ws = wb[sheet]
         rows = list(ws.iter_rows(values_only=True))
         col = {clean(h): i for i, h in enumerate(rows[0])}

@@ -88,6 +88,8 @@ select { max-width: 100%; }
 #langs button { background: none; border: 0; border-left: 1px solid var(--grid); color: var(--ink-2); padding: 3px 8px; cursor: pointer; font: inherit; font-size: 13px; }
 #langs button:first-child { border-left: 0; }
 #langs button.on { background: var(--ink-2); color: var(--page); }
+.hhint { position: fixed; z-index: 60; background: var(--ink); color: var(--page); font-size: 12.5px; line-height: 1.55; padding: 7px 10px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.18); pointer-events: none; }
+.hhint[hidden] { display: none; }
 .hbtn, #theme { background: none; border: 1px solid var(--grid); color: var(--ink-2); border-radius: 6px; padding: 3px 8px; cursor: pointer; font: inherit; font-size: 13px; }
 main { padding: 24px 0 64px; }
 h1 { font-size: 26px; margin: 0 0 6px; }
@@ -594,7 +596,7 @@ var I = window.ZhaiI18n, L = I.L, N = I.N, NT = I.NT, C = I.C, DT = I.D;
 I.addPinyin(D.py, D.pyTitle);
 if (window.ZHAI_RING) I.addPinyin(window.ZHAI_RING.py, window.ZHAI_RING.pyTitle);
 document.getElementById('share').onclick = function () { copyText(shareURL(true), L('已複製本頁鏈接：對方打開看到的是同一畫面', 'Link copied: it opens this same view', 'Lien copié : il ouvre cette même vue')); };
-document.getElementById('demo').onclick = function () { if (DEMO.on) demoExit(); else demoGo(0); };
+document.getElementById('demo').onclick = function () { if (DEMO.on) demoExit(); else demoGo(0); if (typeof hintHide === 'function') hintHide(); };
 document.querySelectorAll('#langs [data-lang]').forEach(function (b) { b.onclick = function () { var l = b.getAttribute('data-lang'); if (l === I.lang) return; I.set(l); footer(); route(); }; });
 
 // ---------- 主題 ----------
@@ -606,7 +608,37 @@ themeBtn.onclick = function () {
   var next = dark ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   try { localStorage.setItem('zhai-theme', next); } catch (e) {}
+  hintShow(themeBtn);
 };
+
+// ---------- 頁首按鈕的懸浮說明（複製鏈接、演示、深淺色；窄屏時按鈕只剩圖標，更需要說明） ----------
+var HINTS = {
+  share: function () { return L('複製本頁鏈接：篩選、聚焦的神明、年代和打開的「這一天」都寫在鏈接裏，別人打開看到的是同一畫面。', 'Copy a link to this page: filters, the focused deity, the years and any open “this day” panel are kept in the link, so others see the same view.', 'Copier le lien de cette page : filtres, divinité ciblée, années et panneau « ce jour » ouvert sont conservés, pour que d’autres voient la même vue.'); },
+  demo: function () { return DEMO.on ? L('退出演示模式（也可按 Esc）。', 'Leave presentation mode (or press Esc).', 'Quitter le mode présentation (ou Échap).') : L('演示模式：按預設步驟逐頁講解網站，每步一句說明；用 ← → 翻頁，步驟可在演示條上編輯。', 'Presentation mode: a guided tour of the site, one caption per step; use ← → to move, and edit the steps from the presentation bar.', 'Mode présentation : visite guidée du site, une légende par étape ; ← → pour avancer, étapes modifiables depuis la barre.'); },
+  theme: function () { var cur = document.documentElement.getAttribute('data-theme'), dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; return dark ? L('現在是深色顯示，點擊改爲淺色。', 'Dark display now; click for light.', 'Affichage sombre ; cliquer pour clair.') : L('現在是淺色顯示，點擊改爲深色。', 'Light display now; click for dark.', 'Affichage clair ; cliquer pour sombre.'); }
+};
+var hintEl = null;
+function hintShow(btn) {
+  if (!hintEl) { hintEl = document.createElement('div'); hintEl.className = 'hhint'; hintEl.setAttribute('role', 'tooltip'); hintEl.id = 'hhint'; document.body.appendChild(hintEl); }
+  btn.removeAttribute('title');   // 換語言時會重設 title，這裏再去掉，避免瀏覽器自帶的提示疊在說明框上
+  hintEl.textContent = HINTS[btn.id](); hintEl.hidden = false;
+  var r = btn.getBoundingClientRect(), w = Math.min(280, innerWidth - 16);
+  hintEl.style.maxWidth = w + 'px';
+  hintEl.style.left = '0px'; var hw = hintEl.offsetWidth;   // 按實際寬度，讓說明框對準按鈕中間，並留在視窗內
+  var x = Math.max(8, Math.min(r.left + r.width / 2 - hw / 2, innerWidth - hw - 8));
+  hintEl.style.left = x + 'px'; hintEl.style.top = (r.bottom + 8) + 'px';
+  btn.setAttribute('aria-describedby', 'hhint');
+}
+function hintHide() { if (hintEl) hintEl.hidden = true; }
+['share', 'demo', 'theme'].forEach(function (id) {
+  var b = document.getElementById(id); if (!b) return;
+  b.removeAttribute('title');   // 改用自己的說明框，避免與瀏覽器自帶的提示重疊
+  b.addEventListener('mouseenter', function () { hintShow(b); });
+  b.addEventListener('focus', function () { hintShow(b); });
+  b.addEventListener('mouseleave', hintHide);
+  b.addEventListener('blur', hintHide);
+});
+addEventListener('scroll', hintHide, { passive: true });
 
 // ---------- 數據索引 ----------
 var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };

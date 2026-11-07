@@ -799,7 +799,7 @@ addEventListener('keydown', function (e) {
 }, true);
 
 // ---------- 全站搜索：漢字（繁簡互通）、拼音、記錄 ID ----------
-var T2S = {}; (function (s) { for (var i = 0; i + 1 < s.length; i += 2) T2S[s[i]] = s[i + 1]; })(window.ZHAI_T2S || '');
+var T2S = {}; (function (s) { s = Array.from(s); for (var i = 0; i + 1 < s.length; i += 2) T2S[s[i]] = s[i + 1]; })(window.ZHAI_T2S || '');   // 按字（碼點）配對：對照表裏有擴展區字（如「𠡠」），按 UTF-16 單元配對會從那裏起錯位
 function norm(s) { return String(s || '').toLowerCase().replace(/[㐀-鿿]/g, function (c) { return T2S[c] || c; }); }
 function npy(s) { return String(s || '').toLowerCase().replace(/[\s'’·\-]/g, ''); }
 var SIDX = null;
@@ -822,8 +822,11 @@ function searchIndex() {
   var docs = {}, dl = [];
   D.practice.forEach(function (p) { if (!p.w) return; if (!docs[p.w]) { docs[p.w] = { id: p.w, title: p.wt, n: 0 }; dl.push(docs[p.w]); } docs[p.w].n++; });
   D.versions.forEach(function (v) { if (!docs[v.id]) { docs[v.id] = { id: v.id, title: v.title, n: 0, status: v.status }; dl.push(docs[v.id]); } });
-  dl.forEach(function (x) { x.hay = norm(x.title); x.py = npy(I.py(x.title)); x.lid = x.id.toLowerCase(); });
-  SIDX = { gods: gods, ents: ents, pr: pr, docs: dl };
+  // 有實踐記錄的文獻 → 實踐與齋曆；只在「文獻」表登記、沒有實踐記錄的齋曆 → 未取得的去缺口，已取得的去版本目錄
+  dl.forEach(function (x) { x.hay = norm(x.title); x.py = npy(I.py(x.title)); x.lid = x.id.toLowerCase(); x.href = x.n ? '#fit/' + x.id : /未取得/.test(x.status || '') ? '#gaps' : '#editions'; });
+  // 齋曆版本（版本對比工作簿中已錄入的版本）→ 齋期日曆，並選中該版本
+  var vers = EVS.map(function (v) { return { v: v, hay: norm([v.short, v.title, v.sheet, v.era, v.when, v.pub, v.type].join(' ')), py: npy(I.py(v.short)) }; });
+  SIDX = { gods: gods, vers: vers, ents: ents, pr: pr, docs: dl };
   return SIDX;
 }
 function runSearch(q0) {
@@ -832,10 +835,11 @@ function runSearch(q0) {
   var hit = function (x) { return x.hay.indexOf(q) >= 0 || (qp.length >= 2 && /^[a-z]+$/.test(qp) && x.py.indexOf(qp) >= 0); };
   var gods = S.gods.filter(function (x) { return (isId && x.key.toLowerCase().indexOf(q) === 0) || hit(x); });
   gods.sort(function (a, b) { return (norm(a.name) === q ? -1 : 0) - (norm(b.name) === q ? -1 : 0) || b.n - a.n; });
+  var vers = isId ? [] : S.vers.filter(hit);
   var ents = S.ents.filter(function (x) { return isId ? x.id.indexOf(q) === 0 : hit(x); });
   var pr = S.pr.filter(function (x) { return isId ? x.id.indexOf(q) === 0 : hit(x); });
   var docs = S.docs.filter(function (x) { return isId ? x.lid.indexOf(q) === 0 : hit(x); });
-  return { gods: gods, ents: ents, pr: pr, docs: docs };
+  return { gods: gods, vers: vers, ents: ents, pr: pr, docs: docs };
 }
 var GS = { sel: 0, items: [] };
 function gsRender(q) {
@@ -848,12 +852,14 @@ function gsRender(q) {
   };
   var h = grp(L('神明', 'Deities'), R.gods, 6, function (x) {
     return { href: x.href, html: '<b>' + N(x.name) + '</b> <span class="muted small">' + esc(x.sub) + (x.n ? L(' · 實踐 ', ' · practice ') + x.n : '') + '</span>', extra: '<button type="button" class="fbtn gs-f" data-focus="' + esc(x.key) + '">' + L('聚焦', 'Focus') + '</button>' };
+  }) + grp(L('齋曆版本', 'Calendar editions', 'Éditions de calendriers'), R.vers, 6, function (x) {
+    var v = x.v; return { href: '#calendar?eds=' + v.no, html: '<b>' + N(v.short) + '</b> <span class="muted small">' + edWhen(v) + (v.type ? ' · ' + esc(v.type) : '') + ' · ' + L('在齋期日曆中打開', 'open in the calendar', 'ouvrir dans le calendrier') + '</span>', extra: '<a class="fbtn gs-f" href="#ev/' + v.i + '">' + L('原文', 'Text', 'Texte') + '</a>' };
   }) + grp(L('齋曆條目', 'Calendar entries'), R.ents, 6, function (x) {
     var e = x.e; return { href: '#ev/' + e.v + '/' + e.id, html: '<b>' + esc(e.id) + '</b> ' + edWhen(x.v) + ' ' + N(x.v.short) + ' · ' + esc((e.mo || '') + (e.dy || '')) + '<div class="small muted">' + esc(e.t || e.g || e.k || '') + '</div>' };
   }) + grp(L('實踐記錄', 'Practice records'), R.pr, 6, function (x) {
     var p = x.p; return { href: p.g ? '#g/' + p.g + '/' + p.id : '#fit/' + p.id, html: '<b>' + esc(p.id) + '</b> ' + esc(p.year || '') + ' · ' + N(p.place) + (p.g ? ' · ' + N(G[p.g].name) : '') + '<div class="small muted">' + N(p.wt) + ' · ' + esc(p.zhai || '') + '</div>' };
   }) + grp(L('文獻', 'Sources'), R.docs, 5, function (x) {
-    return { href: '#fit/' + x.id, html: '<b>' + esc(x.id) + '</b> ' + N(x.title) + ' <span class="muted small">' + (x.n ? L('實踐 ' + x.n + ' 條', x.n + ' practice records', x.n + ' témoignages de pratique') : esc(C(x.status) || '')) + '</span>' };
+    return { href: x.href, html: '<b>' + esc(x.id) + '</b> ' + N(x.title) + ' <span class="muted small">' + (x.n ? L('實踐 ' + x.n + ' 條', x.n + ' practice records', x.n + ' témoignages de pratique') : esc(C(x.status) || '')) + '</span>' };
   });
   out.innerHTML = h || '<div class="gs-g muted small">' + L('沒有找到。', 'Nothing found.') + '</div>';
   out.hidden = false;

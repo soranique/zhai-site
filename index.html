@@ -193,6 +193,12 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread .grat { fill: none; stroke: var(--grid); stroke-width: .5; stroke-dasharray: 2 3; }
 .spread .ibox { fill: var(--sea); stroke: var(--ink-2); stroke-width: 1; } .spread .ireg { fill: none; stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 2; } .spread .ititle { font-size: 12px; fill: var(--ink-2); }
 .spread .sedge { fill: none; stroke-width: 2.2; cursor: pointer; }
+.spread .izt, .spread .ireg { cursor: zoom-in; } .spread .sins.z .izt { cursor: zoom-out; }
+.spread .ititle .izh { font-weight: 400; fill: var(--muted); font-size: .85em; }
+.spread .sins.z text { font-size: 6px; stroke-width: 1.4px; } .spread .sins.z .ititle { font-size: 6.4px; }
+.spread .sins.z .sedge { stroke-width: 1.1; } .spread .sins.z .sedge.inf { stroke-width: 1; } .spread .sins.z .sedge:hover, .spread .sins.z .sedge.hl { stroke-width: 1.8; }
+.spread .sins.z .hit { stroke-width: 6; } .spread .sins.z .ibox, .spread .sins.z .ireg { stroke-width: .5; } .spread .sins.z .land { stroke-width: .35; }
+.spread .sins.z .pr-ring, .spread .sins.z .spt .print, .spread .sins.z .spt .acq { stroke-width: .7; } .spread .sins.z .spt .attr { stroke-width: 1; }
 .spread .sedge.inf { stroke-dasharray: 2 4; stroke-width: 2; } .spread .sedge.fam { stroke-dasharray: 7 5; }
 .spread .sedge:hover, .spread .sedge.hl { stroke-width: 4; }
 .spread .hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; }
@@ -449,6 +455,7 @@ table.edm thead .edn { z-index: 2; background: var(--surface-2); }
 .morebtn { font: inherit; font-size: 14px; background: none; border: 1px solid var(--axis); color: var(--ink-2); border-radius: 6px; padding: 5px 14px; cursor: pointer; }
 .morebtn[hidden] { display: none; }
 .gap .cnt { font-weight: 700; font-variant-numeric: tabular-nums; }
+#r-dom, #r-total, #sprac, #sbyp { scroll-margin-top: 96px; }
 /* 源流與框架 */
 .flow { display: grid; grid-template-columns: 150px repeat(5, minmax(120px, 1fr)) 26px 190px; min-width: 1000px; padding: 16px; row-gap: 14px; }
 .flow .ph { font-weight: 700; text-align: center; font-size: 15px; padding-bottom: 2px; }
@@ -573,7 +580,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <div id="daypanel" class="daypanel" hidden role="dialog" aria-modal="true" aria-label="這一天"><div class="dp-box"><div class="dp-body"></div></div></div>
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
-<script src="demo.js?v=2183fdce"></script>
+<script src="demo.js?v=3d6db88e"></script>
 <script src="fr.js?v=0972c55f"></script>
 <script src="i18n.js?v=2af508b0"></script>
 <script src="data.js?v=dba1d6e8"></script>
@@ -581,7 +588,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="kinship-data.js?v=30c22f5f"></script>
 <script src="spread-data.js?v=9d5df462"></script>
 <script src="search-data.js?v=bae77b1a"></script>
-<script src="ring.js?v=a854095e"></script>
+<script src="ring.js?v=06671c8d"></script>
 <script>
 (function () {
 'use strict';
@@ -1576,7 +1583,7 @@ function viewFit() {
 // ---------- 視圖：刊刻地與版本線索圖（數據見 spread-data.js，資料源 tools/spread/spread_sources.json） ----------
 var spFocus = null;
 var SP = { on: { doc: true, inf: true, f1: true, f2: true, f5: true, f6: true, f0: true }, modern: false,
-  prac: true, pall: false, pweak: false, pref: null };   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
+  prac: true, pall: false, pweak: false, pref: null, izoom: false };   // izoom：江南放大圖再放大   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
 // 實踐記錄的府：去掉括注；兩府交界的記在第一個府
 function pracPref(p) { return String(p.pref || '').replace(/（.*?）/g, '').split('、')[0].trim(); }
 // 與齋曆的對應關係歸成三類（待確認刪除的記錄不上圖）
@@ -1593,6 +1600,7 @@ function viewSpread() {
   var color = function (e) { return e.t === 'fam' ? M.fam[e.f][1] : 'var(--doc)'; };
   // ---- 實踐記錄圖層：按府彙總（受年代滑桿、江南／全部、僅日期巧合三個選項影響） ----
   var PRF = {}; (M.prefs || []).forEach(function (p) { PRF[p.name] = p; });
+  var IZK = 2.2, IZS = 0.55;   // 江南放大圖再放大的倍數；放大後點和標籤的縮回比例（約爲原來的 1.2 倍）
   var PA = null;
   var prefName = function (k) { var p = PRF[k]; return I.en() && p ? esc(p.en) + ' ' + esc(k) : esc(k); };
   function pracAgg() {
@@ -1762,7 +1770,7 @@ function viewSpread() {
       PA.list.forEach(function (g) {
         var P = g.p; if (!P || P.off) return;
         if (ins !== (P.ix != null)) return;
-        var x = ins ? P.ix : P.x, y = ins ? P.iy : P.y, r = (ins ? 3.2 : 2.6) * Math.sqrt(g.n) + 2, a0 = -Math.PI / 2;
+        var x = ins ? P.ix : P.x, y = ins ? P.iy : P.y, r = ((ins ? 3.2 : 2.6) * Math.sqrt(g.n) + 2) * (ins && SP.izoom ? IZS : 1), a0 = -Math.PI / 2;
         s += '<g class="sprp' + (SP.pref === g.name ? ' on' : '') + '" data-pref="' + esc(g.name) + '">';
         var parts = PREL.map(function (q) { return [q[0], g.rel[q[0]] || 0]; }).filter(function (q) { return q[1]; });
         if (parts.length === 1) s += '<circle class="pr-' + parts[0][0] + '" cx="' + x + '" cy="' + y + '" r="' + r.toFixed(1) + '"/>';
@@ -1779,7 +1787,7 @@ function viewSpread() {
         if (p.modern && !SP.modern) return;
         var out = !placeYear(p);   // 時段外的地點半透明顯示
         if (ins && !p.jn) return;
-        var x = ins ? p.ix : p.x, y = ins ? p.iy : p.y, l = (ins ? M.ilbl[p.id] : M.lbl[p.id]) || [10, 4, 'start'], r = ins ? 1 : (p.jn ? 0.7 : 1);
+        var z = ins && SP.izoom ? IZS : 1, x = ins ? p.ix : p.x, y = ins ? p.iy : p.y, l0 = (ins ? M.ilbl[p.id] : M.lbl[p.id]) || [10, 4, 'start'], l = [l0[0] * z, l0[1] * z, l0[2]], r = ins ? z : (p.jn ? 0.7 : 1);
         // 形狀表示地點性質（刊刻地、署名地、抄寫購藏地），顏色表示所收本子屬玉匣記系統（sy）、其他齋曆（so），兩者都有的左右各半
         var sy = p.sys === 'o' ? ' so' : ' sy', rr = (p.kind === 'print' ? 6.5 : 5.5) * r;
         var sym = p.kind === 'acq' ? '<rect class="acq' + sy + '" x="' + (x - 5.5 * r) + '" y="' + (y - 5.5 * r) + '" width="' + 11 * r + '" height="' + 11 * r + '" transform="rotate(45 ' + x + ' ' + y + ')"/>' :
@@ -1791,10 +1799,15 @@ function viewSpread() {
     };
     prac(false); edges(false); pts(false);
     s += '<text class="ititle" x="' + (R[1][0] + 6) + '" y="' + (R[1][1] + 14) + '">' + L('江南（見放大圖）', 'Jiangnan (see inset)') + '</text>';
-    s += '<rect class="ibox" x="' + B[0][0] + '" y="' + B[0][1] + '" width="' + (B[1][0] - B[0][0]) + '" height="' + (B[1][1] - B[0][1]) + '" rx="6"/><path class="land" d="' + M.inset.land + '"/><text class="ititle" x="' + (B[0][0] + 10) + '" y="' + (B[0][1] + 17) + '">' + L('江南放大圖', 'Jiangnan inset') + '</text>';
+    // 江南放大圖：點擊框內空白處或標題再放大（以右上角爲錨點放大 IZK 倍），再點還原；放大時文字、點、線按比例縮回，保持原來的大小
+    var izTr = SP.izoom ? 'translate(' + B[1][0] + ',' + B[0][1] + ') scale(' + IZK + ') translate(' + (-B[1][0]) + ',' + (-B[0][1]) + ')' : '';
+    s += '<g class="sins' + (SP.izoom ? ' z' : '') + '"' + (izTr ? ' transform="' + izTr + '"' : '') + '>';
+    s += '<rect class="ibox izt" x="' + B[0][0] + '" y="' + B[0][1] + '" width="' + (B[1][0] - B[0][0]) + '" height="' + (B[1][1] - B[0][1]) + '" rx="6"/><path class="land izt" d="' + M.inset.land + '"/><text class="ititle izt" x="' + (B[0][0] + 10) + '" y="' + (B[0][1] + 17) + '">' + L('江南放大圖', 'Jiangnan inset') + '<tspan class="izh"> ' + (SP.izoom ? L('（點擊還原）', '(click to restore)', '(cliquer pour réduire)') : L('（點擊放大）', '(click to enlarge)', '(cliquer pour agrandir)')) + '</tspan></text>';
     prac(true); edges(true); pts(true);
+    s += '</g>';
     s += '</svg>';
     var mc = document.getElementById('smap'); mc.innerHTML = s;
+    mc.querySelectorAll('.izt, .ireg').forEach(function (el) { el.addEventListener('click', function () { SP.izoom = !SP.izoom; hideTip(); draw(); }); });
     timeBarSync();
     spFocus = FOCUS ? function () {
       // 收錄聚焦神明的版本 → 版本目錄編號 → 地點說明中「編號…」所指的地點
@@ -2668,16 +2681,16 @@ var SHARE = {
     set: function (o) { EDF.rows = o.rows === 'zs' ? 'zs' : 'k'; if (o.rows === 'zs') { M.q = o.mq || ''; M.type = o.type || ''; M.only = o.only || 'any'; M.sort = o.msort || 'prac'; } EDF.q = o.q || ''; EDF.min = o.min || '2'; EDF.fam = o.fam || 'all'; EDF.sort = o.sort || 'nv'; EDF.limit = 150; }
   },
   spread: {
-    get: function () { return { off: Object.keys(SP.on).filter(function (k) { return !SP.on[k]; }).join(','), modern: SP.modern ? 1 : '' }; },
-    set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; }
+    get: function () { return { off: Object.keys(SP.on).filter(function (k) { return !SP.on[k]; }).join(','), modern: SP.modern ? 1 : '', prac: SP.prac ? '' : 0, pall: SP.pall ? 1 : '', pweak: SP.pweak ? 1 : '', pref: SP.pref || '' }; },
+    set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; }
   },
   kin: {
     get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', dir: KIN.dir ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
     set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' ? 'sv' : 'j'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.dir = o.dir !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
   },
   ring: {
-    get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null; return r ? { month: r.zoom || '', layers: r.layers } : {}; },
-    set: function (o) { RING_SET = { month: +o.month || 0, layers: o.layers } ; }
+    get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; return o; },
+    set: function (o) { RING_SET = { month: +o.month || 0, layers: o.layers }; if (window.ZhaiRing && ZhaiRing.prefs) ZhaiRing.prefs({ tab: o.tab || 'sm', dom: o.dom === 'all' }); }
   }
 };
 var RING_SET = null, FIT_ZOOM = 1;
@@ -2698,6 +2711,7 @@ function shareApply(v, o) {
   if (SHARE[v]) SHARE[v].set(o);
   if (o.day) after.day = o.day.split('/').map(Number);
   if (o.play) after.play = true;
+  if (o.sec) after.sec = o.sec;   // 打開頁面後捲到這一欄（元素 id，如 r-total、r-dom、sprac、sbyp）
   focusBar();
   return after;
 }
@@ -2953,6 +2967,7 @@ function demoEdit() {
 // ---------- 路由 ----------
 function route(ev) {
   hideTip(true); hcHide(); closeDay();
+  timeStop(true);   // 先停下上一頁的播放，再讀網址狀態；否則年代提示條會停在播放到一半的年份
   if (window.ZhaiRing) ZhaiRing.hideTip();
   var hsh = location.hash.replace(/^#/, '') || 'ring', qi = hsh.indexOf('?'), qs = null, after = {};
   if (qi >= 0) { qs = qsParse(hsh.slice(qi + 1)); hsh = hsh.slice(0, qi) || 'ring'; history.replaceState(null, '', location.pathname + location.search + '#' + hsh); }   // 帶狀態的鏈接：讀入後從地址欄去掉
@@ -2986,6 +3001,7 @@ function route(ev) {
   if (v === 'ring' && RING_SET && window.ZhaiRing) { var rs = RING_SET; RING_SET = null; setTimeout(function () { ZhaiRing.set(rs); }, 30); }
   if (after.day && after.day[1]) openDay(after.day[0], after.day[1]);
   if (after.play && (v === 'fit' || v === 'spread')) setTimeout(timePlay, 400);
+  if (after.sec) setTimeout(function () { var el = document.getElementById(after.sec); if (el) el.scrollIntoView({ block: 'start' }); }, 150);
   if (DEMO.on) demoRender();
   decorate();
 }

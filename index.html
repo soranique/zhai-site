@@ -161,6 +161,30 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; } }
 :root[data-theme="dark"] .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; }
 .spread .sgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.spread { --pfit: #2f7d5a; --pdev: #c08a1e; --pnone: #a59c8e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --pfit: #4aa57c; --pdev: #d3a03a; --pnone: #8d877c; } }
+:root[data-theme="dark"] .spread { --pfit: #4aa57c; --pdev: #d3a03a; --pnone: #8d877c; }
+.spread .pr-fit { fill: var(--pfit); } .spread .pr-dev { fill: var(--pdev); } .spread .pr-none { fill: var(--pnone); }
+.spread .pr-ring { fill: none; stroke: var(--surface); stroke-width: 1.2; }
+.spread .sprp { cursor: pointer; opacity: .82; } .spread .sprp:hover, .spread .sprp.on { opacity: 1; } .spread .sprp.on .pr-ring { stroke: var(--ink); stroke-width: 2; }
+.spread .seg { display: inline-flex; border: 1px solid var(--grid); border-radius: 6px; overflow: hidden; }
+.spread .seg button { font: inherit; font-size: 12.5px; background: none; border: 0; padding: 3px 10px; cursor: pointer; color: var(--ink-2); }
+.spread .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.spread .sw2 { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+.spread .sw2.pr-fit { background: var(--pfit); } .spread .sw2.pr-dev { background: var(--pdev); } .spread .sw2.pr-none { background: var(--pnone); }
+.spread table.sptab { width: 100%; border-collapse: collapse; font-size: 13px; }
+.spread .sptab th, .spread .sptab td { padding: 4px 8px; border-bottom: 1px solid var(--grid); text-align: left; vertical-align: top; }
+.spread .sptab .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.spread .sptab tbody tr { cursor: pointer; } .spread .sptab tbody tr:hover, .spread .sptab tbody tr.on { background: var(--hover, rgba(0,0,0,.04)); }
+.spread .sprecs { padding-left: 0; list-style: none; margin: 0; columns: 2 360px; } .spread .sprecs li { break-inside: avoid; margin-bottom: 4px; }
+.spread .linkbtn { font: inherit; font-size: 12px; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0 4px; }
+.spread .sbyp { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px 20px; }
+.spread .sbyp-p h3 { font-size: 15px; margin: 0 0 6px; }
+.spread .sbyp-t { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.spread .zsm { display: block; text-decoration: none; color: var(--ink-2); font-size: 11.5px; line-height: 1.35; }
+.spread .zsm svg { display: block; width: 100%; height: auto; margin-bottom: 3px; }
+.spread .zsm-bg { fill: var(--grid); opacity: .35; } .spread .zsm-c { fill: var(--accent); }
+.spread .sbyp-r { margin: 0; padding-left: 16px; line-height: 1.6; }
 .spread .sbelow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; margin-top: 16px; }
 @media (max-width: 700px) { .spread .sbelow { grid-template-columns: 1fr; } }
 @media (max-width: 900px) { .spread .sgrid { grid-template-columns: 1fr; } }
@@ -548,9 +572,9 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="fr.js?v=0972c55f"></script>
 <script src="i18n.js?v=2af508b0"></script>
 <script src="data.js?v=dba1d6e8"></script>
-<script src="editions-data.js?v=5309f19e"></script>
+<script src="editions-data.js?v=88e2242c"></script>
 <script src="kinship-data.js?v=30c22f5f"></script>
-<script src="spread-data.js?v=7d06d645"></script>
+<script src="spread-data.js?v=250b36e5"></script>
 <script src="search-data.js?v=bae77b1a"></script>
 <script src="ring.js?v=a854095e"></script>
 <script>
@@ -1545,7 +1569,13 @@ function viewFit() {
 
 // ---------- 視圖：刊刻地與版本線索圖（數據見 spread-data.js，資料源 tools/spread/spread_sources.json） ----------
 var spFocus = null;
-var SP = { on: { doc: true, inf: true, f1: true, f2: true, f5: true, f6: true, f0: true }, modern: false };
+var SP = { on: { doc: true, inf: true, f1: true, f2: true, f5: true, f6: true, f0: true }, modern: false,
+  prac: true, pall: false, pweak: false, pref: null };   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
+// 實踐記錄的府：去掉括注；兩府交界的記在第一個府
+function pracPref(p) { return String(p.pref || '').replace(/（.*?）/g, '').split('、')[0].trim(); }
+// 與齋曆的對應關係歸成三類（待確認刪除的記錄不上圖）
+function pracRel(p) { return p.rel === REL_FIT ? 'fit' : String(p.rel || '').indexOf(REL_DEV) === 0 ? 'dev' : 'none'; }
+var PREL = [['fit', '貼合', 'Fit', 'Concordant'], ['dev', '存在偏差', 'Deviation', 'Écart'], ['none', '未對應（不對應、待查）', 'Not matched (no match, to check)', 'Non apparié (pas de correspondance, à vérifier)']];
 function viewSpread() {
   var M = window.ZHAI_SPREAD;
   if (!M) { app.innerHTML = '<p>' + L('缺少 spread-data.js。', 'spread-data.js is missing.') + '</p>'; return; }
@@ -1555,6 +1585,96 @@ function viewSpread() {
   var STEN = { '據三浦': 'after Miura', '三浦推測': 'Miura’s conjecture', '推定': 'inferred', '序文所稱': 'stated in preface', '署名': 'attribution', '待考': 'to study' };
   var famName = function (k) { return I.en() ? I.T(FAMEN[k]) : M.fam[k][0]; };
   var color = function (e) { return e.t === 'fam' ? M.fam[e.f][1] : 'var(--doc)'; };
+  // ---- 實踐記錄圖層：按府彙總（受年代滑桿、江南／全部、僅日期巧合三個選項影響） ----
+  var PRF = {}; (M.prefs || []).forEach(function (p) { PRF[p.name] = p; });
+  var PA = null;
+  var prefName = function (k) { var p = PRF[k]; return I.en() && p ? esc(p.en) + ' ' + esc(k) : esc(k); };
+  function pracAgg() {
+    var g = {}, noPlace = 0, offMap = 0, tot = 0;
+    D.practice.forEach(function (p) {
+      if (p.rel === '待確認刪除') return;
+      if (!SP.pweak && p.ev === NOFAST) return;
+      if (!SP.pall && p.jn !== '是') return;
+      if (!fYear(p)) return;
+      tot++;
+      var k = pracPref(p); if (!k) { noPlace++; return; }
+      var o = g[k] || (g[k] = { name: k, p: PRF[k], n: 0, rel: {}, genre: {}, recs: [] });
+      o.n++; o.rel[pracRel(p)] = (o.rel[pracRel(p)] || 0) + 1; o.genre[p.genre || '—'] = (o.genre[p.genre || '—'] || 0) + 1; o.recs.push(p);
+    });
+    var list = Object.keys(g).map(function (k) { return g[k]; }).sort(function (a, b) { return b.n - a.n; });
+    list.forEach(function (o) { if (!o.p || o.p.off) offMap += o.n; });
+    return { list: list, noPlace: noPlace, offMap: offMap, tot: tot };
+  }
+  function pracTip(o) {
+    var gs = Object.keys(o.genre).sort(function (a, b) { return o.genre[b] - o.genre[a]; });
+    return '<b>' + prefName(o.name) + '</b> · ' + L(o.n + ' 條實踐記錄', o.n + ' practice records', o.n + ' pratiques') +
+      PREL.map(function (r) { return o.rel[r[0]] ? '<br>' + L(r[1], r[2], r[3]) + ' ' + o.rel[r[0]] : ''; }).join('') +
+      '<div class="muted small">' + L('史料類型：', 'Source types: ', 'Types de sources : ') + gs.slice(0, 4).map(function (k) { return esc(k) + ' ' + o.genre[k]; }).join(L('、', ', ')) + (gs.length > 4 ? L(' 等', ' …', ' …') : '') + zhNote() + '</div>';
+  }
+  function renderPrac() {
+    var el = document.getElementById('sprac'); if (!el) return;
+    if (!SP.prac) { el.innerHTML = '<h2 style="margin-top:0">' + L('實踐記錄的分佈與史料類型', 'Practice records: distribution and source types', 'Pratiques : répartition et types de sources') + '</h2><p class="muted small" style="margin:0">' + L('實踐記錄圖層已關閉。', 'The practice layer is off.', 'La couche des pratiques est masquée.') + '</p>'; return; }
+    var A = PA, shown = A.tot - A.noPlace - A.offMap, tl = timeLabel() || L('全部年代', 'all periods', 'toutes périodes');
+    var sel = SP.pref && A.list.filter(function (o) { return o.name === SP.pref; })[0];
+    el.innerHTML = '<h2 style="margin-top:0">' + L('實踐記錄的分佈與史料類型', 'Practice records: distribution and source types', 'Pratiques : répartition et types de sources') + '</h2>' +
+      '<p class="small" style="margin:0 0 8px">' + L((SP.pall ? '全部記錄' : '狹義江南（八府一州）') + '，' + (SP.pweak ? '含僅日期巧合' : '只計言及持齋') + '，' + tl + '：共 ' + A.tot + ' 條；上圖 ' + shown + ' 條' + (A.offMap ? '，在地圖範圍外 ' + A.offMap + ' 條' : '') + (A.noPlace ? '，地點不明 ' + A.noPlace + ' 條' : '') + '。',
+        (SP.pall ? 'All records' : 'Narrow Jiangnan (eight prefectures and one department)') + ', ' + (SP.pweak ? 'including date-only coincidences' : 'fasting stated') + ', ' + tl + ': ' + A.tot + ' records; ' + shown + ' mapped' + (A.offMap ? ', ' + A.offMap + ' outside the map area' : '') + (A.noPlace ? ', ' + A.noPlace + ' without a place' : '') + '.',
+        (SP.pall ? 'Toutes les pratiques' : 'Jiangnan au sens étroit (huit préfectures et un département)') + ', ' + (SP.pweak ? 'coïncidences de date incluses' : 'jeûne mentionné') + ', ' + tl + ' : ' + A.tot + ' pratiques ; ' + shown + ' sur la carte' + (A.offMap ? ', ' + A.offMap + ' hors de la zone' : '') + (A.noPlace ? ', ' + A.noPlace + ' sans lieu' : '') + '.') + '</p>' +
+      '<div class="scroll"><table class="sptab"><thead><tr><th>' + L('府', 'Prefecture', 'Préfecture') + '</th><th class="num">' + L('條數', 'Records', 'Pratiques') + '</th>' + PREL.map(function (r) { return '<th class="num"><span class="sw2 pr-' + r[0] + '"></span>' + L(r[1].replace(/（.*/, ''), r[2].replace(/ \(.*/, ''), r[3].replace(/ \(.*/, '')) + '</th>'; }).join('') + '<th>' + L('主要史料類型', 'Main source types', 'Principaux types de sources') + '</th></tr></thead><tbody>' +
+      A.list.map(function (o) {
+        var gs = Object.keys(o.genre).sort(function (a, b) { return o.genre[b] - o.genre[a]; });
+        return '<tr data-pref="' + esc(o.name) + '"' + (sel === o ? ' class="on"' : '') + '><td>' + prefName(o.name) + (!o.p ? ' <span class="muted small">' + L('（無坐標）', '(no coordinates)', '(sans coordonnées)') + '</span>' : o.p.off ? ' <span class="muted small">' + L('（地圖範圍外）', '(outside map)', '(hors carte)') + '</span>' : '') + '</td><td class="num">' + o.n + '</td>' + PREL.map(function (r) { return '<td class="num">' + (o.rel[r[0]] || '') + '</td>'; }).join('') +
+          '<td class="small">' + gs.slice(0, 3).map(function (k) { return esc(k) + ' ' + o.genre[k]; }).join(L('、', ', ')) + (gs.length > 3 ? L(' 等 ' + gs.length + ' 類', ' (' + gs.length + ' types)', ' (' + gs.length + ' types)') : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      (sel ? '<h3 style="margin:14px 0 6px">' + prefName(sel.name) + L('：' + sel.n + ' 條', ': ' + sel.n + ' records', ' : ' + sel.n + ' pratiques') + ' <button type="button" class="linkbtn" id="spclr">' + L('收起', 'Close', 'Fermer') + '</button></h3><ul class="small sprecs">' +
+        sel.recs.slice().sort(function (a, b) { return pYear(a) - pYear(b); }).map(function (p) {
+          var r = PREL.filter(function (q) { return q[0] === pracRel(p); })[0];
+          return '<li><span class="sw2 pr-' + r[0] + '"></span><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit/' + p.id) + '"><b>' + esc(p.id) + '</b></a> ' + esc(p.year || '') + ' · ' + N(p.place) + ' · ' + N(p.zhai || '') + ' · <span class="muted">' + N(p.wt || '') + '（' + esc(p.genre || '') + '）</span></li>';
+        }).join('') + '</ul>' : '<p class="muted small" style="margin:8px 0 0">' + L('點表中一行或地圖上的圓，列出該府的記錄。', 'Click a row or a circle on the map to list that prefecture’s records.', 'Cliquer une ligne ou un cercle pour lister les pratiques de la préfecture.') + '</p>');
+    el.querySelectorAll('tr[data-pref]').forEach(function (tr) { tr.onclick = function () { pickPref(tr.getAttribute('data-pref')); }; });
+    var c = document.getElementById('spclr'); if (c) c.onclick = function () { pickPref(null); };
+  }
+  function pickPref(k) {
+    SP.pref = SP.pref === k ? null : k;
+    document.querySelectorAll('#smap g.sprp').forEach(function (g) { g.classList.toggle('on', g.getAttribute('data-pref') === SP.pref); });
+    renderPrac();
+  }
+  // ---- 按刊刻地比較齋曆內容：據版本目錄「刊刻地」欄；每版一張 12 × 30 小年格，另列少見日 ----
+  function renderByPlace() {
+    var el = document.getElementById('sbyp'); if (!el) return;
+    // 比較單位：規範名＋月日（跨幾天的按日拆開），與版本親疏相近；少見條目 = 全部版本中只有一兩個版本有的單位
+    var eds = EVS.filter(function (v) { return !v.solo; }), cnt = {}, unitsOf = {}, cellsOf = {};
+    eds.forEach(function (v) {
+      var u = {}, c = {};
+      ringRules(v).forEach(function (x) { if (x.type === 'none') return; x.cells.forEach(function (k) { c[k] = 1; if (x.k) u[x.k + '|' + k] = x; }); });
+      unitsOf[v.i] = u; cellsOf[v.i] = Object.keys(c).map(Number);
+      Object.keys(u).forEach(function (k) { cnt[k] = (cnt[k] || 0) + 1; });
+    });
+    var byP = {}, ord = [];
+    eds.forEach(function (v) { if (!v.pp) return; if (!byP[v.pp]) { byP[v.pp] = []; ord.push(v.pp); } byP[v.pp].push(v); });
+    var nUnk = eds.filter(function (v) { return !v.pp; }).length;
+    var placeLab = function (n) { var p = M.places.filter(function (x) { return x.name === n; })[0]; return I.en() && p ? esc(I.T(p.en)) + ' ' + esc(n) : esc(n); };
+    el.innerHTML = '<h2 style="margin-top:0">' + L('按刊刻地比較齋曆內容', 'Calendar content by place of printing', 'Contenu des calendriers par lieu d’impression') + '</h2>' +
+      '<p class="small" style="margin:0 0 6px">' + L('據版本目錄的「刊刻地」欄。每張小圖是一個版本的一年（12 行月 × 30 列日，有神聖日的格子著色）。「少見條目」以「規範名＋月日」爲單位，指全部 ' + eds.length + ' 個版本中只有一兩個版本收錄的條目，是比較地域差異最直接的指標。刊刻地不明的版本 ' + nUnk + ' 個，未列入。',
+        'From the “place of printing” column in the edition catalogue. Each tile is one edition’s year (12 rows of months × 30 columns of days, sacred days filled). “Rare entries” are units of standard name + month-day that only one or two of all ' + eds.length + ' editions include, the most direct sign of regional difference. ' + nUnk + ' editions of unknown place are left out.',
+        'D’après la colonne « lieu d’impression » du catalogue. Chaque vignette est l’année d’une édition (12 lignes de mois × 30 colonnes de jours, jours sacrés remplis). Les « entrées rares » sont les unités nom normalisé + jour du mois que seules une ou deux des ' + eds.length + ' éditions donnent, l’indice le plus direct d’une différence régionale. ' + nUnk + ' éditions de lieu inconnu sont omises.') + '</p>' +
+      '<p class="small muted" style="margin:0 0 12px">' + L('通書系統的玉匣記多是翻刻，北京、南京、上海的本子內容幾乎相同，地點不同不等於內容有地域性；少見條目也可能只是某一版本的誤刻或獨自增補。目前刊刻地明確的版本很少，這一欄只能作初步比較。', 'Almanac-type Yuxiaji editions are mostly reprints; the Beijing, Nanjing and Shanghai copies are nearly identical, so a different place does not mean regional content, and a rare entry may be a misprint or one edition’s own addition. Few editions have a known place of printing, so this is only a first comparison.', 'Les Yuxiaji de type almanach sont surtout des réimpressions ; les éditions de Pékin, Nankin et Shanghai sont presque identiques, un lieu différent n’implique donc pas un contenu régional, et une entrée rare peut n’être qu’une coquille ou un ajout propre à une édition. Peu d’éditions ont un lieu connu : ce n’est qu’une première comparaison.') + '</p>' +
+      '<div class="sbyp">' + ord.map(function (pl) {
+        var vs = byP[pl], rare = {}, per = {};
+        vs.forEach(function (v) { per[v.i] = 0; Object.keys(unitsOf[v.i]).forEach(function (k) { if (cnt[k] <= 2) { rare[k] = unitsOf[v.i][k]; per[v.i]++; } }); });
+        var rk = Object.keys(rare).sort(function (a, b) { return (+a.split('|')[1]) - (+b.split('|')[1]) || (a < b ? -1 : 1); });
+        return '<div class="sbyp-p"><h3>' + placeLab(pl) + ' <span class="muted small">' + L(vs.length + ' 個版本', vs.length + ' editions', vs.length + ' éditions') + '</span></h3><div class="sbyp-t">' +
+          vs.map(function (v) {
+            var c = cellsOf[v.i];
+            return '<a class="zsm" href="#ring/' + esc(v.no) + '"><svg viewBox="-1 -1 122 50" aria-hidden="true"><rect x="-1" y="-1" width="122" height="50" class="zsm-bg"/><g class="zsm-c">' + c.map(function (k) { return '<rect x="' + ((k % 100 - 1) * 4) + '" y="' + ((Math.floor(k / 100) - 1) * 4) + '" width="3.4" height="3.4"/>'; }).join('') + '</g></svg><span>' + edWhen(v) + ' ' + N(v.short) + ' · ' + L(c.length + ' 天', c.length + ' days', c.length + ' jours') + (vs.length > 1 ? '<br>' + L('少見 ' + per[v.i], per[v.i] + ' rare', per[v.i] + ' rares') : '') + '</span></a>';
+          }).join('') + '</div>' +
+          '<p class="small" style="margin:6px 0 2px"><b>' + L('少見條目 ' + rk.length + ' 項', rk.length + ' rare entries', rk.length + ' entrées rares') + '</b>' + (rk.length ? L('：', ': ', ' : ') : '') + '</p>' +
+          (rk.length ? '<ul class="small sbyp-r">' + rk.slice(0, 10).map(function (k) {
+            var c = +k.split('|')[1], x = rare[k];
+            return '<li>' + dayName(Math.floor(c / 100), c % 100) + ' · ' + N(x.k) + ' <span class="muted">' + L(cnt[k] + ' 本', cnt[k] + ' ed.', cnt[k] + ' éd.') + '</span></li>';
+          }).join('') + (rk.length > 10 ? '<li class="muted">' + L('等 ' + rk.length + ' 項', 'and ' + (rk.length - 10) + ' more', 'et ' + (rk.length - 10) + ' autres') + '</li>' : '') + '</ul>' : '') + '</div>';
+      }).join('') + '</div>';
+  }
   var edgeOn = function (e) { return (e.t === 'fam' ? SP.on[e.f] : SP.on[e.t]) && (!e.modern || SP.modern); };
   var arrow = function (e) { return e.t !== 'fam' || e.dir ? ' → ' : ' — '; };
   var line = function (st, dash, w, ar) { return '<svg viewBox="0 0 34 16"><line x1="2" y1="8" x2="' + (ar ? 26 : 32) + '" y2="8" stroke="' + st + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>' + (ar ? '<path d="M25,3 L33,8 L25,13 z" fill="' + st + '"/>' : '') + '</svg>'; };
@@ -1574,13 +1694,23 @@ function viewSpread() {
       '<label><input type="checkbox" data-k="inf"' + (SP.on.inf ? ' checked' : '') + '> ' + line('var(--doc)', '2 4', 2, 1) + ' ' + L('個本記錄（一端或途徑不明）', 'Copy-level record (one end or route uncertain)') + '</label>' +
       Object.keys(M.fam).map(function (k) { return '<label><input type="checkbox" data-k="' + k + '"' + (SP.on[k] ? ' checked' : '') + '> <span class="ssw" style="border-color:' + M.fam[k][1] + '"></span> ' + famName(k) + '</label>'; }).join('') +
       '<label class="small" style="margin-top:6px"><input type="checkbox" id="smod"' + (SP.modern ? ' checked' : '') + '> ' + L('顯示 1949 年以後的版本（台灣、北京、武當山）', 'Show editions after 1949 (Taiwan, Beijing, Wudangshan)') + '</label></div></div>' +
+    '<div class="card" style="margin-top:12px"><h2 style="margin-top:0">' + L('實踐記錄', 'Practice records', 'Pratiques attestées') + '</h2>' +
+      '<label class="small"><input type="checkbox" id="spon"' + (SP.prac ? ' checked' : '') + '> ' + L('在地圖上顯示實踐記錄（按府）', 'Show practice records on the map (by prefecture)', 'Afficher les pratiques sur la carte (par préfecture)') + '</label>' +
+      '<div class="seg" id="spall" role="group" style="margin:8px 0"><button type="button" data-v="0">' + L('只畫狹義江南', 'Narrow Jiangnan only', 'Jiangnan au sens étroit') + '</button><button type="button" data-v="1">' + L('全部記錄', 'All records', 'Toutes les pratiques') + '</button></div>' +
+      '<label class="small"><input type="checkbox" id="spweak"' + (SP.pweak ? ' checked' : '') + '> ' + L('也計「僅日期巧合」（原文未言齋）的記錄', 'Also count records that only coincide in date (no fasting stated)', 'Compter aussi les coïncidences de date seules (jeûne non mentionné)') + '</label>' +
+      '<div class="slg" style="margin-top:8px">' + PREL.map(function (r) { return '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" class="pr-' + r[0] + '"/></svg><span>' + L(r[1], r[2], r[3]) + '</span>'; }).join('') +
+      '<svg viewBox="0 0 34 16"><circle cx="9" cy="8" r="3" class="pr-ring"/><circle cx="24" cy="8" r="7" class="pr-ring"/></svg><span>' + L('圓面積是記錄條數；扇形是與齋曆的對應關係', 'Circle area is the number of records; slices show the relation to the calendars', 'L’aire est le nombre de pratiques ; les secteurs leur relation aux calendriers') + '</span></div>' +
+      '<p class="small muted" style="margin:8px 0 0">' + L('點一個府，下方列出該府的記錄。圓圈只表示記錄所在的地點，記錄多寡受史料來源影響（見下方史料類型表），刊刻地與實踐地重合不表示兩者有因果關係。', 'Click a prefecture to list its records below. Circles only show where records are located; their number depends on which sources survive (see the source-type table below), and printing places coinciding with practice places do not imply a causal link.', 'Cliquer une préfecture pour lister ses pratiques ci-dessous. Les cercles indiquent seulement où se situent les pratiques ; leur nombre dépend des sources conservées (voir le tableau des types de sources), et la coïncidence d’un lieu d’impression et d’un lieu de pratique n’implique pas de lien causal.') + '</p></div>' +
     (FOCUS ? '<div class="card" style="margin-top:12px" id="sfoc"></div>' : '') +
     '</div></div>' +
     // 連線的依據、刊刻地不明兩欄並排放在地圖下方
     '<div class="sbelow">' +
     '<div class="card"><h2 style="margin-top:0">' + L('連線的依據', 'Evidence for each line') + '</h2><ul class="sev" id="sev"></ul></div>' +
     '<div class="card"><h2 style="margin-top:0">' + L('刊刻地不明，未上圖', 'Place of printing unknown (not mapped)') + '</h2><ul class="small" style="padding-left:18px;margin:0">' + M.unk.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
-    '</div></div>';
+    '</div>' +
+    '<div class="card" style="margin-top:16px" id="sprac"></div>' +
+    '<div class="card" style="margin-top:16px" id="sbyp"></div>' +
+    '</div>';
   app.innerHTML = h;
   putFocusNote(L('標出收錄它的版本的相關地點', 'places linked to editions that include it are marked'));
   function curve(e, ins) {
@@ -1600,6 +1730,7 @@ function viewSpread() {
     app.querySelectorAll('#smap g.spt').forEach(function (g) { var p = g.getAttribute('data-p'); g.classList.toggle('dim', !!id && p !== id && !M.edges.some(function (e) { return edgeOn(e) && ((e.a === id && e.b === p) || (e.b === id && e.a === p)); })); });
   }
   function draw() {
+    PA = pracAgg();
     var W = M.W, H = M.H, R = M.inset.reg, B = M.inset.box;
     var s = '<svg class="smap" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + L('玉匣記刊刻地與版本線索圖', 'Map of Yuxiaji printing places and edition links') + '"><defs>';
     ['doc', 'f1', 'f2', 'f5', 'f6', 'f0'].forEach(function (k) { s += '<marker id="sar-' + k + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" fill="' + (k === 'doc' ? 'var(--doc)' : M.fam[k][1]) + '"/></marker>'; });
@@ -1614,6 +1745,24 @@ function viewSpread() {
           (e.y && !(PL[e.a].jn || PL[e.b].jn) ? '<text class="yr" x="' + c.mx.toFixed(1) + '" y="' + (c.my - 4).toFixed(1) + '" text-anchor="middle">' + esc(e.y) + '</text>' : '') + '</g>';
       });
     };
+    // 實踐記錄：按府畫圓，面積是條數，扇形是對應關係；在放大圖範圍內的府只畫在放大圖裏
+    var prac = function (ins) {
+      if (!SP.prac) return;
+      PA.list.forEach(function (g) {
+        var P = g.p; if (!P || P.off) return;
+        if (ins !== (P.ix != null)) return;
+        var x = ins ? P.ix : P.x, y = ins ? P.iy : P.y, r = (ins ? 3.2 : 2.6) * Math.sqrt(g.n) + 2, a0 = -Math.PI / 2;
+        s += '<g class="sprp' + (SP.pref === g.name ? ' on' : '') + '" data-pref="' + esc(g.name) + '">';
+        var parts = PREL.map(function (q) { return [q[0], g.rel[q[0]] || 0]; }).filter(function (q) { return q[1]; });
+        if (parts.length === 1) s += '<circle class="pr-' + parts[0][0] + '" cx="' + x + '" cy="' + y + '" r="' + r.toFixed(1) + '"/>';
+        else parts.forEach(function (q) {
+          var a1 = a0 + q[1] / g.n * 2 * Math.PI, big = a1 - a0 > Math.PI ? 1 : 0;
+          s += '<path class="pr-' + q[0] + '" d="M' + x + ',' + y + ' L' + (x + r * Math.cos(a0)).toFixed(1) + ',' + (y + r * Math.sin(a0)).toFixed(1) + ' A' + r.toFixed(1) + ',' + r.toFixed(1) + ' 0 ' + big + ' 1 ' + (x + r * Math.cos(a1)).toFixed(1) + ',' + (y + r * Math.sin(a1)).toFixed(1) + ' Z"/>';
+          a0 = a1;
+        });
+        s += '<circle class="pr-ring" cx="' + x + '" cy="' + y + '" r="' + r.toFixed(1) + '"/></g>';
+      });
+    };
     var pts = function (ins) {
       M.places.forEach(function (p) {
         if (p.modern && !SP.modern) return;
@@ -1625,10 +1774,10 @@ function viewSpread() {
         s += '<g class="spt" data-p="' + p.id + '">' + sym + (!ins && p.jn ? '' : '<text x="' + (x + l[0]) + '" y="' + (y + l[1]) + '" text-anchor="' + (I.en() && l[2] === 'end' ? 'end' : l[2]) + '">' + esc(nm) + '</text>') + '</g>';
       });
     };
-    edges(false); pts(false);
+    prac(false); edges(false); pts(false);
     s += '<text class="ititle" x="' + (R[1][0] + 6) + '" y="' + (R[1][1] + 14) + '">' + L('江南（見放大圖）', 'Jiangnan (see inset)') + '</text>';
     s += '<rect class="ibox" x="' + B[0][0] + '" y="' + B[0][1] + '" width="' + (B[1][0] - B[0][0]) + '" height="' + (B[1][1] - B[0][1]) + '" rx="6"/><path class="land" d="' + M.inset.land + '"/><text class="ititle" x="' + (B[0][0] + 10) + '" y="' + (B[0][1] + 17) + '">' + L('江南放大圖', 'Jiangnan inset') + '</text>';
-    edges(true); pts(true);
+    prac(true); edges(true); pts(true);
     s += '</svg>';
     var mc = document.getElementById('smap'); mc.innerHTML = s;
     timeBarSync();
@@ -1652,6 +1801,14 @@ function viewSpread() {
       g.addEventListener('mousemove', function (ev) { showTip(ev, edgeTip(e)); });
       g.addEventListener('mouseleave', hideTip);
     });
+    mc.querySelectorAll('g.sprp').forEach(function (g) {
+      var o = PA.list.filter(function (x) { return x.name === g.getAttribute('data-pref'); })[0];
+      g.addEventListener('mousemove', function (ev) { showTip(ev, pracTip(o)); });
+      g.addEventListener('mouseleave', hideTip);
+      g.addEventListener('click', function () { pickPref(o.name); var t = document.getElementById('sprac'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+    });
+    if (SP.pref && !PA.list.some(function (o) { return o.name === SP.pref; })) SP.pref = null;
+    renderPrac();
     mc.querySelectorAll('g.spt').forEach(function (g) {
       var id = g.getAttribute('data-p'), inf = M.info[id] || [];
       g.addEventListener('mousemove', function (ev) {
@@ -1683,7 +1840,13 @@ function viewSpread() {
     var y = lineYear(String(e.y || '').replace(/^→/, '')); return !y || yearOK(y);
   };
   TIME_HOOK = draw;
-  timeBarWire(function () { var n = M.places.filter(function (p) { return (!p.modern || SP.modern) && placeYear(p); }).length; return L('地圖上 ' + n + ' 處地點', n + ' places on the map', n + ' lieux sur la carte') + (TIME.mode === 'period' || TIME.play ? '' : '') ; });
+  timeBarWire(function () { var n = M.places.filter(function (p) { return (!p.modern || SP.modern) && placeYear(p); }).length; var q = SP.prac && PA ? PA.tot - PA.noPlace - PA.offMap : 0; return L('地圖上 ' + n + ' 處地點', n + ' places on the map', n + ' lieux sur la carte') + (SP.prac ? L('、' + q + ' 條實踐記錄', ', ' + q + ' practice records', ', ' + q + ' pratiques') : ''); });
+  var segSync = function () { app.querySelectorAll('#spall button').forEach(function (b) { b.setAttribute('aria-pressed', String((b.getAttribute('data-v') === '1') === SP.pall)); }); };
+  segSync();
+  app.querySelectorAll('#spall button').forEach(function (b) { b.onclick = function () { SP.pall = b.getAttribute('data-v') === '1'; segSync(); draw(); timeBarSync(); }; });
+  document.getElementById('spon').onchange = function (e) { SP.prac = e.target.checked; draw(); timeBarSync(); };
+  document.getElementById('spweak').onchange = function (e) { SP.pweak = e.target.checked; draw(); timeBarSync(); };
+  renderByPlace();
   document.getElementById('sflt').addEventListener('change', function (e) {
     if (e.target.id === 'smod') SP.modern = e.target.checked;
     else { var k = e.target.getAttribute('data-k'); if (k) SP.on[k] = e.target.checked; }
@@ -2401,7 +2564,7 @@ function ringRules(v) {
       type = cells.length ? 'month' : 'none';
     } else if (e.m && e.d && e.d <= 30) { type = 'year'; cells = [e.m * 100 + e.d]; }
     var lab = e.l && !/^（/.test(e.l) ? e.l : '';
-    return { id: e.id, type: type, cells: cells, kind: RKIND[e.c] || 'U', mo: e.mo || '', dy: e.dy || '',
+    return { id: e.id, type: type, cells: cells, kind: RKIND[e.c] || 'U', k: e.k || '', mo: e.mo || '', dy: e.dy || '',
       name: e.k ? e.k + (lab ? '・' + lab : '') : (lab || e.t || e.g || '—'), t: v.solo ? soloName(e) : (e.t || '') };
   });
 }

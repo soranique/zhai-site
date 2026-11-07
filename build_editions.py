@@ -139,6 +139,9 @@ def main():
             norms[k] = [conf or cand, not conf and bool(cand), nat, gcode]
 
     versions, entries, cmap = [], [], {}
+    # 版本目录「刊刻地（規範地名，待核）」栏：版本線索圖按刊刻地比較内容用；按表头找栏，没有这一栏时为空
+    vhead = [clean(h) for h in next(wb['版本目录'].iter_rows(max_row=1, values_only=True))]
+    ppc = next((i for i, h in enumerate(vhead) if h.startswith('刊刻地') and '依據' not in h and '依据' not in h), None)
     for r in wb['版本目录'].iter_rows(min_row=2, values_only=True):
         sheet = clean(r[1])
         if not sheet or sheet not in wb.sheetnames:
@@ -152,6 +155,7 @@ def main():
             'year': int(yr.group(1)) if yr else None, 'yuxia': '玉匣記' in sheet,
             'no': clean(r[0]), 'noText': bool(re.search(r'[識识]典', clean(r[6]))),
             'solo': '專門單獨齋期' in clean(r[4]),   # 專門單獨齋期：环形历里另列（见 build_rings）
+            'pp': clean(r[ppc]) if ppc is not None and ppc < len(r) else '',   # 刊刻地（規範地名）
         }
         if sheet.startswith('專門單獨齋期'):          # 汇集页不是单一版本，页名没有年代段
             v.update(when='彙集', era='據 Goossaert 2024 及原書', short='專門單獨齋期彙集', pub='')

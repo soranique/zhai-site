@@ -19,8 +19,11 @@ const reg = { type: 'MultiPoint', coordinates: [[118.2, 29.7], [122.4, 29.7], [1
 const projI = geoConicConformal().parallels([25, 40]).rotate([-120, 0]).fitExtent([[IB[0][0] + 10, IB[0][1] + 24], [IB[1][0] - 10, IB[1][1] - 10]], reg).clipExtent(IB);
 const pathI = geoPath(projI).digits(1);
 const box = [[118.2, 29.7], [122.4, 29.7], [122.4, 32.7], [118.2, 32.7]].map(c => proj(c).map(v => +v.toFixed(1)));
+// 府治坐標（實踐記錄圖層用）：在放大圖範圍內的另算放大圖坐標；在地圖範圍外的標 off
+const inReg = (p) => p.lon >= 118.2 && p.lon <= 122.4 && p.lat >= 29.7 && p.lat <= 32.7;
+const PREFS = (SRC.PREFS || []).map((p) => { const [x, y] = proj([p.lon, p.lat]); const q = { ...p, x: +x.toFixed(1), y: +y.toFixed(1) }; if (x < 0 || x > W || y < 0 || y > H) q.off = true; if (inReg(p)) { const [a, b] = projI([p.lon, p.lat]); q.ix = +a.toFixed(1); q.iy = +b.toFixed(1); } return q; });
 for (const p of P) { const [x, y] = proj([p.lon, p.lat]); p.x = +x.toFixed(1); p.y = +y.toFixed(1); if (p.jn) { const [a, b] = projI([p.lon, p.lat]); p.ix = +a.toFixed(1); p.iy = +b.toFixed(1); } }
 const data = { W, H, land: path(land), grat: path(grat()), inset: { box: IB, land: pathI(land), reg: box }, places: P,
-  info: SRC.INFO, fam: SRC.FAM, edges: SRC.EDGES, unk: SRC.UNK, lbl: SRC.LBL, ilbl: SRC.ILBL };
+  info: SRC.INFO, fam: SRC.FAM, edges: SRC.EDGES, unk: SRC.UNK, lbl: SRC.LBL, ilbl: SRC.ILBL, prefs: PREFS };
 fs.writeFileSync(new URL('../../spread-data.js', import.meta.url), '// 由 tools/spread/build_spread.mjs 自动生成，请勿手改；资料改 spread_sources.json\nwindow.ZHAI_SPREAD = ' + JSON.stringify(data) + ';\n');
 console.log('地点 %d、连线 %d', P.length, SRC.EDGES.length);

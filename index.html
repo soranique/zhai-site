@@ -997,14 +997,19 @@ function kDays(e) {   // 條目 → [月, [日…]]；不是具體月日的返�
   if (e._kd !== undefined) return e._kd;
   var m = /^(十一|十二|正|冬|臘|臘|[一二三四五六七八九十])月$/.exec(e.mo || ''), dy = e.dy || '', ds = {}, r;
   if (!m || !dy) return (e._kd = null);
+  var ks = dyDays(dy);
+  return (e._kd = ks.length ? [KMON[m[1]], ks] : null);
+}
+// 日期字串 → 日的列表（如「初八、十四、十五」「初八至十五」）；「（月小：……）」裏的替代日期不計
+function dyDays(dy) {
+  var ds = {}, r;
   var re1 = new RegExp('(' + KDAY + ')日?至(' + KDAY + ')', 'g');
   while ((r = re1.exec(dy))) { var x = kDnum(r[1]), y = kDnum(r[2]); if (x && y) for (var i = x; i <= y; i++) ds[i] = 1; }
   var small = dy.replace(/（月小.*?）/g, ''), re2 = new RegExp(KDAY, 'g');
   while ((r = re2.exec(small))) { var z = kDnum(r[0]); if (z) ds[z] = 1; }
   var re3 = /([一二三四五六七八九])日/g;
   while ((r = re3.exec(small))) { var pc = small[r.index - 1]; if (pc !== '初' && pc !== '十' && pc !== '廿') ds[KCN[r[1]]] = 1; }
-  var ks = Object.keys(ds).map(Number).sort(function (a, b) { return a - b; });
-  return (e._kd = ks.length ? [KMON[m[1]], ks] : null);
+  return Object.keys(ds).map(Number).filter(function (d) { return d >= 1 && d <= 30; }).sort(function (a, b) { return a - b; });
 }
 function cmpBox() {
   var box = document.getElementById('cmppanel');
@@ -2368,13 +2373,42 @@ function ringVersion(no) {
 }
 // 專門單獨齋期：原文欄常只有日期或「（未見原書）」，環形曆上改用齋名
 function soloName(e) { return /未見原書/.test(e.t) ? e.l : /僅列日期/.test(e.l) ? (e.q || e.k) : e.t; }
+// 齋期規則：把一個版本的條目分成年度定日、每月週期、多日齋期、不能排入月日四類，並展開到一年 12 個月 × 30 日
+// 「明言齋戒」：原文、說明或日期類型欄裏有持齋、齋戒、齋素、吃素等字；設齋、修齋、撿齋、齋醮、齋僧等儀式用語不算。專門單獨齋期整本都算
+var FAST_IN = /持齋|齋戒|戒齋|齋素|喫素|吃素|食素|茹素|持素|齋期|齋日|白衣齋|雷齋|斗齋|準提齋|准提齋|十王齋|辛齋|大齋|十齋|六齋|三短齋|十直齋|^齋/;
+var FAST_OUT = /設齋|修齋|建齋|撿齋|檢齋|齋醮|設醮|建醮|齋僧|齋衆|齋眾|齋供/;
+function saysFast(e) { return [e.q, e.l, e.t].some(function (x) { return x && FAST_IN.test(x) && !FAST_OUT.test(x); }); }
+function rangeCells(r) {
+  var out = [];
+  String(r).split(/[；;]/).forEach(function (seg) {
+    var m = /(\d+)\/(\d+)(?:-(\d+)\/(\d+))?/.exec(seg); if (!m) return;
+    var a = [+m[1], +m[2]], b = m[3] ? [+m[3], +m[4]] : a, mo = a[0], d = a[1], n = 0;
+    while (n++ < 400) { if (d <= 30) out.push(mo * 100 + d); if (mo === b[0] && d === b[1]) break; d++; if (d > 30) { d = 1; mo = mo % 12 + 1; } }
+  });
+  return out;
+}
+function ringRules(v) {
+  var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
+  return es.map(function (e) {
+    var type = 'none', cells = [];
+    if (e.r) { type = 'range'; cells = rangeCells(e.r); }
+    else if (/^每月/.test(e.mo || '')) {
+      if (e.m && e.d) cells = [e.m * 100 + e.d];   // 專門單獨齋期：「每月」已排進十二個月
+      else { var ds = dyDays(e.dy || ''); for (var m = 1; m <= 12; m++) ds.forEach(function (d) { cells.push(m * 100 + d); }); }
+      type = cells.length ? 'month' : 'none';
+    } else if (e.m && e.d && e.d <= 30) { type = 'year'; cells = [e.m * 100 + e.d]; }
+    var lab = e.l && !/^（/.test(e.l) ? e.l : '';
+    return { id: e.id, type: type, cells: cells, fast: !!v.solo || saysFast(e), mo: e.mo || '', dy: e.dy || '',
+      name: e.k ? e.k + (lab ? '・' + lab : '') : (lab || e.t || e.g || '—'), t: v.solo ? soloName(e) : (e.t || '') };
+  });
+}
 function ringData(v) {
   var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
   var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
   return {
     meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + esc(v.pub) : ''),
       sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
-      fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30] },
+      fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30], rules: ringRules(v), solo: !!v.solo },
     entries: es.filter(function (e) { return e.m && e.d; }).map(function (e) {
       var src = /原表出處：([^｜]+)/.exec(e.pg || '');
       return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: KIND[e.c] || '?', src: src ? src[1].trim() : '',

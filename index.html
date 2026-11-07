@@ -344,6 +344,7 @@ svg .gridl { stroke: var(--grid); }
 .csvbar { display: flex; justify-content: flex-end; margin: 4px 0 2px; }
 .csvbtn { font: inherit; font-size: 12px; padding: 2px 10px; border: 1px solid var(--grid); border-radius: 6px; background: var(--surface); color: var(--ink-2); cursor: pointer; }
 .csvbtn:hover { border-color: var(--accent); color: var(--accent); }
+.fmode { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; max-width: 560px; margin: 0 0 12px; border: 1px solid var(--axis); border-radius: 8px; overflow: hidden; } .fmode button { font: inherit; font-size: 14px; padding: 7px 14px; min-height: 36px; border: 0; border-left: 1px solid var(--axis); background: var(--surface); color: var(--ink-2); cursor: pointer; text-align: left; line-height: 1.35; } .fmode button:first-child { border-left: 0; } .fmode button small { display: block; font-size: 12px; color: var(--muted); } .fmode button[aria-pressed="true"] { background: var(--ink); color: var(--page); font-weight: 600; } .fmode button[aria-pressed="true"] small { color: var(--page); opacity: .8; font-weight: 400; }
 .fzoom { display: inline-flex; margin: 0 6px; } .fzoom button { font: inherit; width: 28px; height: 26px; border: 1px solid var(--grid); background: var(--surface); color: var(--ink); cursor: pointer; } .fzoom button:first-child { border-radius: 6px 0 0 6px; } .fzoom button:last-child { border-radius: 0 6px 6px 0; border-left: 0; }
 .fheat-wrap .fheat { grid-template-columns: 44px repeat(30, minmax(calc(18px * var(--fz, 1)), 1fr)); min-width: calc(640px * var(--fz, 1)); }
 .fheat-wrap .fheat .fh-c { height: calc(22px * var(--fz, 1)); font-size: calc(10px * var(--fz, 1)); }
@@ -1334,7 +1335,9 @@ function viewCalendar() {
 }
 
 // ---------- 視圖：實踐與齋曆 ----------
-var FIT = { q: '', rel: '', open: {}, unit: 'rec', pres: 'half', day: 0 };
+var FIT = { q: '', rel: '', open: {}, unit: 'rec', pres: 'half', day: 0, fast: true };
+// 默認只計言及持齋的實踐記錄；「僅日期巧合」（原文未提持齋，只是日期與齋曆條目重合）可選擇加入
+function fitEv(p) { return !FIT.fast || p.ev !== NOFAST; }
 var FIT_HEAT = { cnt: {}, pres: function () { return false; } };
 // 月日熱力圖：實踐記錄按所對齋曆條目的農曆月日落格；「規定」按已獲完整文本的版本（見證，1882/1891 算一個）統計
 var FIT_PRES = null;
@@ -1355,10 +1358,15 @@ var FIT_MN = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九',
 function FIT_DN(d) { var n = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']; return d <= 10 ? '初' + n[d] : d < 20 ? '十' + n[d - 10] : d === 20 ? '二十' : d < 30 ? '廿' + n[d - 20] : '三十'; }
 function fitDayOf(p) { var e = EBYID[pCal(p)]; return e && e.m && e.d && e.d <= 30 ? e.m * 100 + e.d : 0; }
 function fitHeatHTML() {
-  var sel = function (id, cur, opts) { return '<select id="' + id + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>'; };
-  return '<h2>' + L('月日熱力圖', 'Lunar-day heat map') + '</h2><p class="lede small">' +
-    L('每格是一個農曆日（十二個月 × 三十日），按實踐記錄所對齋曆條目的月日落格；色越深，對上這一天的實踐越多。計數單位可換成「不同文獻」或「不同地點」，用來區分是多處多書都有記載，還是某一種材料貢獻了多條。<b>描邊空格</b>是齋曆規定了、但沒有實踐記錄對上的日子；「規定」的標準可選，只統計已獲完整文本的 15 個見證（1882、1891 兩本算一個），只計正文條目。顏色深淺反映的是存世並被收集的記錄多少，不等於實際持齋的人數。點格子打開「這一天」：左邊是各版本這一天的條目，右邊是對上的實踐記錄。',
-      'Each cell is a lunar day (12 months × 30 days); practice records fall on the month and day of the calendar entry they match, and darker means more. The unit can be switched to distinct sources or distinct places, to tell whether a day is attested in many places and books or by many records from one source. <b>Outlined empty cells</b> are days the calendars prescribe but no practice record matches; choose what counts as prescribed. Only the 15 witnesses with a complete text (1882 and 1891 count as one) and main-table entries are counted. Shading reflects how many records survive and were collected, not how many people fasted. Click a cell to open “this day”: each edition’s entries for the day beside the practice records matched to them.') + '</p>' +
+  var sel = function (id, cur, opts) { return '<select id="' + id + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + L(o[1], o[2], o[3]) + '</option>'; }).join('') + '</select>'; };
+  var mb = function (v, zh, en, fr, szh, sen, sfr) { return '<button type="button" data-fast="' + v + '" aria-pressed="' + ((FIT.fast ? 'fast' : 'all') === v) + '">' + L(zh, en, fr) + '<small>' + L(szh, sen, sfr) + '</small></button>'; };
+  return '<h2>' + L('月日熱力圖', 'Lunar-day heat map') + '</h2>' +
+    '<div class="fmode" id="ffast" role="group" aria-label="' + L('熱力圖顯示模式', 'Heat map mode', 'Mode de la carte de chaleur') + '">' +
+    mb('fast', '只計言及持齋', 'Fasting mentioned', 'Jeûne mentionné', '原文明確提到持齋的實踐記錄', 'records whose text mentions fasting', 'témoignages dont le texte mentionne le jeûne') +
+    mb('all', '含日期巧合', 'Incl. date coincidences', 'Avec coïncidences de date', '另加只與齋曆日期重合、未提持齋的記錄', 'adds records that only coincide in date', 'ajoute les témoignages qui ne coïncident que par la date') +
+    '</div><p class="lede small">' +
+    L('每格是一個農曆日（十二個月 × 三十日），按實踐記錄所對齋曆條目的月日落格；色越深，對上這一天的實踐越多。默認只計原文言及持齋的記錄；「僅日期巧合」的記錄（原文未提持齋，只是日期與齋曆條目重合）可用上方按鈕切換加入。計數單位可換成「不同文獻」或「不同地點」，用來區分是多處多書都有記載，還是某一種材料貢獻了多條。<b>描邊空格</b>是齋曆規定了、但沒有實踐記錄對上的日子；「規定」的標準可選，只統計已獲完整文本的 19 個見證（1882、1891 兩本算一個），只計正文條目。顏色深淺反映的是存世並被收集的記錄多少，不等於實際持齋的人數。點格子打開「這一天」：左邊是各版本這一天的條目，右邊是對上的實踐記錄。',
+      'Each cell is a lunar day (12 months × 30 days); practice records fall on the month and day of the calendar entry they match, and darker means more. By default only records whose text mentions fasting are counted; records that only coincide in date (no fasting mentioned) can be added with the switch above. The unit can be switched to distinct sources or distinct places, to tell whether a day is attested in many places and books or by many records from one source. <b>Outlined empty cells</b> are days the calendars prescribe but no practice record matches; choose what counts as prescribed. Only the 19 witnesses with a complete text (1882 and 1891 count as one) and main-table entries are counted. Shading reflects how many records survive and were collected, not how many people fasted. Click a cell to open “this day”: each edition’s entries for the day beside the practice records matched to them.') + '</p>' +
     '<div class="controls">' + L('計數：', 'Count: ') + sel('funit', FIT.unit, [['rec', '實踐記錄數', 'practice records'], ['src', '不同文獻數', 'distinct sources'], ['loc', '不同地點數', 'distinct places']]) +
     L('　描邊（規定但無實踐）：', '　Outline (prescribed, no practice): ') + sel('fpres', FIT.pres, [['half', '過半見證列出該日', 'listed by over half the witnesses'], ['any', '至少一個見證列出', 'listed by at least one witness'], ['q', '有明確持齋／戒要求', 'with an explicit abstinence requirement'], ['off', '不描邊', 'no outline']]) +
     '<span class="muted small" id="fhs"></span><span class="fzoom" role="group" aria-label="' + L('縮放熱力圖', 'Zoom the heat map', 'Zoom de la carte de chaleur') + '"><button type="button" data-fz="-1" aria-label="' + L('縮小', 'Zoom out', 'Réduire') + '">－</button><button type="button" data-fz="1" aria-label="' + L('放大', 'Zoom in', 'Agrandir') + '">＋</button></span><button type="button" class="csvbtn" id="fhcsv">' + L('下載 CSV', 'Download CSV', 'Télécharger CSV') + '</button></div><div class="fheat-wrap"><div class="fheat" id="fheat"></div></div><div class="fheat-key small muted" id="fhk"></div>';
@@ -1392,7 +1400,7 @@ function viewFit() {
   var fill = function () {
     var q = FIT.q.toLowerCase();
     var ps = LINKED.filter(function (p) {
-      if (!fPrac(p) || !fYear(p)) return false;
+      if (!fPrac(p) || !fYear(p) || !fitEv(p)) return false;
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return false;
       if (FIT.rel === REL_DEV && !isDev(p)) return false;
       if (FIT.day && fitDayOf(p) !== FIT.day) return false;
@@ -1432,7 +1440,7 @@ function viewFit() {
   var heat = function () {
     var P = fitPres(), cnt = {}, set = {}, names = {}, max = 0;
     LINKED.forEach(function (p) {
-      if (!fPrac(p) || !fYear(p)) return;
+      if (!fPrac(p) || !fYear(p) || !fitEv(p)) return;
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return;
       if (FIT.rel === REL_DEV && !isDev(p)) return;
       var k = fitDayOf(p); if (!k) return;
@@ -1449,7 +1457,7 @@ function viewFit() {
     };
     if (TIME.play) {  // 播放時色階按整個年代區間定，格子才是逐年加深、不會忽深忽淺
       var setW = {};
-      LINKED.forEach(function (p) { if (!fPrac(p) || !fYear(p, true)) return; if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return; if (FIT.rel === REL_DEV && !isDev(p)) return; var k = fitDayOf(p); if (!k) return; (setW[k] = setW[k] || {})[FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id] = 1; });
+      LINKED.forEach(function (p) { if (!fPrac(p) || !fYear(p, true) || !fitEv(p)) return; if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return; if (FIT.rel === REL_DEV && !isDev(p)) return; var k = fitDayOf(p); if (!k) return; (setW[k] = setW[k] || {})[FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id] = 1; });
       Object.keys(setW).forEach(function (k) { max = Math.max(max, Object.keys(setW[k]).length); });
     }
     var lv = function (n) { return !n ? 0 : max <= 4 ? Math.min(n, 4) : n <= max * 0.12 ? 1 : n <= max * 0.3 ? 2 : n <= max * 0.6 ? 3 : 4; };
@@ -1490,9 +1498,15 @@ function viewFit() {
   document.getElementById('fhcsv').onclick = function () {   // 熱力圖的數字：12 個月 × 30 日
     var u = { rec: L('實踐記錄數', 'practice records'), src: L('文獻數', 'sources'), loc: L('地點數', 'places') }[FIT.unit], rows = [[L('月', 'Month') + ' \\ ' + L('日', 'Day') + '（' + u + '）'].concat(Array.apply(null, Array(30)).map(function (_, i) { return i + 1; }))];
     for (var m = 1; m <= 12; m++) rows.push([m].concat(Array.apply(null, Array(30)).map(function (_, i) { var k = m * 100 + i + 1, n = FIT_HEAT.cnt[k] || 0; return n || (FIT_HEAT.pres(k) ? L('規定', 'prescribed') : ''); })));
-    csvDownload(rows, 'zhai_heatmap_' + FIT.unit + (timeOn() ? '_' + (TIME.mode === 'period' ? PERIODS.filter(function (P) { return P[0] === TIME.period; })[0][1].replace(/\W+/g, '') : TIME.lo + '-' + TIME.hi) : '') + (FOCUS ? '_' + (FOCUS.g || 'focus') : '') + '_' + new Date().toISOString().slice(0, 10));
+    csvDownload(rows, 'zhai_heatmap_' + (FIT.fast ? 'fasting_' : 'all_') + FIT.unit + (timeOn() ? '_' + (TIME.mode === 'period' ? PERIODS.filter(function (P) { return P[0] === TIME.period; })[0][1].replace(/\W+/g, '') : TIME.lo + '-' + TIME.hi) : '') + (FOCUS ? '_' + (FOCUS.g || 'focus') : '') + '_' + new Date().toISOString().slice(0, 10));
   };
-  timeBarWire(function () { var n = LINKED.filter(function (p) { return fPrac(p) && fYear(p); }).length; return L('對上齋曆的實踐 ' + n + ' / ' + LINKED.length + ' 條', n + ' / ' + LINKED.length + ' matched practice records', n + ' / ' + LINKED.length + ' témoignages de pratique rattachés'); });
+  timeBarWire(function () { var n = LINKED.filter(function (p) { return fPrac(p) && fYear(p) && fitEv(p); }).length; return L('對上齋曆的實踐 ' + n + ' / ' + LINKED.length + ' 條', n + ' / ' + LINKED.length + ' matched practice records', n + ' / ' + LINKED.length + ' témoignages de pratique rattachés'); });
+  document.getElementById('ffast').onclick = function (e) {
+    var b = e.target.closest('button[data-fast]'); if (!b) return;
+    FIT.fast = b.getAttribute('data-fast') !== 'all'; FIT.open = {};
+    this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    heat(); fill();
+  };
   document.getElementById('funit').onchange = function (e) { FIT.unit = e.target.value; heat(); };
   document.getElementById('fpres').onchange = function (e) { FIT.pres = e.target.value; heat(); };
   document.getElementById('fb').onclick = function (ev) {
@@ -2379,9 +2393,9 @@ function viewRing(no) {
 // 讀進來以後就從地址欄去掉（之後的改動不受影響）；要重新得到鏈接，點頁首「複製鏈接」
 var SHARE = {
   fit: {
-    get: function () { return { unit: FIT.unit !== 'rec' ? FIT.unit : '', pres: FIT.pres !== 'half' ? FIT.pres : '', rel: FIT.rel === REL_FIT ? 'fit' : FIT.rel === REL_DEV ? 'dev' : '', q: FIT.q, only: FIT.day ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : '', zoom: FIT_ZOOM > 1 ? FIT_ZOOM : '' }; },
+    get: function () { return { fast: FIT.fast ? '' : 'all', unit: FIT.unit !== 'rec' ? FIT.unit : '', pres: FIT.pres !== 'half' ? FIT.pres : '', rel: FIT.rel === REL_FIT ? 'fit' : FIT.rel === REL_DEV ? 'dev' : '', q: FIT.q, only: FIT.day ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : '', zoom: FIT_ZOOM > 1 ? FIT_ZOOM : '' }; },
     set: function (o) {
-      FIT.unit = { src: 'src', loc: 'loc' }[o.unit] || 'rec'; FIT.pres = { any: 'any', q: 'q', off: 'off' }[o.pres] || 'half';
+      FIT.fast = o.fast !== 'all'; FIT.unit = { src: 'src', loc: 'loc' }[o.unit] || 'rec'; FIT.pres = { any: 'any', q: 'q', off: 'off' }[o.pres] || 'half';
       FIT.rel = o.rel === 'fit' ? REL_FIT : o.rel === 'dev' ? REL_DEV : ''; FIT.q = o.q || '';
       var d = (o.only || '').split('/'); FIT.day = d[1] ? +d[0] * 100 + +d[1] : 0; FIT.open = {};
       if (o.zoom) FIT_ZOOM = Math.max(1, Math.min(3, +o.zoom || 1));

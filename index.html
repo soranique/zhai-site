@@ -2284,6 +2284,8 @@ function viewContext() {
   // 書名：中文界面用《》，英文界面用「斜體拼音 漢字」
   var B = function (zh, py) { return E ? '<i>' + py + '</i> ' + zh : '《' + zh + '》'; };
   var SL = B('事林廣記', 'Shilin guangji');
+  var CX = B('朝修吉辰章', 'Chaoxiu jichen zhang'), WB = B('萬寶全書', 'Wanbao quanshu'), ZS = B('諸神聖誕日玉匣記', 'Zhushen shengdanri yuxiaji');
+  // 明代格子的數字以「規範名＋月日」爲單位，據版本對比工作簿已錄的明代文本計算（2026-11-07）
   // 每條泳道：五個時期（漢魏六朝、唐、宋、元、明）各一格；in = 入線類型 s 實線 / d 虛線；out = 進入清代通書的線
   var lanes = [
     { n: L('① 干支擇日', '① Ganzhi day selection'), s: L('諸神在天、地府、人間', 'Gods in heaven, the underworld and the human world'), out: 's', c: [
@@ -2291,34 +2293,34 @@ function viewContext() {
       { t: L('守庚申', 'Keeping gengshen 守庚申'), s: L('三尸上天奏人罪過', 'The Three Corpses report sins to heaven') },
       null,
       { t: SL, s: L('甲子、庚申、本命日', 'jiazi, gengshen and benming days'), y: 1, i: 'd' },
-      { t: L('道藏本《許真君玉匣記》', 'Daozang ed. ' + B('許真君玉匣記', 'Xu zhenjun yuxiaji'), 'éd. du Daozang ' + B('許真君玉匣記', 'Xu zhenjun yuxiaji')), s: L('六十甲子諸神去向', 'Whereabouts of the gods on the sixty jiazi days'), i: 'd' }] },
+      { t: L('道藏本《許真君玉匣記》（1433 序）<br>胡文煥校本', 'Daozang ed. ' + B('許真君玉匣記', 'Xu zhenjun yuxiaji') + ' (1433 preface)<br>Hu Wenhuan 胡文煥 recension', 'éd. du Daozang ' + B('許真君玉匣記', 'Xu zhenjun yuxiaji') + ' (préface de 1433)<br>recension de Hu Wenhuan 胡文煥'), s: L('六十甲子諸神去向；《朝修吉辰章》亦有甲子、庚申、本命日', 'Whereabouts of the gods on the sixty jiazi days; the ' + CX + ' also has jiazi, gengshen and benming days', 'Où se trouvent les dieux les soixante jours jiazi ; le ' + CX + ' a aussi des jours jiazi, gengshen et benming'), i: 'd' }] },
     { n: L('② 月日降日循環', '② Monthly descent-day cycles'), s: L('具名神祇定期下降', 'Named deities descend on fixed days'), out: 'd', c: [
       null, null,
       { t: L('道教吉辰曆', 'Daoist calendars of auspicious days'), s: L('《朝修吉辰章》等，待考', B('朝修吉辰章', 'Chaoxiu jichen zhang') + ' etc.; to be examined', B('朝修吉辰章', 'Chaoxiu jichen zhang') + ', etc. ; à examiner'), q: 1 },
       { t: L('《事林廣記》逐月聖降', SL + ': monthly descents', SL + ' : descentes mensuelles'), s: L('每月固定降日循環', 'Fixed monthly cycle of descent days'), y: 1, i: 'd' },
-      null] },
+      { t: L('《朝修吉辰章》（1444 序）', CX + ' (1444 preface)', CX + ' (préface de 1444)'), s: L('逐日降現；與《事林廣記》共有 208 項降日，承襲或共同來源待考', 'Daily descents; shares 208 descent units with the ' + SL + '; descent from it or a common source still to be determined', 'Descentes jour par jour ; 208 unités de descente en commun avec le ' + SL + ' ; filiation ou source commune à déterminer'), i: 's' }] },
     { n: L('③ 昇仙、降現事件', '③ Ascension and manifestation events'), s: L('仙傳中有日期的事件', 'Dated events in hagiographies'), out: 'd', note: L('有日期的事件轉爲日曆條目', 'Dated events become calendar entries'), c: [
       { t: L('《列仙傳》王子喬<br>漢武故事 西王母降', B('列仙傳', 'Liexian zhuan') + ': Wang Ziqiao 王子喬<br>' + B('漢武故事', 'Han Wu gushi') + ': descent of Xiwangmu 西王母', B('列仙傳', 'Liexian zhuan') + ' : Wang Ziqiao 王子喬<br>' + B('漢武故事', 'Han Wu gushi') + ' : descente de Xiwangmu 西王母'), s: L('七月七日', '7th day of the 7th month') },
       null, null,
       { t: SL, s: L('真人昇仙、降現日', 'Days when Perfected ascend or appear'), y: 1, i: 's' },
-      null] },
+      { t: CX + '<br>' + WB, s: L('真人飛昇、祖師飛昇；《朝修》45 項中 33 項見於《事林廣記》', 'Ascensions of Perfected and patriarchs; 33 of the 45 units in the ' + CX + ' also appear in the ' + SL, 'Ascensions de Parfaits et de patriarches ; 33 des 45 unités du ' + CX + ' figurent aussi dans le ' + SL), i: 's' }] },
     { n: L('④ 神誕', '④ Deity birthdays'), s: L('誕日作爲紀念類別', 'Birthdays as a commemorative category'), out: 's', c: [
       null,
       { t: L('佛誕、帝王誕節', 'Buddha’s birthday; imperial birthday festivals'), s: L('老君降聖節（二月十五）', 'Laojun jiangsheng jie 老君降聖節 (2/15)') },
       { t: L('汴京、臨安筆記', 'Biji on Bianjing 汴京 and Lin’an 臨安'), s: L('地方神生日與社會', 'Local gods’ birthdays and society'), i: 'd' },
       { t: SL, s: L('約 46 日記有誕日', 'Birthdays recorded on about 46 days'), y: 1, i: 's' },
-      null] },
+      { t: L('道藏本', 'Daozang ed. ', 'éd. du Daozang ') + ZS + L('（1607）', ' (1607)', ' (1607)') + '<br>' + WB, s: L('以神誕爲主；道藏本與 1827 年本共有 71 項', 'Mainly birthdays; the Daozang ed. shares 71 units with the 1827 edition', 'Surtout des anniversaires ; l’éd. du Daozang a 71 unités en commun avec l’édition de 1827'), i: 's' }] },
     { n: L('⑤ 國家節日、地方神', '⑤ State festivals and local gods'), s: L('宋代禮制與封祀', 'Song ritual system and canonization'), s2: L('假設：封祀→信仰興起→收錄', 'Hypothesis: canonization → rise of a cult → inclusion'), out: 'd', c: [
       null, null,
       { t: L('天書、聖祖降節', 'Tianshu 天書 and Shengzu jiang 聖祖降 festivals'), s: L('神祠封爵：侯、公、王、妃', 'Titles for shrines: marquis, duke, king, consort') },
       { t: SL, s: L('收宋代節日與封號', 'Includes Song festivals and titles'), y: 1, i: 's' },
-      null] },
+      { t: CX, s: L('只存開基、先天、降聖三個宋代節名（《事林廣記》有 14 項）', 'Only three Song festival names remain: Kaiji 開基, Xiantian 先天 and Jiangsheng 降聖 (14 in the ' + SL + ')', 'Seuls trois noms de fêtes Song subsistent : Kaiji 開基, Xiantian 先天 et Jiangsheng 降聖 (14 dans le ' + SL + ')'), i: 's' }] },
     { n: L('⑥ 齋期', '⑥ Fasting periods'), s: L('佛道齋戒傳統', 'Buddhist and Daoist fasting traditions'), s2: L('十齋日與逐月降日循環只重合十五、廿九兩日', 'The ten fast days coincide with the monthly descent cycle only on the 15th and 29th'), out: 's', c: [
       { t: L('六齋日', 'Six fast days (liuzhai ri 六齋日)'), s: L('漢譯佛典、四天王巡察', 'Chinese Buddhist translations; inspection by the Four Heavenly Kings') },
       { t: L('敦煌十齋日', 'Ten fast days at Dunhuang 敦煌'), s: L('三長月、十齋日入律', 'Three long fast months and ten fast days enter the precepts'), i: 's' },
       { t: B('雲笈七籤', 'Yunji qiqian'), s: L('十直、三元、五臘', 'Ten zhi 十直 days, three Primes 三元, five la 五臘'), i: 'd' },
       { t: SL, s: L('三元、五臘、小欑齋日', 'Three Primes, five la, xiaozan 小欑 fast days'), y: 1, i: 's' },
-      null] }
+      { t: L('道藏本', 'Daozang ed. ', 'éd. du Daozang ') + ZS + '<br>' + CX, s: L('六齋日持齋念佛、正月初八至十五戒齋；十直齋日、三元、正五九月齋', 'Six fast days with fasting and invoking the Buddha; abstinence 1/8–1/15; ten zhi 十直 fast days, three Primes, fasts in the 1st, 5th and 9th months', 'Six jours de jeûne avec invocation du Buddha ; abstinence du 8 au 15 du 1er mois ; dix jours zhi 十直, trois Origines, jeûnes des 1er, 5e et 9e mois'), i: 's' }] }
   ];
   var periods = E ? ['Han–Six Dynasties', 'Tang', 'Song', 'Yuan', 'Ming'] : ['漢魏六朝', '唐', '宋', '元', '明'];
   var g = '<div class="ph"></div>' + periods.map(function (p, i) { return '<div class="ph' + (i === 3 ? ' y' : '') + '">' + p + '</div>'; }).join('') + '<div class="ph"></div><div class="ph">' + L('清', 'Qing') + '</div>';
@@ -2358,6 +2360,7 @@ function viewContext() {
     '<p class="small muted swipe" style="margin:0 0 6px">' + L('在手機上可左右滑動查看全圖', 'On a phone, swipe sideways to see the whole diagram') + '</p>' +
     '<div class="scroll"><div class="flow">' + g + '</div></div>' +
     '<div class="lg"><span><i></i>' + L('有文本對應或直接見證', 'Textual correspondence or direct witness') + '</span><span><i class="d"></i>' + L('推測或待覈', 'Conjectural or to be verified') + '</span><span><i class="bxq"></i>' + L('來源待考', 'Source to be identified') + '</span><span><i class="bxy"></i>' + L('元代匯合點', 'Yuan convergence point') + '</span></div>' +
+    '<p class="small muted" style="margin:4px 0 0">' + L('明代格子中的「項」以規範名＋月日爲單位，據版本對比工作簿已錄的明代文本計算：《朝修吉辰章》、道藏本《諸神聖誕日玉匣記》、胡文煥校《新刻許真君玉匣記》（江戶寫本）、《萬寶全書》。', 'In the Ming cells a “unit” is a standard name + month-day, counted from the Ming texts entered in the comparison workbook: the ' + CX + ', the Daozang ' + ZS + ', Hu Wenhuan’s ' + B('新刻許真君玉匣記', 'Xinke Xu zhenjun yuxiaji') + ' (Edo manuscript) and the ' + WB + '.', 'Dans les cases Ming, une « unité » est un nom normalisé + jour du mois, comptée sur les textes Ming saisis dans le classeur : le ' + CX + ', le ' + ZS + ' du Daozang, le ' + B('新刻許真君玉匣記', 'Xinke Xu zhenjun yuxiaji') + ' de Hu Wenhuan (manuscrit d’Edo) et le ' + WB + '.') + '</p>' +
     '<h2>' + L('二、齋曆文本的「三層一軸」分類框架', '2. A “three layers, one axis” framework for classifying fasting-calendar texts') + '</h2>' +
     '<p class="small muted" style="margin-top:0">' + L('每個維度描述同一對象的不同層次，各自獨立記錄，不合成單一分類。', 'Each dimension describes a different level of the same object and is recorded separately, not merged into a single classification.') + '</p>' +
     '<div class="fw">' +

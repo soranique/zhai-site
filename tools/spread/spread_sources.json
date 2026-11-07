@@ -402,7 +402,8 @@
    "lon": 116.4,
    "lat": 39.9,
    "kind": "print",
-   "en": "Beijing"
+   "en": "Beijing",
+   "sys": "b"
   },
   {
    "id": "suzhou",
@@ -411,7 +412,8 @@
    "lat": 31.3,
    "kind": "print",
    "jn": true,
-   "en": "Suzhou"
+   "en": "Suzhou",
+   "sys": "b"
   },
   {
    "id": "nanjing",
@@ -420,7 +422,8 @@
    "lat": 32.06,
    "kind": "print",
    "jn": true,
-   "en": "Nanjing"
+   "en": "Nanjing",
+   "sys": "y"
   },
   {
    "id": "shanghai",
@@ -429,7 +432,8 @@
    "lat": 31.23,
    "kind": "print",
    "jn": true,
-   "en": "Shanghai"
+   "en": "Shanghai",
+   "sys": "y"
   },
   {
    "id": "hangzhou",
@@ -438,7 +442,8 @@
    "lat": 30.27,
    "kind": "attr",
    "jn": true,
-   "en": "Hangzhou"
+   "en": "Hangzhou",
+   "sys": "y"
   },
   {
    "id": "fuzhou",
@@ -446,7 +451,8 @@
    "lon": 119.3,
    "lat": 26.08,
    "kind": "print",
-   "en": "Fuzhou"
+   "en": "Fuzhou",
+   "sys": "y"
   },
   {
    "id": "jianyang",
@@ -454,7 +460,8 @@
    "lon": 118.12,
    "lat": 27.33,
    "kind": "attr",
-   "en": "Jianyang"
+   "en": "Jianyang",
+   "sys": "o"
   },
   {
    "id": "hsinchu",
@@ -463,7 +470,8 @@
    "lat": 24.8,
    "kind": "print",
    "modern": true,
-   "en": "Hsinchu"
+   "en": "Hsinchu",
+   "sys": "y"
   },
   {
    "id": "taipei",
@@ -472,7 +480,8 @@
    "lat": 25.04,
    "kind": "attr",
    "modern": true,
-   "en": "Taiwan"
+   "en": "Taiwan",
+   "sys": "y"
   },
   {
    "id": "wudang",
@@ -481,7 +490,8 @@
    "lat": 32.4,
    "kind": "acq",
    "modern": true,
-   "en": "Wudangshan"
+   "en": "Wudangshan",
+   "sys": "y"
   },
   {
    "id": "shuri",
@@ -489,7 +499,8 @@
    "lon": 127.72,
    "lat": 26.22,
    "kind": "acq",
-   "en": "Shuri (Okinawa)"
+   "en": "Shuri (Okinawa)",
+   "sys": "y"
   },
   {
    "id": "yaeyama",
@@ -497,7 +508,8 @@
    "lon": 124.16,
    "lat": 24.34,
    "kind": "acq",
-   "en": "Yaeyama"
+   "en": "Yaeyama",
+   "sys": "y"
   },
   {
    "id": "kume",
@@ -505,7 +517,8 @@
    "lon": 126.8,
    "lat": 26.34,
    "kind": "acq",
-   "en": "Kumejima"
+   "en": "Kumejima",
+   "sys": "y"
   },
   {
    "id": "korea",
@@ -513,7 +526,8 @@
    "lon": 126.98,
    "lat": 37.57,
    "kind": "acq",
-   "en": "Korean peninsula"
+   "en": "Korean peninsula",
+   "sys": "y"
   },
   {
    "id": "ako",
@@ -521,7 +535,8 @@
    "lon": 134.39,
    "lat": 34.75,
    "kind": "acq",
-   "en": "Akō (Japan)"
+   "en": "Akō (Japan)",
+   "sys": "y"
   },
   {
    "id": "guangzhou",
@@ -529,7 +544,8 @@
    "lon": 113.26,
    "lat": 23.13,
    "kind": "print",
-   "en": "Guangzhou"
+   "en": "Guangzhou",
+   "sys": "o"
   },
   {
    "id": "yangzhou",
@@ -538,7 +554,8 @@
    "lat": 32.39,
    "kind": "print",
    "en": "Yangzhou",
-   "jn": true
+   "jn": true,
+   "sys": "o"
   }
  ],
  "PREFS": [

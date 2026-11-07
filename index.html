@@ -2410,7 +2410,7 @@ function ringAll() {
     ringRules(v).forEach(function (x) { if (x.type !== 'none') x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; }); });
     var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
     Object.keys(day).forEach(function (c) { var k = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'].filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
-    return { no: String(v.no), label: v.when + ' ' + v.short, solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon };
+    return { no: String(v.no), label: v.when + ' ' + v.short, solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number) };
   });
   return RALL;
 }

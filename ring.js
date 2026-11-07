@@ -504,6 +504,7 @@ function dom(root, D) {
 // 齋曆整體就是持齋日程，凡能排入月日的神聖日都計入；每月週期、多日齋期展開到 12 個月 × 30 日，同一天多條只算一天
 // 按編碼日期類型分色；每天只算一次，同一天兼有幾類的合成一段「兼類」（斜線紋），懸停列出各組合（如「紀念/巡察」）的天數。數據由頁面傳入：meta.rules（本版本）、meta.ruleAll（各版本彙總）
 var RK = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'];
+var RTAB = 'sm';
 // 數據裏的鍵是單一類型（T）或組合（T/L）；畫圖時單一類型各成一段，組合全部併入「兼類」MIX
 var MIX_CSS = 'repeating-linear-gradient(135deg,var(--zr-ink-2) 0 1.5px,var(--zr-cell) 1.5px 4.5px)';
 function rkLab(k) { return k === 'MIX' ? L('兼類', 'Several types', 'Plusieurs types') : k.split('/').map(trLab).join('/'); }
@@ -537,11 +538,61 @@ function fastRules(root, D, data) {
       tile((cur.tot / 12).toFixed(1), L('天／月', 'days a month', 'jours par mois'), L('平均', 'on average', 'en moyenne')) +
       tile(mdays[top - 1], L('天', 'days', 'jours'), L('最多的是' + monthLabel(top), 'most in month ' + top, 'le plus : mois ' + top)) +
       tile(nNone, L('條不能排入月日', 'entries not placeable', 'entrées non plaçables'), L('不計入', 'not counted', 'non comptées')) + '</div>' + key +
-    '<h3 class="zr-subh">' + L('每年：各版本', 'Per year: all editions', 'Par an : toutes les éditions') + '</h3><p class="zr-muted-s" style="margin:0 0 6px">' + L('點一個版本換到它的環形曆。', 'Click an edition to switch to its ring calendar.', 'Cliquer une édition pour afficher son calendrier circulaire.') + '</p><div class="zr-edbars"></div>' +
+    '<div class="zr-tabs" role="tablist">' + [['sm', L('小倍數：各版本的一年', 'Small multiples: each edition’s year', 'Petits multiples : l’année de chaque édition')], ['upset', L('類型組合：本版本', 'Type combinations: this edition', 'Combinaisons de types : cette édition')], ['bars', L('全年天數：各版本', 'Days a year: all editions', 'Jours par an : toutes les éditions')]].map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="zr-tabp" data-p="sm"></div><div class="zr-tabp" data-p="upset"></div><div class="zr-tabp" data-p="bars"><p class="zr-muted-s" style="margin:0 0 6px">' + L('點一個版本換到它的環形曆。', 'Click an edition to switch to its ring calendar.', 'Cliquer une édition pour afficher son calendrier circulaire.') + '</p><div class="zr-edbars"></div></div>' +
     '<h3 class="zr-subh">' + L('每月：本版本', 'Per month: this edition', 'Par mois : cette édition') + '</h3><p class="zr-muted-s" style="margin:0 0 6px">' + L('橫線是各版本該月天數的中位數。', 'The short line marks the median across editions for that month.', 'Le trait marque la médiane des éditions pour ce mois.') + '</p>' +
     '<div class="zr-chart"><svg viewBox="0 0 960 280" role="img" aria-label="' + L('本版本每月神聖日天數，按日期類型分段', 'Sacred days per month in this edition, by day type', 'Jours sacrés par mois dans cette édition, par type de jour') + '"></svg></div>' +
     '<div class="zr-rulelist"></div>';
   root.appendChild(sec);
+  // 標籤：小倍數／類型組合（UpSet）／全年天數；選擇在切換版本後保留
+  function showTab(t) { RTAB = t; sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === t)); }); sec.querySelectorAll('.zr-tabp').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== t; }); hideTip(); }
+  sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.onclick = function () { showTab(b.getAttribute('data-tab')); }; });
+  // 小倍數：每個版本一張 12 × 30 的小年格
+  var smh = '', smSolo = false;
+  all.forEach(function (x) {
+    if (x.solo && !smSolo) smh += '<div class="zr-smsep">' + L('專門單獨齋期', 'Standalone fast calendars', 'Calendriers de jeûne autonomes') + '</div>';
+    smSolo = x.solo;
+    var cells = x.cells.map(function (c) { var m = Math.floor(c / 100), d = c % 100; return '<rect x="' + ((d - 1) * 4) + '" y="' + ((m - 1) * 4) + '" width="3.4" height="3.4"/>'; }).join('');
+    smh += '<a class="zr-sm' + (x === cur ? ' on' : '') + '" href="#ring/' + esc(x.no) + '" title="' + esc(x.label) + '"><svg viewBox="-1 -1 122 50" aria-hidden="true"><rect x="-1" y="-1" width="122" height="50" class="zr-smbg"/><g class="zr-smc">' + cells + '</g></svg><span>' + NH(x.label) + ' · ' + L(x.tot + ' 天', x.tot + ' days', x.tot + ' jours') + '</span></a>';
+  });
+  sec.querySelector('[data-p="sm"]').innerHTML = '<p class="zr-muted-s" style="margin:0 0 8px">' + L('每張小圖是一個版本的一年：12 行是月，30 列是日，有神聖日的格子著色。十齋日這類每月週期在圖上是縱紋，多日齋期是橫條。點一張換到該版本。', 'Each tile is one edition’s year: 12 rows of months, 30 columns of days, with sacred days filled. Monthly cycles such as the ten fast days show as vertical stripes, multi-day fasts as horizontal runs. Click a tile to switch to that edition.', 'Chaque vignette est l’année d’une édition : 12 lignes de mois, 30 colonnes de jours, jours sacrés remplis. Les cycles mensuels comme les dix jours de jeûne forment des bandes verticales, les jeûnes de plusieurs jours des segments horizontaux. Cliquer une vignette pour passer à cette édition.') + '</p><div class="zr-smgrid">' + smh + '</div>';
+  // 類型組合：UpSet 圖（本版本）
+  (function () {
+    var box = sec.querySelector('[data-p="upset"]'), KS = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'], C = cur.seg, LIM = 14;
+    var keys = Object.keys(C).sort(function (a, b) { return C[b] - C[a] || a.split('/').length - b.split('/').length; }), shown = keys.slice(0, LIM), rest = keys.slice(LIM);
+    var single = keys.filter(function (k) { return k.indexOf('/') < 0; }).reduce(function (s, k) { return s + C[k]; }, 0), tk = {};
+    KS.forEach(function (k) { tk[k] = keys.reduce(function (s, c) { return s + (c.split('/').indexOf(k) >= 0 ? C[c] : 0); }, 0); });
+    var rows = KS.filter(function (k) { return tk[k]; });
+    var cols = shown.map(function (k) { return [k, C[k]]; }); if (rest.length) cols.push(['…', rest.reduce(function (s, k) { return s + C[k]; }, 0)]);
+    box.innerHTML = '<p class="zr-muted-s" style="margin:0 0 8px">' + L('本版本全年 ' + cur.tot + ' 天：單類 ' + single + ' 天，兼類 ' + (cur.tot - single) + ' 天，共 ' + keys.length + ' 種組合。下方點陣的每一列是一種組合，連起來的點是這一天兼有的類型；柱高是天數；左側是每類出現的天數。',
+      'This edition: ' + cur.tot + ' days a year, ' + single + ' of a single type and ' + (cur.tot - single) + ' of several, in ' + keys.length + ' combinations. Each column of the dot matrix is one combination, with joined dots for the types that share the day; bar height is the number of days; the left bars give the days on which each type occurs.',
+      'Cette édition : ' + cur.tot + ' jours par an, ' + single + ' d’un seul type et ' + (cur.tot - single) + ' de plusieurs, en ' + keys.length + ' combinaisons. Chaque colonne de la matrice est une combinaison, les points reliés étant les types qui partagent le jour ; la hauteur donne le nombre de jours ; à gauche, les jours où chaque type apparaît.') + '</p>' +
+      '<div class="zr-chart"><svg viewBox="0 0 960 ' + (190 + rows.length * 26) + '" role="img" aria-label="' + L('本版本日期類型組合的天數', 'Days per combination of day types in this edition', 'Jours par combinaison de types dans cette édition') + '"></svg></div>';
+    var S2 = box.querySelector('svg'), x0 = 230, cw = (950 - x0) / Math.max(cols.length, 8), y0 = 160, rh = 26, mx2 = Math.max.apply(null, cols.map(function (c) { return c[1]; })) || 1;
+    var step = mx2 > 100 ? 50 : mx2 > 40 ? 20 : mx2 > 15 ? 10 : 5;
+    for (var v = 0; v <= mx2; v += step) { var yy = y0 - v / mx2 * 130; svgEl('line', { x1: x0, x2: 950, y1: yy, y2: yy, stroke: 'var(--zr-line)' }, S2); svgEl('text', { x: x0 - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--zr-muted)' }, S2).textContent = v; }
+    rows.forEach(function (k, ri) { if (ri % 2 === 0) svgEl('rect', { x: x0, y: y0 + 16 + ri * rh, width: 950 - x0, height: rh, fill: 'var(--zr-cell)' }, S2); });
+    cols.forEach(function (cc, i) {
+      var k = cc[0], x = x0 + i * cw + cw * 0.2, w = cw * 0.6, hh = cc[1] / mx2 * 130, ks = k === '…' ? [] : k.split('/');
+      svgEl('rect', { x: x, y: y0 - hh, width: w, height: hh, rx: 2, fill: k === '…' ? 'var(--zr-wei)' : ks.length > 1 ? 'var(--zr-ink-2)' : 'var(' + TR[k].c + ')' }, S2);
+      svgEl('text', { x: x + w / 2, y: y0 - hh - 5, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S2).textContent = cc[1];
+      var hit = svgEl('rect', { x: x0 + i * cw, y: 10, width: cw, height: y0 + 16 + rows.length * rh - 10, fill: 'transparent' }, S2);
+      hit.addEventListener('pointermove', function (ev) { showTip(ev, k === '…' ? L('其餘 ' + rest.length + ' 種組合', rest.length + ' other combinations', rest.length + ' autres combinaisons') + rest.map(function (c) { return '<br>' + rkLab(c) + ' ' + C[c]; }).join('') : '<b>' + rkLab(k) + '</b> · ' + L(cc[1] + ' 天', cc[1] + ' days', cc[1] + ' jours')); });
+      hit.addEventListener('pointerleave', hideTip);
+      if (k === '…') { svgEl('text', { x: x + w / 2, y: y0 + 16 + rh * rows.length / 2 + 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--zr-muted)' }, S2).textContent = L('其餘 ' + rest.length, '+' + rest.length, '+' + rest.length); return; }
+      var ys = [];
+      rows.forEach(function (rk, ri) { var cy = y0 + 16 + ri * rh + rh / 2, on = ks.indexOf(rk) >= 0; svgEl('circle', { cx: x + w / 2, cy: cy, r: 5, fill: on ? 'var(' + TR[rk].c + ')' : 'var(--zr-line)' }, S2); if (on) ys.push(cy); });
+      if (ys.length > 1) svgEl('line', { x1: x + w / 2, x2: x + w / 2, y1: ys[0], y2: ys[ys.length - 1], stroke: 'var(--zr-ink-2)', 'stroke-width': 2 }, S2);
+    });
+    var tm = Math.max.apply(null, rows.map(function (k) { return tk[k]; })) || 1;
+    rows.forEach(function (k, ri) {
+      var cy = y0 + 16 + ri * rh + rh / 2, w = tk[k] / tm * 110;
+      svgEl('rect', { x: x0 - 70 - w, y: cy - 7, width: w, height: 14, rx: 2, fill: 'var(' + TR[k].c + ')' }, S2);
+      svgEl('text', { x: x0 - 76 - w, y: cy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S2).textContent = tk[k];
+      svgEl('text', { x: x0 - 8, y: cy + 5, 'text-anchor': 'end', 'font-size': 13, fill: 'var(--zr-ink-2)' }, S2).textContent = trLab(k);
+    });
+  })();
+  showTab(RTAB);
   // 每年：各版本橫條
   var mx = Math.max.apply(null, all.map(function (x) { return x.tot; })), prevSolo = false, h = '';
   all.forEach(function (x) {

@@ -540,5 +540,161 @@
    "en": "Yangzhou",
    "jn": true
   }
+ ],
+ "PREFS": [
+  {
+   "name": "蘇州府",
+   "en": "Suzhou",
+   "lon": 120.62,
+   "lat": 31.3,
+   "jn": true
+  },
+  {
+   "name": "松江府",
+   "en": "Songjiang",
+   "lon": 121.23,
+   "lat": 31.01,
+   "jn": true
+  },
+  {
+   "name": "常州府",
+   "en": "Changzhou",
+   "lon": 119.95,
+   "lat": 31.78,
+   "jn": true
+  },
+  {
+   "name": "鎮江府",
+   "en": "Zhenjiang",
+   "lon": 119.45,
+   "lat": 32.2,
+   "jn": true
+  },
+  {
+   "name": "江寧府",
+   "en": "Jiangning",
+   "lon": 118.78,
+   "lat": 32.06,
+   "jn": true
+  },
+  {
+   "name": "杭州府",
+   "en": "Hangzhou",
+   "lon": 120.17,
+   "lat": 30.25,
+   "jn": true
+  },
+  {
+   "name": "嘉興府",
+   "en": "Jiaxing",
+   "lon": 120.75,
+   "lat": 30.75,
+   "jn": true
+  },
+  {
+   "name": "湖州府",
+   "en": "Huzhou",
+   "lon": 120.09,
+   "lat": 30.87,
+   "jn": true
+  },
+  {
+   "name": "太倉州",
+   "en": "Taicang",
+   "lon": 121.1,
+   "lat": 31.45,
+   "jn": true
+  },
+  {
+   "name": "紹興府",
+   "en": "Shaoxing",
+   "lon": 120.58,
+   "lat": 30.0,
+   "jn": false
+  },
+  {
+   "name": "通州",
+   "en": "Tongzhou",
+   "lon": 120.86,
+   "lat": 32.01,
+   "jn": false
+  },
+  {
+   "name": "淮安府",
+   "en": "Huai’an",
+   "lon": 119.02,
+   "lat": 33.5,
+   "jn": false
+  },
+  {
+   "name": "溫州府",
+   "en": "Wenzhou",
+   "lon": 120.65,
+   "lat": 28.0,
+   "jn": false
+  },
+  {
+   "name": "福州府",
+   "en": "Fuzhou",
+   "lon": 119.3,
+   "lat": 26.08,
+   "jn": false
+  },
+  {
+   "name": "興化府",
+   "en": "Xinghua",
+   "lon": 119.01,
+   "lat": 25.43,
+   "jn": false
+  },
+  {
+   "name": "肇慶府",
+   "en": "Zhaoqing",
+   "lon": 112.47,
+   "lat": 23.05,
+   "jn": false
+  },
+  {
+   "name": "潯州府",
+   "en": "Xunzhou",
+   "lon": 110.08,
+   "lat": 23.39,
+   "jn": false
+  },
+  {
+   "name": "襄陽府",
+   "en": "Xiangyang",
+   "lon": 112.14,
+   "lat": 32.04,
+   "jn": false
+  },
+  {
+   "name": "順天府",
+   "en": "Shuntian",
+   "lon": 116.4,
+   "lat": 39.9,
+   "jn": false
+  },
+  {
+   "name": "成都府",
+   "en": "Chengdu",
+   "lon": 104.06,
+   "lat": 30.67,
+   "jn": false
+  },
+  {
+   "name": "綿州",
+   "en": "Mianzhou",
+   "lon": 104.73,
+   "lat": 31.47,
+   "jn": false
+  },
+  {
+   "name": "順慶府",
+   "en": "Shunqing",
+   "lon": 106.08,
+   "lat": 30.8,
+   "jn": false
+  }
  ]
 }

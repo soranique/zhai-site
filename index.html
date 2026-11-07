@@ -198,6 +198,11 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread .hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; }
 .spread .spt { cursor: pointer; } .spread .spt text { font-size: 13px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .spread .spt .print { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; } .spread .spt .attr { fill: var(--surface); stroke: var(--accent); stroke-width: 2; } .spread .spt .acq { fill: var(--ink); stroke: var(--surface); stroke-width: 1.5; }
+.spread { --sp-y: var(--accent); --sp-o: var(--cat3); }   /* 其他齋曆用青綠，避開版本關聯連線已用的藍、金、紫、橄欖綠 */
+.spread .spt .print.sy, .spread .spt .acq.sy { fill: var(--sp-y); } .spread .spt .print.so, .spread .spt .acq.so { fill: var(--sp-o); }
+.spread .spt .attr.sy { stroke: var(--sp-y); } .spread .spt .attr.so { stroke: var(--sp-o); }
+.spread .spt path.attr.so { fill: none; }
+.spread .out { opacity: .25; } .spread .out.dim { opacity: .1; }
 .spread .dim { opacity: .15; }
 .spread g.spt.fhit circle, .spread g.spt.fhit rect { stroke: var(--ink); stroke-width: 2.5; }
 .spread g.spt.fhit text { font-weight: 700; }
@@ -574,7 +579,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="data.js?v=dba1d6e8"></script>
 <script src="editions-data.js?v=88e2242c"></script>
 <script src="kinship-data.js?v=30c22f5f"></script>
-<script src="spread-data.js?v=250b36e5"></script>
+<script src="spread-data.js?v=9d5df462"></script>
 <script src="search-data.js?v=bae77b1a"></script>
 <script src="ring.js?v=a854095e"></script>
 <script>
@@ -1684,9 +1689,13 @@ function viewSpread() {
     timeBarHTML() + '<p class="small muted" style="margin:-4px 0 10px">' + L('地圖按年份顯示：地點按說明裏所記的刊刻、抄寫、購得年份，連線按其年份；「晚明／清代／晚清民國」在地圖上暫以 1644、1860 爲界（研究的時段界年尚未定）。', 'The map filters by year: places by the years of printing, copying or acquisition in their notes, lines by their own year; on the map “Late Ming / Qing / Late Qing & Republic” use 1644 and 1860 as provisional boundaries (the study’s period boundaries are not yet fixed).') + '</p>' +
     '<div class="spread"><div class="sgrid"><div class="card" id="smap"></div><div>' +
     '<div class="card"><h2 style="margin-top:0">' + L('圖例', 'Legend') + '</h2><div class="slg">' +
-      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--accent)"/></svg><span>' + L('刊刻地（資料明載）', 'Place of printing (stated)') + '</span>' +
-      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/></svg><span>' + L('署名地或暫定刊刻地', 'Place in an attribution, or provisional place of printing') + '</span>' +
-      '<svg viewBox="0 0 34 16"><rect x="12" y="3" width="10" height="10" transform="rotate(45 17 8)" fill="var(--ink)"/></svg><span>' + L('抄寫、購得或收藏地（個本證據）', 'Place of copying, purchase or holding (copy-level evidence)') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--ink-2)"/></svg><span>' + L('刊刻地（資料明載）', 'Place of printing (stated)') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="5" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="2"/></svg><span>' + L('署名地或暫定刊刻地', 'Place in an attribution, or provisional place of printing') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--sp-y)"/></svg><span>' + L('玉匣記系統的本子', 'Yuxiaji-tradition copies', 'Exemplaires de la tradition du Yuxiaji') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--sp-o)"/></svg><span>' + L('其他齋曆（只作對照）', 'Other fasting calendars (for comparison)', 'Autres calendriers de jeûne (pour comparaison)') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--sp-y)"/><path d="M17,2 A6,6 0 0 1 17,14 Z" fill="var(--sp-o)"/></svg><span>' + L('兩者都有', 'Both', 'Les deux') + '</span>' +
+      '<svg viewBox="0 0 34 16"><circle cx="17" cy="8" r="6" fill="var(--sp-y)" opacity=".25"/></svg><span>' + L('所選年代以外（半透明）', 'Outside the selected years (faded)', 'Hors des années choisies (estompé)') + '</span>' +
+      '<svg viewBox="0 0 34 16"><rect x="12" y="3" width="10" height="10" transform="rotate(45 17 8)" fill="var(--ink-2)"/></svg><span>' + L('抄寫、購得或收藏地（個本證據）', 'Place of copying, purchase or holding (copy-level evidence)') + '</span>' +
       line('var(--doc)', '', 2.2, 1) + '<span>' + L('個本記錄：購書墨書、同版實物', 'Copy-level record: purchase inscription, surviving copy') + '</span>' +
       line('var(--f1)', '7 5', 2.2, 0) + '<span>' + L('版本關聯（共用序文、校者署名或題名）：不表示方向', 'Edition link (shared preface, reviser or title): no direction implied') + '</span>' +
       line('var(--doc)', '2 4', 2, 1) + '<span>' + L('個本記錄，但一端或途徑不明', 'Copy-level record, one end or route uncertain') + '</span></div>' +
@@ -1739,10 +1748,11 @@ function viewSpread() {
     s += '<path class="ireg" d="M' + R.map(function (c) { return c.join(','); }).join(' L') + ' Z"/>';
     var edges = function (ins) {
       M.edges.forEach(function (e, i) {
-        if (!edgeOn(e) || !edgeYear(e)) return;
+        if (!edgeOn(e)) return;
+        var out = !edgeYear(e);   // 時段外的連線半透明顯示
         if (ins !== !!(PL[e.a].jn && PL[e.b].jn)) return;   // 江南城市之間的連線只畫在放大圖裏
         var c = curve(e, ins), mk = e.t === 'fam' ? (e.dir ? 'sar-' + e.f : '') : 'sar-doc';
-        s += '<g data-e="' + i + '"><path class="hit" d="' + c.d + '"/><path class="sedge ' + e.t + '" d="' + c.d + '" style="stroke:' + color(e) + '"' + (mk ? ' marker-end="url(#' + mk + ')"' : '') + '/>' +
+        s += '<g data-e="' + i + '"' + (out ? ' class="out"' : '') + '><path class="hit" d="' + c.d + '"/><path class="sedge ' + e.t + '" d="' + c.d + '" style="stroke:' + color(e) + '"' + (mk ? ' marker-end="url(#' + mk + ')"' : '') + '/>' +
           (e.y && !(PL[e.a].jn || PL[e.b].jn) ? '<text class="yr" x="' + c.mx.toFixed(1) + '" y="' + (c.my - 4).toFixed(1) + '" text-anchor="middle">' + esc(e.y) + '</text>' : '') + '</g>';
       });
     };
@@ -1767,12 +1777,16 @@ function viewSpread() {
     var pts = function (ins) {
       M.places.forEach(function (p) {
         if (p.modern && !SP.modern) return;
-        if (!placeYear(p)) return;
+        var out = !placeYear(p);   // 時段外的地點半透明顯示
         if (ins && !p.jn) return;
         var x = ins ? p.ix : p.x, y = ins ? p.iy : p.y, l = (ins ? M.ilbl[p.id] : M.lbl[p.id]) || [10, 4, 'start'], r = ins ? 1 : (p.jn ? 0.7 : 1);
-        var sym = p.kind === 'acq' ? '<rect class="acq" x="' + (x - 5.5 * r) + '" y="' + (y - 5.5 * r) + '" width="' + 11 * r + '" height="' + 11 * r + '" transform="rotate(45 ' + x + ' ' + y + ')"/>' : '<circle class="' + p.kind + '" cx="' + x + '" cy="' + y + '" r="' + (p.kind === 'print' ? 6.5 : 5.5) * r + '"/>';
+        // 形狀表示地點性質（刊刻地、署名地、抄寫購藏地），顏色表示所收本子屬玉匣記系統（sy）、其他齋曆（so），兩者都有的左右各半
+        var sy = p.sys === 'o' ? ' so' : ' sy', rr = (p.kind === 'print' ? 6.5 : 5.5) * r;
+        var sym = p.kind === 'acq' ? '<rect class="acq' + sy + '" x="' + (x - 5.5 * r) + '" y="' + (y - 5.5 * r) + '" width="' + 11 * r + '" height="' + 11 * r + '" transform="rotate(45 ' + x + ' ' + y + ')"/>' :
+          p.sys === 'b' ? '<circle class="' + p.kind + ' sy" cx="' + x + '" cy="' + y + '" r="' + rr + '"/><path class="' + p.kind + ' so" d="M' + x + ',' + (y - rr) + ' A' + rr + ',' + rr + ' 0 0 1 ' + x + ',' + (y + rr) + ' Z"/>' :
+          '<circle class="' + p.kind + sy + '" cx="' + x + '" cy="' + y + '" r="' + rr + '"/>';
         var nm = I.en() ? I.T(p.en) : p.name;
-        s += '<g class="spt" data-p="' + p.id + '">' + sym + (!ins && p.jn ? '' : '<text x="' + (x + l[0]) + '" y="' + (y + l[1]) + '" text-anchor="' + (I.en() && l[2] === 'end' ? 'end' : l[2]) + '">' + esc(nm) + '</text>') + '</g>';
+        s += '<g class="spt' + (out ? ' out' : '') + '" data-p="' + p.id + '">' + sym + (!ins && p.jn ? '' : '<text x="' + (x + l[0]) + '" y="' + (y + l[1]) + '" text-anchor="' + (I.en() && l[2] === 'end' ? 'end' : l[2]) + '">' + esc(nm) + '</text>') + '</g>';
       });
     };
     prac(false); edges(false); pts(false);

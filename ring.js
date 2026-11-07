@@ -500,6 +500,149 @@ function dom(root, D) {
   draw();
 }
 
+// ---------- 齋期總長：每年、每月有多少神聖日 ----------
+// 齋曆整體就是持齋日程，凡能排入月日的神聖日都計入；每月週期、多日齋期展開到 12 個月 × 30 日，同一天多條只算一天
+// 按編碼日期類型分色；每天只算一次，同一天兼有幾類的合成一段「兼類」（斜線紋），懸停列出各組合（如「紀念/巡察」）的天數。數據由頁面傳入：meta.rules（本版本）、meta.ruleAll（各版本彙總）
+var RK = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'];
+var RTAB = 'sm';
+// 數據裏的鍵是單一類型（T）或組合（T/L）；畫圖時單一類型各成一段，組合全部併入「兼類」MIX
+var MIX_CSS = 'repeating-linear-gradient(135deg,var(--zr-ink-2) 0 1.5px,var(--zr-cell) 1.5px 4.5px)';
+function rkLab(k) { return k === 'MIX' ? L('兼類', 'Several types', 'Plusieurs types') : k.split('/').map(trLab).join('/'); }
+function rkCss(k) { return k === 'MIX' ? MIX_CSS : 'var(' + TR[k].c + ')'; }
+function rkAgg(o) {   // → { keys: [單類…, 'MIX'], v: {鍵: 天數}, combos: [[組合, 天數]…] }
+  var v = {}, combos = [];
+  Object.keys(o).forEach(function (k) { if (!o[k]) return; if (k.indexOf('/') < 0) v[k] = (v[k] || 0) + o[k]; else { v.MIX = (v.MIX || 0) + o[k]; combos.push([k, o[k]]); } });
+  combos.sort(function (a, b) { return b[1] - a[1]; });
+  return { keys: RK.filter(function (k) { return v[k]; }).concat(v.MIX ? ['MIX'] : []), v: v, combos: combos };
+}
+function rkTip(a, k) { return k !== 'MIX' ? rkLab(k) + L('：' + a.v[k] + ' 天', ': ' + a.v[k] + ' days', ' : ' + a.v[k] + ' jours') :
+  rkLab('MIX') + L('：' + a.v.MIX + ' 天', ': ' + a.v.MIX + ' days', ' : ' + a.v.MIX + ' jours') + a.combos.map(function (c) { return '<br>' + rkLab(c[0]) + ' ' + c[1]; }).join(''); }
+function rtLab(t) { return t === 'month' ? L('每月週期', 'Monthly cycles', 'Cycles mensuels') : t === 'range' ? L('多日齋期', 'Multi-day fasts', 'Jeûnes de plusieurs jours') : t === 'year' ? L('年度定日', 'Fixed annual days', 'Jours annuels fixes') : L('不能排入月日', 'Not placeable on a month-day', 'Non plaçables sur un jour du mois'); }
+function fastRules(root, D, data) {
+  var meta = data.meta || {}, rules = meta.rules || [], all = meta.ruleAll || [];
+  if (!rules.length || !all.length) return;
+  var cur = all.filter(function (x) { return x.no === meta.no; })[0];
+  if (!cur) return;
+  var used = RK.filter(function (k) { return all.some(function (x) { return Object.keys(x.seg).some(function (c) { return c.split('/').indexOf(k) >= 0; }); }); });
+  var sec = document.createElement('section'); sec.className = 'zr-sec';
+  var mdays = cur.mon.map(function (o) { return Object.keys(o).reduce(function (s, k) { return s + o[k]; }, 0); });
+  var top = mdays.indexOf(Math.max.apply(null, mdays)) + 1, nNone = rules.filter(function (x) { return x.type === 'none'; }).length;
+  var tile = function (n, a, b) { return '<div><b>' + n + '</b><span>' + a + (b ? '<br>' + b : '') + '</span></div>'; };
+  var key = '<div class="zr-legend zr-rulekey">' + used.map(function (k) { return '<span><i class="zr-sw" style="background:' + rkCss(k) + '"></i>' + rkLab(k) + '</span>'; }).join('') +
+    '<span><i class="zr-sw" style="background:' + MIX_CSS + '"></i>' + L('兼類：一天兼有幾類（懸停看組合）', 'Several types on one day (hover for the combinations)', 'Plusieurs types le même jour (survoler pour les combinaisons)') + '</span></div>';
+  sec.innerHTML = '<div class="zr-eyebrow">' + L('齋期總長', 'Total fasting time', 'Durée totale du jeûne') + '</div><h2 style="margin:0">' + L('每月、每年有多少神聖日：各版本對比', 'How many sacred days a month and a year: editions compared', 'Combien de jours sacrés par mois et par an : comparaison des éditions') + '</h2>' +
+    '<p class="zr-lede">' + L('齋曆整體是一份持齋日程，推薦持齋常寫在序言裏，不逐日標註，所以這裏凡能排入月日的神聖日都計入。每月週期（如十齋日）和多日齋期（如九皇齋）展開到十二個月、每月三十日上；同一天有幾條也只算一天。顏色是工作簿編碼的日期類型；同一天兼有幾類的，如既是某神誕辰（紀念）又是十齋日（其他），記作「紀念/其他」；這類日子在圖上合成一段「兼類」（斜線紋），懸停可見各組合的天數，仍只算一天。六十甲子日、八節等日期隨年份或節氣而變，不計入。',
+      'A fasting calendar as a whole is a schedule for fasting; the recommendation to fast usually sits in the preface rather than under each day, so every sacred day that can be placed on a month-day is counted here. Monthly cycles (such as the ten fast days) and multi-day fasts (such as the Nine Emperors fast) are laid out over twelve thirty-day months, and a day with several entries counts once. Colours are the workbook’s coded day types. A day of several types, say both a deity’s birthday (commemoration) and one of the ten fast days (other), is labelled “commemoration/other”; such days are drawn together as one hatched “several types” segment, with the combinations listed on hover, and each still counts once. The sixty-day jiazi cycle, the eight nodal days and the like shift with the year or solar terms and are not counted.',
+      'Un calendrier de jeûne est dans son ensemble un programme de jeûne ; la recommandation de jeûner figure d’ordinaire dans la préface plutôt que sous chaque jour, si bien que tout jour sacré plaçable sur un jour du mois est compté. Les cycles mensuels (dix jours de jeûne, par ex.) et les jeûnes de plusieurs jours (Neuf Empereurs, par ex.) sont reportés sur douze mois de trente jours ; un jour portant plusieurs entrées ne compte qu’une fois. Les couleurs sont les types de jour codés du classeur. Un jour de plusieurs types, par exemple anniversaire d’une divinité (commémoration) et l’un des dix jours de jeûne (autre), est noté « commémoration/autre » ; ces jours forment ensemble un segment hachuré « plusieurs types », les combinaisons s’affichant au survol, et chacun ne compte qu’une fois. Le cycle sexagésimal, les huit nœuds, etc., varient selon l’année ou les termes solaires et ne sont pas comptés.') + '</p>' +
+    '<div class="zr-stats">' + tile(cur.tot, L('天', 'days', 'jours'), L('全年 360 天中的 ' + Math.round(cur.tot / 3.6) + '%', Math.round(cur.tot / 3.6) + '% of 360 days', Math.round(cur.tot / 3.6) + ' % de 360 jours')) +
+      tile((cur.tot / 12).toFixed(1), L('天／月', 'days a month', 'jours par mois'), L('平均', 'on average', 'en moyenne')) +
+      tile(mdays[top - 1], L('天', 'days', 'jours'), L('最多的是' + monthLabel(top), 'most in month ' + top, 'le plus : mois ' + top)) +
+      tile(nNone, L('條不能排入月日', 'entries not placeable', 'entrées non plaçables'), L('不計入', 'not counted', 'non comptées')) + '</div>' + key +
+    '<div class="zr-tabs" role="tablist">' + [['sm', L('小倍數：各版本的一年', 'Small multiples: each edition’s year', 'Petits multiples : l’année de chaque édition')], ['upset', L('類型組合：本版本', 'Type combinations: this edition', 'Combinaisons de types : cette édition')], ['bars', L('全年天數：各版本', 'Days a year: all editions', 'Jours par an : toutes les éditions')]].map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="zr-tabp" data-p="sm"></div><div class="zr-tabp" data-p="upset"></div><div class="zr-tabp" data-p="bars"><p class="zr-muted-s" style="margin:0 0 6px">' + L('點一個版本換到它的環形曆。', 'Click an edition to switch to its ring calendar.', 'Cliquer une édition pour afficher son calendrier circulaire.') + '</p><div class="zr-edbars"></div></div>' +
+    '<h3 class="zr-subh">' + L('每月：本版本', 'Per month: this edition', 'Par mois : cette édition') + '</h3><p class="zr-muted-s" style="margin:0 0 6px">' + L('橫線是各版本該月天數的中位數。', 'The short line marks the median across editions for that month.', 'Le trait marque la médiane des éditions pour ce mois.') + '</p>' +
+    '<div class="zr-chart"><svg viewBox="0 0 960 280" role="img" aria-label="' + L('本版本每月神聖日天數，按日期類型分段', 'Sacred days per month in this edition, by day type', 'Jours sacrés par mois dans cette édition, par type de jour') + '"></svg></div>' +
+    '<div class="zr-rulelist"></div>';
+  root.appendChild(sec);
+  // 標籤：小倍數／類型組合（UpSet）／全年天數；選擇在切換版本後保留
+  function showTab(t) { RTAB = t; sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === t)); }); sec.querySelectorAll('.zr-tabp').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== t; }); hideTip(); }
+  sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.onclick = function () { showTab(b.getAttribute('data-tab')); }; });
+  // 小倍數：每個版本一張 12 × 30 的小年格
+  var smh = '', smSolo = false;
+  all.forEach(function (x) {
+    if (x.solo && !smSolo) smh += '<div class="zr-smsep">' + L('專門單獨齋期', 'Standalone fast calendars', 'Calendriers de jeûne autonomes') + '</div>';
+    smSolo = x.solo;
+    var cells = x.cells.map(function (c) { var m = Math.floor(c / 100), d = c % 100; return '<rect x="' + ((d - 1) * 4) + '" y="' + ((m - 1) * 4) + '" width="3.4" height="3.4"/>'; }).join('');
+    smh += '<a class="zr-sm' + (x === cur ? ' on' : '') + '" href="#ring/' + esc(x.no) + '" title="' + esc(x.label) + '"><svg viewBox="-1 -1 122 50" aria-hidden="true"><rect x="-1" y="-1" width="122" height="50" class="zr-smbg"/><g class="zr-smc">' + cells + '</g></svg><span>' + NH(x.label) + ' · ' + L(x.tot + ' 天', x.tot + ' days', x.tot + ' jours') + '</span></a>';
+  });
+  sec.querySelector('[data-p="sm"]').innerHTML = '<p class="zr-muted-s" style="margin:0 0 8px">' + L('每張小圖是一個版本的一年：12 行是月，30 列是日，有神聖日的格子著色。十齋日這類每月週期在圖上是縱紋，多日齋期是橫條。點一張換到該版本。', 'Each tile is one edition’s year: 12 rows of months, 30 columns of days, with sacred days filled. Monthly cycles such as the ten fast days show as vertical stripes, multi-day fasts as horizontal runs. Click a tile to switch to that edition.', 'Chaque vignette est l’année d’une édition : 12 lignes de mois, 30 colonnes de jours, jours sacrés remplis. Les cycles mensuels comme les dix jours de jeûne forment des bandes verticales, les jeûnes de plusieurs jours des segments horizontaux. Cliquer une vignette pour passer à cette édition.') + '</p><div class="zr-smgrid">' + smh + '</div>';
+  // 類型組合：UpSet 圖（本版本）
+  (function () {
+    var box = sec.querySelector('[data-p="upset"]'), KS = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'], C = cur.seg, LIM = 14;
+    var keys = Object.keys(C).sort(function (a, b) { return C[b] - C[a] || a.split('/').length - b.split('/').length; }), shown = keys.slice(0, LIM), rest = keys.slice(LIM);
+    var single = keys.filter(function (k) { return k.indexOf('/') < 0; }).reduce(function (s, k) { return s + C[k]; }, 0), tk = {};
+    KS.forEach(function (k) { tk[k] = keys.reduce(function (s, c) { return s + (c.split('/').indexOf(k) >= 0 ? C[c] : 0); }, 0); });
+    var rows = KS.filter(function (k) { return tk[k]; });
+    var cols = shown.map(function (k) { return [k, C[k]]; }); if (rest.length) cols.push(['…', rest.reduce(function (s, k) { return s + C[k]; }, 0)]);
+    box.innerHTML = '<p class="zr-muted-s" style="margin:0 0 8px">' + L('本版本全年 ' + cur.tot + ' 天：單類 ' + single + ' 天，兼類 ' + (cur.tot - single) + ' 天，共 ' + keys.length + ' 種組合。下方點陣的每一列是一種組合，連起來的點是這一天兼有的類型；柱高是天數；左側是每類出現的天數。',
+      'This edition: ' + cur.tot + ' days a year, ' + single + ' of a single type and ' + (cur.tot - single) + ' of several, in ' + keys.length + ' combinations. Each column of the dot matrix is one combination, with joined dots for the types that share the day; bar height is the number of days; the left bars give the days on which each type occurs.',
+      'Cette édition : ' + cur.tot + ' jours par an, ' + single + ' d’un seul type et ' + (cur.tot - single) + ' de plusieurs, en ' + keys.length + ' combinaisons. Chaque colonne de la matrice est une combinaison, les points reliés étant les types qui partagent le jour ; la hauteur donne le nombre de jours ; à gauche, les jours où chaque type apparaît.') + '</p>' +
+      '<div class="zr-chart"><svg viewBox="0 0 960 ' + (190 + rows.length * 26) + '" role="img" aria-label="' + L('本版本日期類型組合的天數', 'Days per combination of day types in this edition', 'Jours par combinaison de types dans cette édition') + '"></svg></div>';
+    var S2 = box.querySelector('svg'), x0 = 230, cw = (950 - x0) / Math.max(cols.length, 8), y0 = 160, rh = 26, mx2 = Math.max.apply(null, cols.map(function (c) { return c[1]; })) || 1;
+    var step = mx2 > 100 ? 50 : mx2 > 40 ? 20 : mx2 > 15 ? 10 : 5;
+    for (var v = 0; v <= mx2; v += step) { var yy = y0 - v / mx2 * 130; svgEl('line', { x1: x0, x2: 950, y1: yy, y2: yy, stroke: 'var(--zr-line)' }, S2); svgEl('text', { x: x0 - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': 12, fill: 'var(--zr-muted)' }, S2).textContent = v; }
+    rows.forEach(function (k, ri) { if (ri % 2 === 0) svgEl('rect', { x: x0, y: y0 + 16 + ri * rh, width: 950 - x0, height: rh, fill: 'var(--zr-cell)' }, S2); });
+    cols.forEach(function (cc, i) {
+      var k = cc[0], x = x0 + i * cw + cw * 0.2, w = cw * 0.6, hh = cc[1] / mx2 * 130, ks = k === '…' ? [] : k.split('/');
+      svgEl('rect', { x: x, y: y0 - hh, width: w, height: hh, rx: 2, fill: k === '…' ? 'var(--zr-wei)' : ks.length > 1 ? 'var(--zr-ink-2)' : 'var(' + TR[k].c + ')' }, S2);
+      svgEl('text', { x: x + w / 2, y: y0 - hh - 5, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S2).textContent = cc[1];
+      var hit = svgEl('rect', { x: x0 + i * cw, y: 10, width: cw, height: y0 + 16 + rows.length * rh - 10, fill: 'transparent' }, S2);
+      hit.addEventListener('pointermove', function (ev) { showTip(ev, k === '…' ? L('其餘 ' + rest.length + ' 種組合', rest.length + ' other combinations', rest.length + ' autres combinaisons') + rest.map(function (c) { return '<br>' + rkLab(c) + ' ' + C[c]; }).join('') : '<b>' + rkLab(k) + '</b> · ' + L(cc[1] + ' 天', cc[1] + ' days', cc[1] + ' jours')); });
+      hit.addEventListener('pointerleave', hideTip);
+      if (k === '…') { svgEl('text', { x: x + w / 2, y: y0 + 16 + rh * rows.length / 2 + 4, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--zr-muted)' }, S2).textContent = L('其餘 ' + rest.length, '+' + rest.length, '+' + rest.length); return; }
+      var ys = [];
+      rows.forEach(function (rk, ri) { var cy = y0 + 16 + ri * rh + rh / 2, on = ks.indexOf(rk) >= 0; svgEl('circle', { cx: x + w / 2, cy: cy, r: 5, fill: on ? 'var(' + TR[rk].c + ')' : 'var(--zr-line)' }, S2); if (on) ys.push(cy); });
+      if (ys.length > 1) svgEl('line', { x1: x + w / 2, x2: x + w / 2, y1: ys[0], y2: ys[ys.length - 1], stroke: 'var(--zr-ink-2)', 'stroke-width': 2 }, S2);
+    });
+    var tm = Math.max.apply(null, rows.map(function (k) { return tk[k]; })) || 1;
+    rows.forEach(function (k, ri) {
+      var cy = y0 + 16 + ri * rh + rh / 2, w = tk[k] / tm * 110;
+      svgEl('rect', { x: x0 - 70 - w, y: cy - 7, width: w, height: 14, rx: 2, fill: 'var(' + TR[k].c + ')' }, S2);
+      svgEl('text', { x: x0 - 76 - w, y: cy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S2).textContent = tk[k];
+      svgEl('text', { x: x0 - 8, y: cy + 5, 'text-anchor': 'end', 'font-size': 13, fill: 'var(--zr-ink-2)' }, S2).textContent = trLab(k);
+    });
+  })();
+  showTab(RTAB);
+  // 每年：各版本橫條
+  var mx = Math.max.apply(null, all.map(function (x) { return x.tot; })), prevSolo = false, h = '';
+  all.forEach(function (x) {
+    if (x.solo && !prevSolo) h += '<div class="zr-edsep">' + L('專門單獨齋期', 'Standalone fast calendars', 'Calendriers de jeûne autonomes') + '</div>';
+    prevSolo = x.solo;
+    var on = x === cur;
+    h += '<a class="zr-edrow' + (on ? ' on' : '') + '" href="#ring/' + esc(x.no) + '"><span class="zr-edn">' + NH(x.label) + '</span><span class="zr-edb"><span class="zr-edbar" style="width:' + (x.tot / mx * 88).toFixed(1) + '%">' +
+      (function (a) { return a.keys.map(function (k) { return '<i style="flex:' + a.v[k] + ';background:' + rkCss(k) + '" data-tip="' + esc(rkTip(a, k)) + '"></i>'; }).join(''); })(rkAgg(x.seg)) + '</span><span class="zr-edt">' + x.tot + '</span></span></a>';
+  });
+  var eb = sec.querySelector('.zr-edbars'); eb.innerHTML = h;
+  eb.addEventListener('pointermove', function (ev) { var i = ev.target.closest('[data-tip]'); if (i) showTip(ev, i.getAttribute('data-tip')); else hideTip(); });
+  eb.addEventListener('pointerleave', hideTip);
+  // 每月：本版本堆疊柱 + 各版本中位數
+  var S = sec.querySelector('svg'), HATCH = 'zr-hatch-' + (++FAST_UID), defs = svgEl('defs', {}, S), pat = svgEl('pattern', { id: HATCH, width: 4.5, height: 4.5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  svgEl('rect', { width: 4.5, height: 4.5, fill: 'var(--zr-cell)' }, pat); svgEl('rect', { width: 1.5, height: 4.5, fill: 'var(--zr-ink-2)' }, pat);
+  var W = 960, H = 280, ml = 36, mr = 8, mt = 22, mb = 34, bw = (W - ml - mr) / 12;
+  var med = []; for (var m = 0; m < 12; m++) { var vs = all.map(function (x) { return Object.keys(x.mon[m]).reduce(function (s, k) { return s + x.mon[m][k]; }, 0); }).sort(function (a, b) { return a - b; }); med.push(vs.length % 2 ? vs[(vs.length - 1) / 2] : (vs[vs.length / 2 - 1] + vs[vs.length / 2]) / 2); }
+  var vmax = Math.max(30, Math.max.apply(null, mdays.concat(med))), max = Math.ceil(vmax / 5) * 5;
+  function y(v) { return mt + (H - mt - mb) * (1 - v / max); }
+  for (var v = 0; v <= max; v += 10) { svgEl('line', { x1: ml, x2: W - mr, y1: y(v), y2: y(v), stroke: 'var(--zr-line)' }, S); svgEl('text', { x: ml - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = v; }
+  cur.mon.forEach(function (o, i) {
+    var x = ml + i * bw + bw * 0.2, w = bw * 0.6, base = 0;
+    var a = rkAgg(o);
+    a.keys.forEach(function (k) { svgEl('rect', { x: x, y: y(base + a.v[k]), width: w, height: Math.max(0, y(base) - y(base + a.v[k]) - 1.5), fill: k === 'MIX' ? 'url(#' + HATCH + ')' : rkCss(k), rx: 1.5 }, S); base += a.v[k]; });
+    svgEl('text', { x: x + w / 2, y: y(base) - 6, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S).textContent = base;
+    svgEl('line', { x1: x - 6, x2: x + w + 6, y1: y(med[i]), y2: y(med[i]), stroke: 'var(--zr-ink)', 'stroke-width': 2, 'stroke-dasharray': '4 3' }, S);
+    var hit = svgEl('rect', { x: ml + i * bw, y: mt, width: bw, height: H - mt - mb, fill: 'transparent' }, S);
+    hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + monthLabel(i + 1) + '</b> · ' + L(base + ' 天', base + ' days', base + ' jours') + a.keys.map(function (k) { return '<br>' + rkTip(a, k); }).join('') + '<br>' + L('各版本中位數 ', 'Median across editions ', 'Médiane des éditions ') + med[i]); });
+    hit.addEventListener('pointerleave', hideTip);
+    svgEl('text', { x: ml + (i + 0.5) * bw, y: H - mb + 20, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-muted)' }, S).textContent = monthLabel(i + 1);
+  });
+  // 規則清單：按規則形式
+  function groups(type) {
+    var g = {}, ord = [];
+    rules.forEach(function (x) {
+      if (x.type !== type) return;
+      var k = x.name + '|' + (type === 'month' ? x.dy : x.id);
+      if (!g[k]) { g[k] = { name: x.name, dy: x.dy, kind: x.kind, cells: {} }; ord.push(k); }
+      x.cells.forEach(function (c) { g[k].cells[c] = 1; });
+    });
+    return ord.map(function (k) { return g[k]; });
+  }
+  var li = function (g) { return '<li><i class="zr-sw" style="background:' + rkCss(g.kind) + '"></i>' + NH(g.name) + (g.dy ? ' <span class="zr-muted-s">' + esc(g.dy) + '</span>' : '') + ' · ' + L(Object.keys(g.cells).length + ' 天', Object.keys(g.cells).length + ' days', Object.keys(g.cells).length + ' jours') + '</li>'; };
+  var nYear = rules.filter(function (x) { return x.type === 'year'; }).length;
+  sec.querySelector('.zr-rulelist').innerHTML = '<h3 class="zr-subh">' + L('本版本的規則形式', 'Rule forms in this edition', 'Formes de règle dans cette édition') + '</h3><div class="zr-rulecols">' +
+    ['month', 'range'].map(function (t) { var gs = groups(t); return '<div><h4>' + rtLab(t) + ' <span class="zr-muted-s">' + L(gs.length + ' 條規則', gs.length + ' rules', gs.length + ' règles') + '</span></h4>' + (gs.length ? '<ul>' + gs.map(li).join('') + '</ul>' : '<p class="zr-muted-s">' + L('本版本沒有。', 'None in this edition.', 'Aucune dans cette édition.') + '</p>'); }).join('') +
+    '<div><h4>' + rtLab('year') + ' <span class="zr-muted-s">' + L(nYear + ' 條', nYear + ' entries', nYear + ' entrées') + '</span></h4><p class="zr-muted-s" style="margin:0">' + L('逐條見上方環形曆和下方條目表。', 'See the ring above and the table below for each entry.', 'Voir le cercle ci-dessus et la table ci-dessous pour chaque entrée.') + '</p></div>' +
+    '<div><h4>' + rtLab('none') + ' <span class="zr-muted-s">' + L(nNone + ' 條', nNone + ' entries', nNone + ' entrées') + '</span></h4><p class="zr-muted-s" style="margin:0">' + L('如六十甲子日、八節、三元等。', 'Such as the sixty-day jiazi cycle, the eight nodal days and the Three Primes.', 'Cycle sexagésimal, huit nœuds, Trois Origines, etc.') + '</p></div></div>';
+}
+
 // ---------- 一神多日 ----------
 function strips(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec';
@@ -599,8 +742,8 @@ window.ZhaiRing = {
       root.appendChild(head);
     }
     el.appendChild(root);
-    var fns = { disc: disc, treemap: treemap, dom: dom, strips: strips, table: table, notes: function (r) { notes(r, data); } };
-    (opt.sections || ['disc', 'treemap', 'dom', 'strips', 'table', 'notes']).forEach(function (s) { if (fns[s]) fns[s](root, D); });
+    var fns = { disc: disc, treemap: treemap, dom: dom, rules: function (r) { fastRules(r, D, data); }, strips: strips, table: table, notes: function (r) { notes(r, data); } };
+    (opt.sections || ['disc', 'treemap', 'dom', 'rules', 'strips', 'table', 'notes']).forEach(function (s) { if (fns[s]) fns[s](root, D); });
     return root;
   },
   hideTip: hideTip,

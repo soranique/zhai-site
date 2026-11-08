@@ -520,10 +520,10 @@ function fastRules(root, D, data) {
       'A fasting calendar as a whole is a schedule for fasting; the recommendation to fast usually sits in the preface rather than under each day, so every sacred day that can be placed on a month-day is counted here. Monthly cycles (such as the ten fast days) and multi-day fasts (such as the Nine Emperors fast) are laid out over twelve thirty-day months, and a day with several entries counts once. Colours are the workbook’s coded day types. A day of several types, say both a deity’s birthday (commemoration) and one of the ten fast days (other), is labelled “commemoration/other”; such days are drawn together as one hatched “several types” segment, with the combinations listed on hover, and each still counts once. The sixty-day jiazi cycle, the eight nodal days and the like shift with the year or solar terms and are not counted.',
       'Un calendrier de jeûne est dans son ensemble un programme de jeûne ; la recommandation de jeûner figure d’ordinaire dans la préface plutôt que sous chaque jour, si bien que tout jour sacré plaçable sur un jour du mois est compté. Les cycles mensuels (dix jours de jeûne, par ex.) et les jeûnes de plusieurs jours (Neuf Empereurs, par ex.) sont reportés sur douze mois de trente jours ; un jour portant plusieurs entrées ne compte qu’une fois. Les couleurs sont les types de jour codés du classeur. Un jour de plusieurs types, par exemple anniversaire d’une divinité (commémoration) et l’un des dix jours de jeûne (autre), est noté « commémoration/autre » ; ces jours forment ensemble un segment hachuré « plusieurs types », les combinaisons s’affichant au survol, et chacun ne compte qu’une fois. Le cycle sexagésimal, les huit nœuds, etc., varient selon l’année ou les termes solaires et ne sont pas comptés.') + '</p>' +
     '<div class="zr-pie"><svg viewBox="0 0 240 240" role="img" aria-label="' + L('全年 360 天中神聖日的構成，按日期類型', 'Make-up of the sacred days in the 360-day year, by day type', 'Composition des jours sacrés sur 360 jours, par type de jour') + '"></svg><div class="zr-piekey"></div></div>' + key +
-    '<div class="zr-tabs" role="tablist">' + [['sm', L('小倍數：各版本的一年', 'Small multiples: each edition’s year', 'Petits multiples : l’année de chaque édition')], ['bars', L('全年天數：各版本', 'Days a year: all editions', 'Jours par an : toutes les éditions')]].map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="zr-tabs" role="tablist">' + [['sm', L('小倍數：各版本的一年', 'Small multiples: each edition’s year', 'Petits multiples : l’année de chaque édition')], ['bars', L('全年天數：各版本', 'Days a year: all editions', 'Jours par an : toutes les éditions')], ['month', L('每月：本版本', 'Per month: this edition', 'Par mois : cette édition')], ['many', L('一神多日', 'One deity, many days', 'Une divinité, plusieurs jours')]].map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="zr-tabp" data-p="sm"></div><div class="zr-tabp" data-p="bars"><p class="zr-muted-s" style="margin:0 0 6px">' + L('點一個版本換到它的環形曆。', 'Click an edition to switch to its ring calendar.', 'Cliquer une édition pour afficher son calendrier circulaire.') + '</p><div class="zr-edbars"></div></div>' +
-    '<h3 class="zr-subh">' + L('每月：本版本', 'Per month: this edition', 'Par mois : cette édition') + '</h3><p class="zr-muted-s" style="margin:0 0 6px">' + L('橫線是各版本該月天數的中位數。', 'The short line marks the median across editions for that month.', 'Le trait marque la médiane des éditions pour ce mois.') + '</p>' +
-    '<div class="zr-chart"><svg viewBox="0 0 960 280" role="img" aria-label="' + L('本版本每月神聖日天數，按日期類型分段', 'Sacred days per month in this edition, by day type', 'Jours sacrés par mois dans cette édition, par type de jour') + '"></svg></div>' +
+    '<div class="zr-tabp" data-p="month">' + '<p class="zr-muted-s" style="margin:0 0 6px">' + L('橫線是各版本該月天數的中位數。', 'The short line marks the median across editions for that month.', 'Le trait marque la médiane des éditions pour ce mois.') + '</p>' +
+    '<div class="zr-chart"><svg viewBox="0 0 960 280" role="img" aria-label="' + L('本版本每月神聖日天數，按日期類型分段', 'Sacred days per month in this edition, by day type', 'Jours sacrés par mois dans cette édition, par type de jour') + '"></svg></div></div><div class="zr-tabp" data-p="many"></div>' +
     '<div class="zr-rulelist"></div>';
   root.appendChild(sec);
   // 餅圖（環形）：全年 360 天 = 各單一類型 + 兼類 + 沒有神聖日的日子；中間是全年神聖日天數。右側列出各段天數與比例，以及每月平均、最多的月份、不能排入月日的條數
@@ -561,7 +561,7 @@ function fastRules(root, D, data) {
     });
   })();
   // 標籤：小倍數／類型組合（UpSet）／全年天數；選擇在切換版本後保留
-  function showTab(t) { if (t !== 'sm' && t !== 'bars') t = 'sm'; RTAB = t; sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === t)); }); sec.querySelectorAll('.zr-tabp').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== t; }); hideTip(); }
+  function showTab(t) { if (['sm', 'bars', 'month', 'many'].indexOf(t) < 0) t = 'sm'; RTAB = t; sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === t)); }); sec.querySelectorAll('.zr-tabp').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== t; }); hideTip(); }
   sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.onclick = function () { showTab(b.getAttribute('data-tab')); }; });
   // 小倍數：每個版本一張 12 × 30 的小年格
   var smh = '', smSolo = false;
@@ -625,12 +625,13 @@ function fastRules(root, D, data) {
 
 // ---------- 一神多日 ----------
 function strips(root, D) {
-  var sec = document.createElement('section'); sec.className = 'zr-sec';
+  var tab = root.querySelector('#r-total [data-p="many"]');   // 有「齋期總長」時放進它的「一神多日」標籤頁
+  var sec = document.createElement(tab ? 'div' : 'section'); sec.className = tab ? 'zr-manytab' : 'zr-sec';
   sec.innerHTML = '<div class="zr-eyebrow">' + L('一神多日', 'One deity, many days') + '</div><h2 style="margin:0">' + L('同一位神，散落在一年中', 'The same deity, scattered across the year') + '</h2><p class="zr-lede">' +
     (SCHEME === 'kind' ? L('每一行是一位神明（按「建議規範名」歸組）在這一年中的全部日子：誕、成道、下降、朝真等。', 'Each row gathers all the days of one deity (grouped by the suggested normalized name) across the year: birthday, attaining the Way, descent, audience with the Perfected, etc.') : '') +
     (SCHEME === 'kind' ? '' : L('每一行是一位神明（按神明編號歸組）在這一年中的全部日子：誕、成道、下降、朝真。版本比較時，比較單位應是「神明＋事件」。',
       'Each row gathers all the days of one deity (grouped by deity code) across the year: birthday, attaining the Way, descent, audience with the Perfected. When comparing editions, the unit of comparison should be “deity + event”.')) + '</p><div class="zr-strips"></div>';
-  root.appendChild(sec);
+  if (tab) { sec.querySelector('.zr-eyebrow').remove(); sec.querySelector('h2').remove(); tab.appendChild(sec); } else root.appendChild(sec);
   var box = sec.querySelector('.zr-strips'), M = {};
   D.all.forEach(function (r) { if (r.god) (M[r.god] = M[r.god] || []).push(r); });
   var rows = Object.keys(M).map(function (g) { return [g, M[g]]; }).filter(function (x) { return x[1].length > 1; })
@@ -728,7 +729,7 @@ window.ZhaiRing = {
   },
   hideTip: hideTip,
   cur: function () { return CUR ? CUR.get() : null; },
-  // 演示和可分享鏈接用：「齋期總長」的標籤（sm／bars）、「每月第幾日最擁擠」是否含十齋日、六齋日
+  // 演示和可分享鏈接用：「齋期總長」的標籤（sm／bars／month／many）、「每月第幾日最擁擠」是否含十齋日、六齋日
   prefs: function (o) { if (o) { if (o.tab) RTAB = o.tab; if (o.dom != null) DOM_ALL = !!o.dom; } return { tab: RTAB, dom: DOM_ALL }; },
   set: function (o) { if (CUR) CUR.set(o || {}); }
 };

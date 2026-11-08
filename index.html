@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>神誕齋期版本對照</title>
+<link rel="icon" href="data:,">
 <meta name="description" content="江南週期性神誕持齋研究：神明在各版本齋期表中的記載，與實踐記錄、《申報》、風俗志的對照。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@400;500;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ring.css?v=d862fa3b">
+<link rel="stylesheet" href="ring.css?v=ef9a54dd">
 <style>
 :root {
   color-scheme: light;
@@ -109,6 +110,8 @@ h3 { font-size: 16px; margin: 22px 0 8px; }
   background: var(--surface); color: var(--ink); min-width: 0;
 }
 .controls label { font-size: 14px; color: var(--ink-2); display: inline-flex; gap: 5px; align-items: center; }
+.controls label { max-width: 100%; min-width: 0; }
+.controls label select { min-width: 0; max-width: 100%; flex: 0 1 auto; }
 .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--grid); border-radius: 10px; background: var(--surface); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 .scroll table { min-width: 760px; }
@@ -593,7 +596,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="kinship-data.js?v=30c22f5f"></script>
 <script src="spread-data.js?v=9d5df462"></script>
 <script src="search-data.js?v=bae77b1a"></script>
-<script src="ring.js?v=25a1a023"></script>
+<script src="ring.js?v=3af69c06"></script>
 <script>
 (function () {
 'use strict';
@@ -2487,7 +2490,7 @@ function edMinor(e) { var K = window.ZHAI_KIN; return K && K.minor && K.minor[e.
 function edJudged(v) { var K = window.ZHAI_KIN; return !!(K && K.incl && K.incl.indexOf(+v.no) >= 0); }
 function edMinorNote(e) {
   var m = edMinor(e); if (!m) return '';
-  var ty = { '同月異日': ['同月異日', 'same month, other day'], '異月': ['異月', 'other month'], '無通行日期': ['無通行日期', 'no prevailing date'] }[m[0]] || [m[0], m[0]];
+  var ty = { '同月異日': ['同月異日', 'same month, other day', 'même mois, autre jour'], '異月': ['異月', 'other month', 'autre mois'], '無通行日期': ['無通行日期', 'no prevailing date', 'pas de date usuelle'] }[m[0]] || [m[0], m[0], m[0]];
   return '<div class="small" style="color:var(--accent)">' + L((m[1] === '獨有' ? '獨有日期' : '少數日期') + '（' + m[2] + '/' + m[3] + ' 個見證）· ' + ty[0] + (m[4] ? '；通行：' + esc(m[4]) : ''),
     (m[1] === '獨有' ? 'Unique date' : 'Minority date') + ' (' + m[2] + '/' + m[3] + ' witnesses) · ' + ty[1] + (m[4] ? '; prevailing: ' + esc(m[4]) : ''), (m[1] === '獨有' ? 'Date unique' : 'Date minoritaire') + ' (' + m[2] + '/' + m[3] + ' témoins) · ' + ty[2] + (m[4] ? ' ; usuelle : ' + esc(m[4]) : '')) + '</div>';
 }

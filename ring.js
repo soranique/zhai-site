@@ -439,7 +439,7 @@ function treemap(root, D) {
 // 默認不顯示十齋日、六齋日（六齋日都在十齋日之內），只比較其餘二十天；可切換爲含全部三十天。選擇在切換版本後保留
 var DOM_ALL = false;
 function dom(root, D) {
-  var sec = document.createElement('section'); sec.className = 'zr-sec';
+  var sec = document.createElement('section'); sec.className = 'zr-sec'; sec.id = 'r-dom';
   sec.innerHTML = '<div class="zr-eyebrow">' + L('檢驗 · 週期齋戒的底層節奏', 'Test · the underlying rhythm of periodic fasting') + '</div><h2 style="margin:0">' + L('每月第幾日最擁擠', 'Which day of the month is most crowded') + '</h2><p class="zr-lede"></p>' +
     '<div class="zr-steps zr-domopt" role="group" aria-label="' + L('十齋日、六齋日', 'Ten and six fast days', 'Dix et six jours de jeûne') + '" style="justify-content:flex-start;margin:0">' +
     '<button type="button" data-all="0">' + L('不含十齋日、六齋日', 'Without the ten and six fast days', 'Sans les dix et six jours de jeûne') + '</button>' +
@@ -524,7 +524,7 @@ function fastRules(root, D, data) {
   var cur = all.filter(function (x) { return x.no === meta.no; })[0];
   if (!cur) return;
   var used = RK.filter(function (k) { return all.some(function (x) { return Object.keys(x.seg).some(function (c) { return c.split('/').indexOf(k) >= 0; }); }); });
-  var sec = document.createElement('section'); sec.className = 'zr-sec';
+  var sec = document.createElement('section'); sec.className = 'zr-sec'; sec.id = 'r-total';
   var mdays = cur.mon.map(function (o) { return Object.keys(o).reduce(function (s, k) { return s + o[k]; }, 0); });
   var top = mdays.indexOf(Math.max.apply(null, mdays)) + 1, nNone = rules.filter(function (x) { return x.type === 'none'; }).length;
   var tile = function (n, a, b) { return '<div><b>' + n + '</b><span>' + a + (b ? '<br>' + b : '') + '</span></div>'; };
@@ -748,6 +748,8 @@ window.ZhaiRing = {
   },
   hideTip: hideTip,
   cur: function () { return CUR ? CUR.get() : null; },
+  // 演示和可分享鏈接用：「齋期總長」的標籤（sm／upset／bars）、「每月第幾日最擁擠」是否含十齋日、六齋日
+  prefs: function (o) { if (o) { if (o.tab) RTAB = o.tab; if (o.dom != null) DOM_ALL = !!o.dom; } return { tab: RTAB, dom: DOM_ALL }; },
   set: function (o) { if (CUR) CUR.set(o || {}); }
 };
 })();

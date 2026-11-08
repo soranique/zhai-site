@@ -891,7 +891,8 @@ addEventListener('keydown', function (e) {
 
 // ---------- 全站搜索：漢字（繁簡互通）、拼音、記錄 ID ----------
 var T2S = {}; (function (s) { s = Array.from(s); for (var i = 0; i + 1 < s.length; i += 2) T2S[s[i]] = s[i + 1]; })(window.ZHAI_T2S || '');   // 按字（碼點）配對：對照表裏有擴展區字（如「𠡠」），按 UTF-16 單元配對會從那裏起錯位
-function norm(s) { return String(s || '').toLowerCase().replace(/[㐀-鿿]/g, function (c) { return T2S[c] || c; }); }
+// 搜索時「廿」「卅」與「二十」「三十」視為同一寫法，查「廿三」也找得到寫作「二十三」的條目
+function norm(s) { return String(s || '').toLowerCase().replace(/[㐀-鿿]/g, function (c) { return T2S[c] || c; }).replace(/廿/g, '二十').replace(/卅/g, '三十'); }
 function npy(s) { return String(s || '').toLowerCase().replace(/[\s'’·\-]/g, ''); }
 var SIDX = null;
 function searchIndex() {
@@ -1532,7 +1533,7 @@ function viewFit() {
       if (FIT.day && fitDayOf(p) !== FIT.day) return false;
       if (!q) return true;
       var e = EBYID[pCal(p)];
-      return [p.id, p.w, p.zhai, p.wt, p.place, p.date, fitName(fitKey(p)), I.py(fitName(fitKey(p))), e.k, e.t, e.g, ED.versions[e.v].short].join(' ').toLowerCase().indexOf(q) >= 0;
+      return [p.id, p.w, p.zhai, p.wt, p.place, p.date, fitName(fitKey(p)), I.py(fitName(fitKey(p))), e.k, e.t, e.g, ED.versions[e.v].short].join(' ').toLowerCase().replace(/廿/g, '二十').replace(/卅/g, '三十').indexOf(q.replace(/廿/g, '二十').replace(/卅/g, '三十')) >= 0;
     });
     var grp = {}, order = [];
     ps.forEach(function (p) { var k = fitKey(p); if (!grp[k]) { grp[k] = []; order.push(k); } grp[k].push(p); });

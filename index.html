@@ -222,7 +222,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .kin { --edge:#bdbbb3; --heat0:#262624; } }
 :root[data-theme="dark"] .kin { --edge:#bdbbb3; --heat0:#262624; }
 .kin svg.knet { display: block; width: 100%; height: auto; }
-.kin .lane { fill: var(--surface-2); } .kin .lanet { font-size: 12.5px; fill: var(--ink-2); } .kin .tick { stroke: var(--grid); stroke-width: 1; } .kin .tickt { font-size: 11px; fill: var(--muted); }
+.kin .lane { fill: var(--surface-2); } .kin .lanet { font-size: 12.5px; fill: var(--ink-2); } .kin .tick { stroke: var(--grid); stroke-width: 1; } .kin .kpy { font-style: italic; } .kin .tickt { font-size: 11px; fill: var(--muted); }
 .kin .e { fill: none; stroke: var(--edge); stroke-linecap: round; cursor: pointer; } .kin .e.sv { stroke: var(--accent); } .kin .e:hover, .kin .e.hl { stroke: var(--accent); opacity: 1 !important; }
 .kin .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
@@ -384,6 +384,7 @@ svg .gridl { stroke: var(--grid); }
 .cid { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
 .hcard { position: fixed; z-index: 70; max-width: min(380px, calc(100vw - 16px)); background: var(--surface); color: var(--ink); border: 1px solid var(--axis); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.55; box-shadow: 0 6px 22px rgba(0,0,0,.16); }
 .hcard[hidden] { display: none; }
+.tx[title] { text-decoration: none; cursor: help; }
 .hcard .hc-t { margin-bottom: 4px; } .hcard .hc-a { margin-top: 6px; }
 .tip.card { pointer-events: auto; left: 8px !important; right: 8px; bottom: 8px; top: auto !important; max-width: none; max-height: 45vh; overflow: auto; font-size: 14px; z-index: 65; }
 .tip-a { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
@@ -577,13 +578,14 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=2183fdce"></script>
 <script src="fr.js?v=0972c55f"></script>
-<script src="i18n.js?v=2af508b0"></script>
+<script src="tx.js?v=d17ca429"></script>
+<script src="i18n.js?v=8abcdfb2"></script>
 <script src="data.js?v=dba1d6e8"></script>
 <script src="editions-data.js?v=88e2242c"></script>
 <script src="kinship-data.js?v=30c22f5f"></script>
 <script src="spread-data.js?v=9d5df462"></script>
 <script src="search-data.js?v=bae77b1a"></script>
-<script src="ring.js?v=a854095e"></script>
+<script src="ring.js?v=b2e4ce08"></script>
 <script>
 (function () {
 'use strict';
@@ -593,6 +595,7 @@ var tip = document.getElementById('tip');
 
 // ---------- 語言 ----------
 var I = window.ZhaiI18n, L = I.L, N = I.N, NT = I.NT, C = I.C, DT = I.D;
+if (window.ZHAI_TX_PY) I.addPinyin(null, window.ZHAI_TX_PY);   // 補充拼音（版本親疏短名等），排在前面，數據自帶的拼音優先
 I.addPinyin(D.py, D.pyTitle);
 if (window.ZHAI_RING) I.addPinyin(window.ZHAI_RING.py, window.ZHAI_RING.pyTitle);
 document.getElementById('share').onclick = function () { copyText(shareURL(true), L('已複製本頁鏈接：對方打開看到的是同一畫面', 'Link copied: it opens this same view', 'Lien copié : il ouvre cette même vue')); };
@@ -692,10 +695,10 @@ function relTag(p) {
 function pLinks(e) {
   var ps = PBYE[e.id]; if (!ps) return '';
   return '<div class="small">' + L('實踐：', 'Practice: ') + ps.map(function (p) {
-    return '<a class="plk" href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '" title="' + esc(DT(p.date) + '｜' + NT(p.wt) + '｜' + C(p.rel)) + '">' + esc(p.id) + (isDev(p) ? L('（偏差）', ' (dev.)') : '') + '</a>';
+    return '<a class="plk" href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '" title="' + esc(DTX(p.date) + '｜' + NT(p.wt) + '｜' + C(p.rel)) + '">' + esc(p.id) + (isDev(p) ? L('（偏差）', ' (dev.)') : '') + '</a>';
   }).join('') + '</div>';
 }
-function eShort(e) { var v = ED.versions[e.v]; return edWhen(v) + ' ' + N(v.short) + ' ' + esc((e.mo || '') + (e.dy || '')); }
+function eShort(e) { var v = ED.versions[e.v]; return edWhen(v) + ' ' + N(v.short) + ' ' + esc(DT((e.mo || '') + (e.dy || ''))); }
 D.shenbao.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).sb.push(s); }); });
 D.fengsu.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).fs.push(s); }); });
 D.classics.forEach(function (s) { s.gs.forEach(function (g) { bucket(g).cl.push(s); }); });
@@ -706,6 +709,20 @@ function godLink(id, txt) { return '<a href="#g/' + id + '">' + (txt ? esc(txt) 
 function vSw(cls) { return '<span class="sw v ' + cls + '"></span>'; }
 function aliases(s) { return I.en() ? s.split(/[、，,；;]/).map(function (a) { return N(a.trim()); }).join(', ') : esc(s); }
 function zhNote() { return I.en() ? ' <span class="muted small">[' + L('', 'Chinese', 'chinois') + ']</span>' : ''; }
+/** 研究者文字（筆記、摘要、說明），返回 HTML：西文界面有譯文時顯示譯文（滑鼠移上去看中文原文；*…* 爲書名斜體），沒有譯文時照錄中文並標 [Chinese] */
+function FT(s, noTag) {
+  if (s == null || s === '') return '';
+  if (!I.en()) return esc(s);
+  var t = I.X(s);
+  if (t == null) return esc(s) + (noTag ? '' : zhNote());
+  return '<span class="tx" title="' + esc(s) + '">' + esc(t).replace(/\*([^*]+)\*/g, '<i>$1</i>') + '</span>';
+}
+/** 日期欄（含研究者括注）：有整條譯文用譯文，否則按程序轉成「月/日」 */
+function DTX(s) { var t = I.en() && I.X(s); return t ? t.replace(/\*([^*]+)\*/g, '$1') : DT(s); }
+/** 專有名詞（有拼音時「拼音 漢字」），沒有拼音時當研究者文字處理 */
+function NF(s) { return I.en() && I.X(s) != null ? FT(s, 1) : I.py(s) ? N(s) : FT(s, 1); }
+/** 同上，純文字（用於 title、SVG、CSV） */
+function FTT(s) { if (s == null || s === '') return ''; var t = I.X(s); return t == null ? String(s) : t.replace(/\*([^*]+)\*/g, '$1'); }
 function pendTag(b) { return b && b.pending ? ' <span class="flag" title="' + esc(L('神明與齋曆條目按名稱對應，尚未覈對', 'Deity matched to calendar entries by name, not yet verified')) + '">' + L('待覈', 'to verify') + '</span>' : ''; }
 // 實踐記錄裏「對應齋期表條目ID」（舊 C 編號）→ 工作簿條目ID
 function calRef(c) {
@@ -837,9 +854,9 @@ function renderDay() {
   h += ps.map(function (x) {
     var p = x.p, v = ED.versions[x.e.v];
     return '<div class="dp-p' + (isDev(p) ? ' dev' : p.rel === REL_FIT ? ' fit' : '') + '"><div><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '"><b>' + esc(p.id) + '</b></a>' + citeBtn(p.id) + ' ' + esc(p.year || '') + ' · ' + N(p.place) + ' ' + relTag(p) + '</div>' +
-      '<div class="small">' + (p.g ? godLink(p.g) + ' · ' : '') + (p.zhai ? N(p.zhai) : '—') + ' · ' + L('日期：', 'Date: ') + esc(DT(p.date) || '—') + '</div>' +
+      '<div class="small">' + (p.g ? godLink(p.g) + ' · ' : '') + (p.zhai ? NF(p.zhai) : '—') + ' · ' + L('日期：', 'Date: ') + esc(DTX(p.date) || '—') + '</div>' +
       '<div class="small muted">' + N(p.wt) + ' · ' + L('對上 ', 'matched to ') + esc(x.e.id) + ' ' + edWhen(v) + ' ' + N(v.short) + '</div>' +
-      (p.relNote ? '<div class="small">' + L('偏差說明：', 'Deviation: ') + esc(p.relNote) + zhNote() + '</div>' : (isDev(p) ? '<div class="small muted">' + L('偏差說明暫空', 'Deviation note to be written') + '</div>' : '')) + '</div>';
+      (p.relNote ? '<div class="small">' + L('偏差說明：', 'Deviation: ') + FT(p.relNote) + '</div>' : (isDev(p) ? '<div class="small muted">' + L('偏差說明暫空', 'Deviation note to be written') + '</div>' : '')) + '</div>';
   }).join('');
   if (timeOn()) h += '<p class="small">' + L('年代篩選：' + timeLabel() + '（全部年代共 ' + nAllP + ' 條）', 'Years: ' + timeLabel() + ' (' + nAllP + ' in all years)', 'Années : ' + timeLabel() + ' (' + nAllP + ' toutes années confondues)') + '</p>';
   h += '<p class="small muted">' + L('每條實踐只對一個齋曆條目（年代最近的版本），所以右欄只列對上這一天各條目的實踐。', 'Each practice record is matched to one entry (the edition closest in date), so this column lists only practice matched to this day’s entries.') + '</p>';
@@ -1265,7 +1282,7 @@ function showTip(e, html) {
 }
 function hideTip(force) { if (TOUCH && !force && tip.classList.contains('card')) return; tip.style.display = 'none'; tip.classList.remove('card'); TIPK = null; }
 
-function yt(s) { return s ? '<span class="yt">' + esc(s) + '</span>' : ''; }   // 史料原文（楷體）
+function yt(s) { if (!s) return ''; var a = I.anno(s); return a ? '<span class="muted">' + esc(a) + '</span>' : '<span class="yt">' + esc(s) + '</span>'; }   // 史料原文（楷體）
 // 頁首的導讀：這一頁回答什麼問題、與另一頁的分工
 function pageGuide(lead, items, eg, href, more) {
   var h1 = app.querySelector('h1'); if (!h1) return;
@@ -1376,7 +1393,7 @@ function viewCalendar() {
       });
       return ord.map(function (g) {
         var ps = agg[g], weak = ps.every(function (p) { return p.ev === NOFAST; });
-        var t = ps.map(function (p) { var e = EBYID[pCal(p)]; return p.id + ' ' + DT(p.date) + '｜' + C(p.period) + '｜' + NT(p.place) + '｜' + C(p.ev) + (e ? '｜→ ' + e.id + ' ' + NT(ED.versions[e.v].short) + ' ' + (e.mo || '') + (e.dy || '') + '（' + C(p.rel) + '）' : ''); }).join('\n');
+        var t = ps.map(function (p) { var e = EBYID[pCal(p)]; return p.id + ' ' + DTX(p.date) + '｜' + C(p.period) + '｜' + NT(p.place) + '｜' + C(p.ev) + (e ? '｜→ ' + e.id + ' ' + NT(ED.versions[e.v].short) + ' ' + (e.mo || '') + (e.dy || '') + '（' + C(p.rel) + '）' : ''); }).join('\n');
         return '<span class="chip p' + (weak ? ' weak' : '') + '" data-g="' + g + '" data-t="' + esc(t) + '">' + N(gName(g)) + (ps.length > 1 ? ' <span class="dd">×' + ps.length + '</span>' : '') + '</span>';
       }).join('');
     }
@@ -1477,8 +1494,8 @@ function viewFit() {
   putFocusNote(L('熱力圖與下方列表只計它的實踐記錄', 'the heat map and the list count only its practice records'));
   var detail = function (p) {
     var e = EBYID[pCal(p)], v = ED.versions[e.v];
-    return '<tr class="fitd"><td></td><td><b>' + esc(p.id) + '</b>' + citeBtn(p.id) + ' ' + esc(p.year || '') + ' · ' + N(p.place) + ' ' + relTag(p) + '<div class="small">' + N(p.wt) + '｜' + (p.zhai ? N(p.zhai) : '—') + ' <span class="tag' + (p.ev === '明確' ? ' strong' : '') + '">' + esc(C(p.ev)) + '</span></div>' + (p.relNote ? '<div class="small muted">' + L('對應說明：', 'Note: ') + esc(p.relNote) + '</div>' : '') + '</td>' +
-      '<td class="small">' + esc(DT(p.date) || '—') + '</td>' +
+    return '<tr class="fitd"><td></td><td><b>' + esc(p.id) + '</b>' + citeBtn(p.id) + ' ' + esc(p.year || '') + ' · ' + N(p.place) + ' ' + relTag(p) + '<div class="small">' + N(p.wt) + '｜' + (p.zhai ? NF(p.zhai) : '—') + ' <span class="tag' + (p.ev === '明確' ? ' strong' : '') + '">' + esc(C(p.ev)) + '</span></div>' + (p.relNote ? '<div class="small muted">' + L('對應說明：', 'Note: ') + FT(p.relNote) + '</div>' : '') + '</td>' +
+      '<td class="small">' + esc(DTX(p.date) || '—') + '</td>' +
       '<td><a href="#ev/' + v.i + '">' + esc(e.id) + '</a> ' + edWhen(v) + ' ' + N(v.short) + '<div class="small">' + esc((e.mo || '') + (e.dy || '')) + '｜' + (e.t ? yt(e.t) : esc(e.g || '—')) + (e.k ? ' <a class="muted" href="#ed/' + encodeURIComponent(e.k) + '">' + L('諸本', 'all editions') + '</a>' : '') + (p.g ? ' <a class="muted" href="#g/' + p.g + '/' + p.id + '">' + L('檔案', 'profile') + '</a>' : '') + '</div></td></tr>';
   };
   var fill = function () {
@@ -1517,7 +1534,7 @@ function viewFit() {
       return '<tr class="fitg' + (open ? ' open' : '') + '" data-k="' + esc(k) + '"><td><span class="tw" aria-hidden="true"></span> ' + name + '</td>' +
         '<td><b>' + rs.length + '</b> ' + L('條', '') + (nd ? ' <span class="small muted">' + L('（貼合 ' + nf + '，偏差 ' + nd + '）', '(fit ' + nf + ', dev. ' + nd + ')', '(conformes ' + nf + ', écart ' + nd + ')') + '</span>' : '') + '</td>' +
         '<td class="small" style="white-space:nowrap">' + yr + '</td>' +
-        '<td class="small">' + dord.map(function (d) { return '<span class="fday">' + esc(d) + ' <span class="muted">×' + days[d].n + '</span></span>'; }).join('') + '</td></tr>' +
+        '<td class="small">' + dord.map(function (d) { return '<span class="fday">' + esc(DT(d)) + ' <span class="muted">×' + days[d].n + '</span></span>'; }).join('') + '</td></tr>' +
         (open ? rs.map(detail).join('') : '');
     }).join('');
   };
@@ -1647,7 +1664,7 @@ function viewSpread() {
     var gs = Object.keys(o.genre).sort(function (a, b) { return o.genre[b] - o.genre[a]; });
     return '<b>' + prefName(o.name) + '</b> · ' + L(o.n + ' 條實踐記錄', o.n + ' practice records', o.n + ' pratiques') +
       PREL.map(function (r) { return o.rel[r[0]] ? '<br>' + L(r[1], r[2], r[3]) + ' ' + o.rel[r[0]] : ''; }).join('') +
-      '<div class="muted small">' + L('史料類型：', 'Source types: ', 'Types de sources : ') + gs.slice(0, 4).map(function (k) { return esc(k) + ' ' + o.genre[k]; }).join(L('、', ', ')) + (gs.length > 4 ? L(' 等', ' …', ' …') : '') + zhNote() + '</div>';
+      '<div class="muted small">' + L('史料類型：', 'Source types: ', 'Types de sources : ') + gs.slice(0, 4).map(function (k) { return esc(C(k)) + ' ' + o.genre[k]; }).join(L('、', ', ')) + (gs.length > 4 ? L(' 等', ' …', ' …') : '') + '</div>';
   }
   function renderPrac() {
     var el = document.getElementById('sprac'); if (!el) return;
@@ -1662,12 +1679,12 @@ function viewSpread() {
       A.list.map(function (o) {
         var gs = Object.keys(o.genre).sort(function (a, b) { return o.genre[b] - o.genre[a]; });
         return '<tr data-pref="' + esc(o.name) + '"' + (sel === o ? ' class="on"' : '') + '><td>' + prefName(o.name) + (!o.p ? ' <span class="muted small">' + L('（無坐標）', '(no coordinates)', '(sans coordonnées)') + '</span>' : o.p.off ? ' <span class="muted small">' + L('（地圖範圍外）', '(outside map)', '(hors carte)') + '</span>' : '') + '</td><td class="num">' + o.n + '</td>' + PREL.map(function (r) { return '<td class="num">' + (o.rel[r[0]] || '') + '</td>'; }).join('') +
-          '<td class="small">' + gs.slice(0, 3).map(function (k) { return esc(k) + ' ' + o.genre[k]; }).join(L('、', ', ')) + (gs.length > 3 ? L(' 等 ' + gs.length + ' 類', ' (' + gs.length + ' types)', ' (' + gs.length + ' types)') : '') + '</td></tr>';
+          '<td class="small">' + gs.slice(0, 3).map(function (k) { return esc(C(k)) + ' ' + o.genre[k]; }).join(L('、', ', ')) + (gs.length > 3 ? L(' 等 ' + gs.length + ' 類', ' (' + gs.length + ' types)', ' (' + gs.length + ' types)') : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
       (sel ? '<h3 style="margin:14px 0 6px">' + prefName(sel.name) + L('：' + sel.n + ' 條', ': ' + sel.n + ' records', ' : ' + sel.n + ' pratiques') + ' <button type="button" class="linkbtn" id="spclr">' + L('收起', 'Close', 'Fermer') + '</button></h3><ul class="small sprecs">' +
         sel.recs.slice().sort(function (a, b) { return pYear(a) - pYear(b); }).map(function (p) {
           var r = PREL.filter(function (q) { return q[0] === pracRel(p); })[0];
-          return '<li><span class="sw2 pr-' + r[0] + '"></span><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit/' + p.id) + '"><b>' + esc(p.id) + '</b></a> ' + esc(p.year || '') + ' · ' + N(p.place) + ' · ' + N(p.zhai || '') + ' · <span class="muted">' + N(p.wt || '') + '（' + esc(p.genre || '') + '）</span></li>';
+          return '<li><span class="sw2 pr-' + r[0] + '"></span><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit/' + p.id) + '"><b>' + esc(p.id) + '</b></a> ' + esc(p.year || '') + ' · ' + N(p.place) + ' · ' + NF(p.zhai || '') + ' · <span class="muted">' + N(p.wt || '') + '（' + esc(p.genre || '') + '）</span></li>';
         }).join('') + '</ul>' : '<p class="muted small" style="margin:8px 0 0">' + L('點表中一行或地圖上的圓，列出該府的記錄。', 'Click a row or a circle on the map to list that prefecture’s records.', 'Cliquer une ligne ou un cercle pour lister les pratiques de la préfecture.') + '</p>');
     el.querySelectorAll('tr[data-pref]').forEach(function (tr) { tr.onclick = function () { pickPref(tr.getAttribute('data-pref')); }; });
     var c = document.getElementById('spclr'); if (c) c.onclick = function () { pickPref(null); };
@@ -1748,7 +1765,7 @@ function viewSpread() {
     // 連線的依據、刊刻地不明兩欄並排放在地圖下方
     '<div class="sbelow">' +
     '<div class="card"><h2 style="margin-top:0">' + L('連線的依據', 'Evidence for each line') + '</h2><ul class="sev" id="sev"></ul></div>' +
-    '<div class="card"><h2 style="margin-top:0">' + L('刊刻地不明，未上圖', 'Place of printing unknown (not mapped)') + '</h2><ul class="small" style="padding-left:18px;margin:0">' + M.unk.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
+    '<div class="card"><h2 style="margin-top:0">' + L('刊刻地不明，未上圖', 'Place of printing unknown (not mapped)') + '</h2><ul class="small" style="padding-left:18px;margin:0">' + M.unk.map(function (x) { return '<li>' + FT(x) + '</li>'; }).join('') + '</ul></div>' +
     '</div>' +
     '<div class="card" style="margin-top:16px" id="sprac"></div>' +
     '<div class="card" style="margin-top:16px" id="sbyp"></div>' +
@@ -1764,7 +1781,7 @@ function viewSpread() {
   }
   function edgeTip(e) {
     var kind = e.t === 'doc' ? L('個本記錄', 'Copy-level record') : e.t === 'inf' ? L('個本記錄（一端或途徑不明）', 'Copy-level record (one end or route uncertain)') : L('版本關聯：', 'Edition link: ') + famName(e.f);
-    return '<b>' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</b>' + (e.y ? ' <span class="muted">' + esc(e.y) + '</span>' : '') + '<div class="muted small">' + kind + '<span class="st">' + esc(I.en() ? I.T(STEN[e.st] || e.st) : e.st) + '</span></div><div>' + esc(e.d) + zhNote() + '</div><div class="muted small">' + L('出處：', 'Source: ') + esc(e.src) + '</div>';
+    return '<b>' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</b>' + (e.y ? ' <span class="muted">' + FT(e.y, 1) + '</span>' : '') + '<div class="muted small">' + kind + '<span class="st">' + esc(I.en() ? I.T(STEN[e.st] || e.st) : e.st) + '</span></div><div>' + FT(e.d) + '</div><div class="muted small">' + L('出處：', 'Source: ') + FT(e.src, 1) + '</div>';
   }
   function hl(id) {
     if (!id && spFocus) { spFocus(); return; }
@@ -1859,7 +1876,7 @@ function viewSpread() {
     mc.querySelectorAll('g.spt').forEach(function (g) {
       var id = g.getAttribute('data-p'), inf = M.info[id] || [];
       g.addEventListener('mousemove', function (ev) {
-        showTip(ev, '<b>' + pn(PL[id]) + '</b> <span class="muted">' + esc(inf[0] || '') + '</span><ul style="margin:4px 0 0;padding-left:16px">' + inf.slice(1).filter(function (x) { return SP.modern || x.indexOf('［1949 後］') < 0; }).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' + zhNote());
+        showTip(ev, '<b>' + pn(PL[id]) + '</b> <span class="muted">' + FT(inf[0] || '', 1) + '</span><ul style="margin:4px 0 0;padding-left:16px">' + inf.slice(1).filter(function (x) { return SP.modern || x.indexOf('［1949 後］') < 0; }).map(function (x) { return '<li>' + FT(x) + '</li>'; }).join('') + '</ul>');
         hl(id);
       });
       g.addEventListener('mouseleave', function () { hideTip(); hl(null); });
@@ -1868,7 +1885,7 @@ function viewSpread() {
     document.getElementById('sev').innerHTML = evOrd.map(function (i) {
       var e = M.edges[i];
       if (!edgeOn(e)) return '';
-      return '<li data-i="' + i + '"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + color(e) + ';margin-right:6px"></span><b>' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</b> ' + (e.y ? '<span class="muted">' + esc(e.y) + '</span>' : '') + '<span class="st">' + esc(I.en() ? I.T(STEN[e.st] || e.st) : e.st) + '</span><div class="small">' + esc(e.d) + '</div></li>';
+      return '<li data-i="' + i + '"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + color(e) + ';margin-right:6px"></span><b>' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</b> ' + (e.y ? '<span class="muted">' + FT(e.y, 1) + '</span>' : '') + '<span class="st">' + esc(I.en() ? I.T(STEN[e.st] || e.st) : e.st) + '</span><div class="small">' + FT(e.d) + '</div></li>';
     }).join('');
     app.querySelectorAll('#sev li').forEach(function (li) {
       var i = li.getAttribute('data-i');
@@ -2074,7 +2091,7 @@ function viewKinship() {
     '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目；要按月日逐條對齊，用圖下的按鈕，或點下方矩陣的格子。比較單位與逐條細看相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries; to align two editions day by day, use the button below the diagram or click a cell of the matrix further down. The unit is the same as in that view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées ; pour aligner deux éditions jour par jour, utilisez le bouton sous le diagramme ou une case de la matrice plus bas. L’unité est celle de cette vue ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
     '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('格中數字爲重合度（×100）；鼠標移上去看雙向包含比例與共有的少數日期，點格子逐條細看這兩本。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.') + '</p><div class="card scroll" id="khm"></div></div><div>' +
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
-    '<h2>' + L('未計入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + esc(x) + zhNote() + '</li>'; }).join('') + '</ul></div>' +
+    '<h2>' + L('未計入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + FT(x) + '</li>'; }).join('') + '</ul></div>' +
     '<h2>' + L('讀圖須知', 'Reading notes') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' +
       L('<li>1882 與 1891 劉誠印本同版，分作兩點，可看到同版兩印之間的差異。</li><li>「通行日期」由見證多數決定，而通書各本與文本相近的本子（如《聖經彙纂》《禪門日誦》）合計最多，所以通書各本的少數日期較少——這是樣本構成造成的，不等於它們更「標準」。</li><li>重合度受規範名歸併的影響：歸併越多，版本間越相近。</li><li>1684 文瑞堂本據截圖錄入，解析度有限，重合度可能偏低。</li>',
         '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanacs and the texts close to them (such as the <i>Shengjing huizuan</i> 聖經彙纂 and the <i>Chanmen risong</i> 禪門日誦) together form the largest group, the almanacs have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>') +
@@ -2116,7 +2133,7 @@ function viewKinship() {
     });
     K.nodes.forEach(function (n) {
       var r = 5 + Math.sqrt(n.n) * 0.4, yr = n.yr.replace('暫定', '?').replace('待覈', '?').replace('前後', '±').replace('待填', L('未定', 'n.d.'));
-      s += '<g class="nd" data-n="' + n.no + '"><circle cx="' + n.x + '" cy="' + n.y + '" r="' + r.toFixed(1) + '" fill="' + LC[n.lane] + '"/><text x="' + n.x + '" y="' + (n.up ? n.y - r - 16 : n.y + r + 13) + '" text-anchor="middle">' + esc(n.sh) + '</text><text class="tickt" x="' + n.x + '" y="' + (n.up ? n.y - r - 4 : n.y + r + 25) + '" text-anchor="middle">' + esc(yr) + '</text></g>';
+      s += '<g class="nd" data-n="' + n.no + '"><circle cx="' + n.x + '" cy="' + n.y + '" r="' + r.toFixed(1) + '" fill="' + LC[n.lane] + '"/><text x="' + n.x + '" y="' + (n.up ? n.y - r - 16 : n.y + r + 13) + '" text-anchor="middle">' + esc(n.sh) + '</text><text class="tickt" x="' + n.x + '" y="' + (n.up ? n.y - r - 4 : n.y + r + 25) + '" text-anchor="middle">' + esc(yr) + '</text>' + (I.en() && I.py(n.sh) ? '<text class="tickt kpy" x="' + n.x + '" y="' + (n.up ? n.y - r - 28 : n.y + r + 37) + '" text-anchor="middle">' + esc(I.py(n.sh)) + '</text>' : '') + '</g>';
     });
     s += '</svg>';
     var el = document.getElementById('knet'); el.innerHTML = s;
@@ -2124,7 +2141,7 @@ function viewKinship() {
       g.addEventListener('mousemove', function (e) {
         var k = g.getAttribute('data-k'), di = g.getAttribute('data-d');
         if (k) showTip(e, pairTip(PB[k]));
-        else { var r = K.dir[+di]; showTip(e, '<b>' + vname(NB[r.a]) + ' → ' + vname(NB[r.b]) + '</b> <span class="muted">（' + esc(I.en() ? I.T(r.st === '確定' ? 'certain' : 'candidate') : r.st) + '）</span><div>' + esc(r.d) + zhNote() + '</div>'); }
+        else { var r = K.dir[+di]; showTip(e, '<b>' + vname(NB[r.a]) + ' → ' + vname(NB[r.b]) + '</b> <span class="muted">（' + esc(I.en() ? I.T(r.st === '確定' ? 'certain' : 'candidate') : r.st) + '）</span><div>' + FT(r.d) + '</div>'); }
       });
       g.addEventListener('mouseleave', hideTip);
     });
@@ -2132,7 +2149,7 @@ function viewKinship() {
       var no = +g.getAttribute('data-n'), n = NB[no];
       g.addEventListener('mousemove', function (e) {
         var near = K.pairs.filter(function (p) { return p.a === no || p.b === no; }).sort(function (a, b) { return b.j - a.j; }).slice(0, 4);
-        showTip(e, '<b>' + vname(n) + '</b>' + L('（編號' + no + '）', ' (no. ' + no + ')', ' (n° ' + no + ')') + '<div class="small muted">' + esc(lname(n.lane)) + (n.tent ? L('（暫定：', ' (provisional: ') + esc(n.tent) + L('）', ')') : '') + (n.note ? '；' + esc(n.note) : '') + '</div><div>' + L('可比條目 ' + n.n + ' 條；少數日期 ' + n.nmin + ' 處', n.n + ' comparable entries; ' + n.nmin + ' minority dates', n.n + ' entrées comparables ; ' + n.nmin + ' dates minoritaires') + '</div><div class="small">' + L('最相近：', 'Closest: ') + near.map(function (p) { var o = NB[p.a === no ? p.b : p.a]; return esc(o.yr) + ' ' + esc(o.sh) + ' ' + (p.j * 100).toFixed(0); }).join('；') + '</div>');
+        showTip(e, '<b>' + vname(n) + '</b>' + L('（編號' + no + '）', ' (no. ' + no + ')', ' (n° ' + no + ')') + '<div class="small muted">' + esc(lname(n.lane)) + (n.tent ? L('（暫定：', ' (provisional: ') + FT(n.tent, 1) + L('）', ')') : '') + (n.note ? L('；', '; ') + FT(n.note, 1) : '') + '</div><div>' + L('可比條目 ' + n.n + ' 條；少數日期 ' + n.nmin + ' 處', n.n + ' comparable entries; ' + n.nmin + ' minority dates', n.n + ' entrées comparables ; ' + n.nmin + ' dates minoritaires') + '</div><div class="small">' + L('最相近：', 'Closest: ') + near.map(function (p) { var o = NB[p.a === no ? p.b : p.a]; return esc(o.yr) + ' ' + esc(o.sh) + ' ' + (p.j * 100).toFixed(0); }).join('；') + '</div>');
         var ks = {}; K.pairs.forEach(function (p) { if (p.a === no || p.b === no) ks[pk(p.a, p.b)] = 1; });
         el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'); x.classList.toggle('dim', !!k && !ks[k]); });
       });
@@ -2141,9 +2158,9 @@ function viewKinship() {
     });
   }
   (function heat() {
-    var hm = '<table class="hm"><thead><tr><th></th>' + ORD.map(function (n) { return '<th class="c2">' + esc(n.sh) + '<br><span class="muted">' + esc((n.yr.match(/^\d{4}/) || [L('未定', 'n.d.')])[0]) + '</span></th>'; }).join('') + '</tr></thead><tbody>';
+    var hm = '<table class="hm"><thead><tr><th></th>' + ORD.map(function (n) { return '<th class="c2" title="' + esc(NT(n.sh)) + '">' + esc(n.sh) + '<br><span class="muted">' + esc((n.yr.match(/^\d{4}/) || [L('未定', 'n.d.')])[0]) + '</span></th>'; }).join('') + '</tr></thead><tbody>';
     ORD.forEach(function (a) {
-      hm += '<tr><th class="r">' + esc(a.yr) + ' ' + esc(a.sh) + '<span class="ksw" style="background:' + LC[a.lane] + '"></span></th>';
+      hm += '<tr><th class="r">' + esc(a.yr) + ' ' + N(a.sh) + '<span class="ksw" style="background:' + LC[a.lane] + '"></span></th>';
       ORD.forEach(function (b) {
         if (a.no === b.no) { hm += '<td style="background:var(--surface-2)"></td>'; return; }
         var p = PB[pk(a.no, b.no)], j = p ? p.j : 0;
@@ -2156,7 +2173,7 @@ function viewKinship() {
   })();
   document.getElementById('kret').innerHTML = ORD.filter(function (n) { return n.no !== K.base && K.ret[n.no] != null; }).map(function (n) {
     var v = K.ret[n.no];
-    return '<div style="display:grid;grid-template-columns:150px 1fr 34px;gap:6px;align-items:center;font-size:12.5px;margin:2px 0"><span>' + esc(n.yr) + ' ' + esc(n.sh) + '</span><span style="background:var(--surface-2);height:10px;border-radius:3px;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:' + (v * 100).toFixed(0) + '%;background:' + LC[n.lane] + ';border-radius:3px"></span></span><span class="muted">' + (v * 100).toFixed(0) + '%</span></div>';
+    return '<div style="display:grid;grid-template-columns:150px 1fr 34px;gap:6px;align-items:center;font-size:12.5px;margin:2px 0"><span>' + esc(n.yr) + ' ' + N(n.sh) + '</span><span style="background:var(--surface-2);height:10px;border-radius:3px;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:' + (v * 100).toFixed(0) + '%;background:' + LC[n.lane] + ';border-radius:3px"></span></span><span class="muted">' + (v * 100).toFixed(0) + '%</span></div>';
   }).join('');
   document.getElementById('kmode').onchange = function (e) { KIN.mode = e.target.value; draw(); };
   document.getElementById('kthr').oninput = function (e) { KIN.thr = +e.target.value; document.getElementById('kthrv').textContent = KIN.thr.toFixed(2); draw(); };
@@ -2185,8 +2202,8 @@ function viewGod(id, jump) {
   var b = byG[id] || bucket(id), fp = fastPrac(b);
   var h = '<p class="small"><a href="#gods">' + L('← 全部神明', '← All deities') + '</a></p><div class="prof-head"><h1>' + N(g.name) + '</h1><span class="muted">' + esc(id) + ' · ' + esc(C(g.type)) + '</span>' + focusBtn(id) + '</div>' +
     '<dl class="kv">' + (g.alias ? '<dt>' + L('異名', 'Aliases') + '</dt><dd>' + aliases(g.alias) + '</dd>' : '') +
-    (g.dates ? '<dt>' + L('主要日期', 'Main dates') + '</dt><dd>' + esc(DT(g.dates)) + (g.dateSrc ? ' <span class="muted small">（' + esc(g.dateSrc) + '）</span>' : '') + '</dd>' : '') +
-    (g.note ? '<dt>' + L('備註', 'Notes') + '</dt><dd>' + esc(g.note) + zhNote() + '</dd>' : '') + '</dl>';
+    (g.dates ? '<dt>' + L('主要日期', 'Main dates') + '</dt><dd>' + esc(DTX(g.dates)) + (g.dateSrc ? ' <span class="muted small">' + L('（', '(') + FT(g.dateSrc, 1) + L('）', ')') + '</span>' : '') + '</dd>' : '') +
+    (g.note ? '<dt>' + L('備註', 'Notes') + '</dt><dd>' + FT(g.note) + '</dd>' : '') + '</dl>';
 
   var nm = Object.keys(b.norms);
   h += '<h2>' + L('各版本所載', 'Entries in each edition') + '</h2>';
@@ -2208,11 +2225,11 @@ function viewGod(id, jump) {
     var none = EVS.filter(function (v) { return !b.ed[v.i]; });
     if (none.length) h += '<p class="small muted">' + L('未收本神的版本：', 'Editions without this deity: ') + none.map(function (v) { return edWhen(v) + ' ' + N(v.short); }).join(L('、', '; ')) + '</p>';
   }
-  if (MISSING.length) h += '<p class="small muted">' + L('數據庫「文獻」表另登記、尚未取得的齋曆：', 'Further calendars registered in the database but not obtained: ') + MISSING.map(function (v) { return N(v.title) + '（' + esc(vYear(v)) + '）'; }).join(L('、', '; ')) + L('（其中部分可能已錄入工作簿，待與版本目錄覈對）', ' (some may already be in the workbook; to be checked against its catalogue)') + '</p>';
+  if (MISSING.length) h += '<p class="small muted">' + L('數據庫「文獻」表另登記、尚未取得的齋曆：', 'Further calendars registered in the database but not obtained: ') + MISSING.map(function (v) { return NF(v.title) + L('（', ' (') + esc(vYear(v)) + L('）', ')'); }).join(L('、', '; ')) + L('（其中部分可能已錄入工作簿，待與版本目錄覈對）', ' (some may already be in the workbook; to be checked against its catalogue)') + '</p>';
 
   if (b.cl.length) {
     h += '<h2>' + L('經典覈查', 'Scripture check') + '</h2><div class="card">' + b.cl.map(function (c) {
-      return '<div class="rec"><b>' + N(c.jing) + '</b> <span class="muted small">' + esc(c.ed) + '</span><div class="meta">' + L('有無具體齋日規定：', 'Specific fast days prescribed: ') + esc(C(c.has)) + '</div>' + (c.ex ? '<div class="q">' + esc(c.ex) + '</div>' : '') + (c.sig ? '<div class="nt">' + esc(c.sig) + zhNote() + '</div>' : '') + '</div>';
+      return '<div class="rec"><b>' + N(c.jing) + '</b> <span class="muted small">' + FT(c.ed, 1) + '</span><div class="meta">' + L('有無具體齋日規定：', 'Specific fast days prescribed: ') + esc(C(c.has)) + '</div>' + (c.ex ? '<div class="q">' + esc(c.ex) + '</div>' : '') + (c.sig ? '<div class="nt">' + FT(c.sig) + '</div>' : '') + '</div>';
     }).join('') + '</div>';
   }
 
@@ -2223,22 +2240,22 @@ function viewGod(id, jump) {
   if (b.prac.length) {
     var ps = b.prac.slice().sort(function (a, c) { return (+a.year || 9999) - (+c.year || 9999); });
     h += '<div class="card">' + ps.map(function (p) {
-      return '<div class="rec" id="rec-' + p.id + '"><b>' + p.id + '</b>' + citeBtn(p.id) + ' ' + esc(p.when || '') + ' · ' + N(p.place) + (p.pref ? '（' + N(p.pref) + '）' : '') +
+      return '<div class="rec" id="rec-' + p.id + '"><b>' + p.id + '</b>' + citeBtn(p.id) + ' ' + FT(p.when || '', 1) + ' · ' + N(p.place) + (p.pref ? L('（', ' (') + N(p.pref) + L('）', ')') : '') +
         ' <span class="tag' + (p.ev === '明確' ? ' strong' : '') + '">' + esc(C(p.ev)) + '</span>' + relTag(p) +
-        '<div class="meta">' + N(p.wt) + (p.loc ? ' · ' + esc(p.loc) : '') + ' · ' + esc(C(p.genre)) + L('｜齋名：', ' | Fast: ') + (p.zhai ? N(p.zhai) : '—') + L('｜日期：', ' | Date: ') + esc(DT(p.date) || '—') + L('｜形式：', ' | Form: ') + esc(C(p.form) || '—') + '</div>' +
-        '<div class="meta">D ' + esc(C(p.D)) + ' · A ' + esc(C(p.A)) + ' · C ' + esc(C(p.C)) + ' · B ' + esc(C(p.B)) + (p.who ? L('｜持齋者：', ' | Faster: ') + N(p.who) : '') + (p.cal ? L('｜對應齋曆條目：', ' | Calendar entry: ') + calRef(p.cal) : '') + '</div>' +
-        (p.relNote ? '<div class="nt">' + L('對應說明：', 'Note on the match: ') + esc(p.relNote) + zhNote() + '</div>' : '') +
-        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + esc(p.note) + zhNote() + '</div>' : '') + '</div>';
+        '<div class="meta">' + N(p.wt) + (p.loc ? ' · ' + FT(p.loc, 1) : '') + ' · ' + esc(C(p.genre)) + L('｜齋名：', ' | Fast: ') + (p.zhai ? NF(p.zhai) : '—') + L('｜日期：', ' | Date: ') + esc(DTX(p.date) || '—') + L('｜形式：', ' | Form: ') + esc(C(p.form) || '—') + '</div>' +
+        '<div class="meta">D ' + esc(C(p.D)) + ' · A ' + esc(C(p.A)) + ' · C ' + esc(C(p.C)) + ' · B ' + esc(C(p.B)) + (p.who ? L('｜持齋者：', ' | Faster: ') + NF(p.who) : '') + (p.cal ? L('｜對應齋曆條目：', ' | Calendar entry: ') + calRef(p.cal) : '') + '</div>' +
+        (p.relNote ? '<div class="nt">' + L('對應說明：', 'Note on the match: ') + FT(p.relNote) + '</div>' : '') +
+        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + FT(p.note) + '</div>' : '') + '</div>';
     }).join('') + '</div>';
   } else h += '<p class="muted">' + L('無。', 'None.') + '</p>';
 
   h += '<div class="grid2"><div><h2>' + L('《申報》', '<i>Shenbao</i> 申報') + ' <span class="muted small">' + L(b.sb.length + ' 篇', b.sb.length + ' articles', b.sb.length + ' articles') + '</span></h2>';
   h += b.sb.length ? '<div class="card">' + b.sb.slice().sort(function (a, c) { return a.date < c.date ? -1 : 1; }).map(function (s) {
-    return '<div class="rec"><b>' + esc(s.date) + '</b> ' + N(s.title) + ' <span class="tag">' + L('相關度 ', 'Relevance: ') + esc(C(s.rel) || '—') + '</span><div class="meta">' + N(s.place) + '｜' + esc(s.kind) + (s.rec ? L('｜已錄入 ', ' | Entered as ') + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + zhNote() + '</div></div>';
+    return '<div class="rec"><b>' + esc(s.date) + '</b> ' + NF(s.title) + ' <span class="tag">' + L('相關度 ', 'Relevance: ') + esc(C(s.rel) || '—') + '</span><div class="meta">' + N(s.place) + '｜' + FT(s.kind, 1) + (s.rec ? L('｜已錄入 ', ' | Entered as ') + FT(s.rec, 1) : '') + '</div><div class="nt">' + FT(s.sum) + '</div></div>';
   }).join('') + '</div>' : '<p class="muted">' + L('無。', 'None.') + '</p>';
   h += '</div><div><h2>' + L('風俗志', 'Records of customs') + ' <span class="muted small">' + L(b.fs.length + ' 處', b.fs.length + ' passages', b.fs.length + ' passages') + '</span></h2>';
   h += b.fs.length ? '<div class="card">' + b.fs.map(function (s) {
-    return '<div class="rec"><b>' + N(s.book) + '</b> ' + esc(s.item) + (s.id ? ' <span class="muted small">' + esc(s.id) + '</span>' + citeBtn(s.id) : '') + ' <span class="tag">' + esc(C(s.tag)) + '</span><div class="meta">' + esc(s.when) + '｜' + N(s.place) + '｜' + esc(DT(s.date)) + (s.rec ? L('｜已錄入 ', ' | Entered as ') + esc(s.rec) : '') + '</div><div class="nt">' + esc(s.sum) + zhNote() + '</div></div>';
+    return '<div class="rec"><b>' + N(s.book) + '</b> ' + FT(s.item, 1) + (s.id ? ' <span class="muted small">' + esc(s.id) + '</span>' + citeBtn(s.id) : '') + ' <span class="tag">' + esc(C(s.tag)) + '</span><div class="meta">' + FT(s.when, 1) + '｜' + N(s.place) + '｜' + esc(DTX(s.date)) + (s.rec ? L('｜已錄入 ', ' | Entered as ') + FT(s.rec, 1) : '') + '</div><div class="nt">' + FT(s.sum) + '</div></div>';
   }).join('') + '</div>' : '<p class="muted">' + L('無。', 'None.') + '</p>';
   h += '</div></div>';
   app.innerHTML = h;
@@ -2304,7 +2321,7 @@ function viewGaps() {
     li(notInV0.length, L('個神明有持齋實踐記錄，但' + YX + '未收（括號內爲言及持齋的實踐條數）：', 'deities have fasting practice records but are absent from ' + YX + ' (in brackets: practice records mentioning fasting):', 'divinités ont des témoignages de pratique du jeûne mais sont absentes du ' + YX + ' (entre parenthèses : témoignages mentionnant le jeûne) :'), links(notInV0)) +
     li(notAny.length, L('個神明有持齋實踐記錄，但目前所有齋曆版本都未收，或尚未對應：', 'deities have fasting practice records but appear in no calendar edition, or are not yet matched:'), links(notAny)) +
     li(v0only.length, L('個神明見於' + YX + '，卻沒有任何言及持齋的實踐記錄（按「負面證據」處理）。', 'deities appear in ' + YX + ' but have no practice record mentioning fasting (treated as negative evidence).', 'divinités figurent dans le ' + YX + ' mais n’ont aucun témoignage de pratique mentionnant le jeûne (traité comme preuve négative).'), v0only.slice(0, 60).map(function (id) { return godLink(id); }).join(L('、', ', '))) +
-    li(MISSING.length, L('種齋曆在數據庫「文獻」表登記爲未取得（其中部分可能已錄入工作簿，待給版本目錄補「文獻ID」覈對）：', 'calendars are registered as not obtained in the database’s texts table (some may already be in the workbook; to be checked by adding text IDs to its catalogue):'), MISSING.map(function (v) { return N(v.title) + '（' + esc(vYear(v)) + '）'; }).join(L('、', '; '))) +
+    li(MISSING.length, L('種齋曆在數據庫「文獻」表登記爲未取得（其中部分可能已錄入工作簿，待給版本目錄補「文獻ID」覈對）：', 'calendars are registered as not obtained in the database’s texts table (some may already be in the workbook; to be checked by adding text IDs to its catalogue):'), MISSING.map(function (v) { return NF(v.title) + L('（', ' (') + esc(vYear(v)) + L('）', ')'); }).join(L('、', '; '))) +
     li(unlinked, L('條言及持齋的實踐記錄尚未覈對與齋曆的對應。', 'practice records that mention fasting have not yet been checked against the calendars.')) +
     '</ul></div>';
   app.innerHTML = h;
@@ -2448,8 +2465,8 @@ function edMinorNote(e) {
     (m[1] === '獨有' ? 'Unique date' : 'Minority date') + ' (' + m[2] + '/' + m[3] + ' witnesses) · ' + ty[1] + (m[4] ? '; prevailing: ' + esc(m[4]) : ''), (m[1] === '獨有' ? 'Date unique' : 'Date minoritaire') + ' (' + m[2] + '/' + m[3] + ' témoins) · ' + ty[2] + (m[4] ? ' ; usuelle : ' + esc(m[4]) : '')) + '</div>';
 }
 function edDate(e) { return e.m && e.d ? (I.en() ? e.m + '/' + e.d : esc(e.mo + e.dy)) : esc(DT((e.mo || '') + (e.dy || '')) || '—'); }
-function edV(v, long) { return (long ? N(v.short) : esc(v.short)) + (v.pub && v.pub !== '待填' ? ' <span class="muted small">' + esc(v.pub) + '</span>' : ''); }
-function edWhen(v) { return esc(I.en() ? v.when.replace('暫定', L('', ' (prov.)', ' (prov.)')).replace('待覈', L('', ' (to verify)', ' (à vérifier)')).replace('前後', L('', ' approx.', ' env.')).replace('待填', L('', 'n.d.', 's. d.')) : v.when); }
+function edV(v, long) { return (long ? N(v.short) : esc(v.short)) + (v.pub && v.pub !== '待填' ? ' <span class="muted small">' + FT(v.pub, 1) + '</span>' : ''); }
+function edWhen(v) { return esc(I.en() ? v.when.replace('暫定', L('', ' (prov.)', ' (prov.)')).replace('待覈', L('', ' (to verify)', ' (à vérifier)')).replace('前後', L('', ' approx.', ' env.')).replace('待填', L('', 'n.d.', 's. d.')).replace('彙集', L('', 'compilation', 'compilation')) : v.when); }
 var EDF = { rows: 'k', q: '', min: '2', fam: 'all', sort: 'nv', limit: 150 };
 function viewEditions() {
   var X = edIndex();
@@ -2463,7 +2480,7 @@ function viewEditions() {
     X.order.map(function (v) {
       var es = ED.entries.filter(function (e) { return e.v === v.i; }), nm = {};
       es.forEach(function (e) { if (e.k) nm[e.k] = 1; });
-      return '<tr class="row" data-ev="' + v.i + '"><td>' + edWhen(v) + (v.era ? '<br><span class="muted small">' + esc(v.era) + '</span>' : '') + '</td><td><b>' + N(v.short) + '</b>' + (v.yuxia ? '' : ' <span class="tag">' + L('非玉匣記系統', 'not Yuxiaji line') + '</span>') + '<br><span class="muted small">' + esc(v.title) + '</span></td><td class="small">' + esc(C(v.type)) + '</td><td class="num">' + es.length + '</td><td class="num">' + Object.keys(nm).length + '</td><td class="num">' + es.filter(function (e) { return e.q; }).length + '</td><td class="small muted">' + esc(v.src.length > 90 ? v.src.slice(0, 90) + '…' : v.src) + '</td></tr>';
+      return '<tr class="row" data-ev="' + v.i + '"><td>' + edWhen(v) + (v.era ? '<br><span class="muted small">' + FT(v.era, 1) + '</span>' : '') + '</td><td><b>' + N(v.short) + '</b>' + (v.yuxia ? '' : ' <span class="tag">' + L('非玉匣記系統', 'not Yuxiaji line') + '</span>') + '<br><span class="muted small">' + FT(v.title, 1) + '</span></td><td class="small">' + esc(C(v.type)) + '</td><td class="num">' + es.length + '</td><td class="num">' + Object.keys(nm).length + '</td><td class="num">' + es.filter(function (e) { return e.q; }).length + '</td><td class="small muted">' + (function (t) { return esc(t.length > 90 ? t.slice(0, 90) + '…' : t); })(I.en() ? FTT(v.src) : v.src) + '</td></tr>';
     }).join('') + '</tbody></table></div><p class="small muted">' + L('點一行看該版本的全部條目。', 'Click a row for all entries of that edition.') + '</p>';
   h += '<h2>' + L('神明 × 版本', 'Deities × editions', 'Divinités × éditions') + '</h2><div class="controls"><label>' + L('每行：', 'Each row: ', 'Chaque ligne : ') + '<select id="erows"><option value="k"' + (EDF.rows === 'k' ? ' selected' : '') + '>' + L('工作簿規範名（' + X.list.length + '，全部神名）', 'workbook normalized name (' + X.list.length + ', all names)', 'nom normalisé du classeur (' + X.list.length + ', tous les noms)') + '</option><option value="zs"' + (EDF.rows === 'zs' ? ' selected' : '') + '>' + L('持齋數據庫神明（' + D.deities.length + '，並列實踐、申報、風俗志）', 'deity of the fasting database (' + D.deities.length + ', with practice and press counts)', 'divinité de la base (' + D.deities.length + ', avec pratiques et presse)') + '</option></select></label></div><div id="ezs" hidden></div><div id="ekn">' +
     '<p class="lede small">' + L('格中是該神在該版本中的第一個日期（農曆），×n 表示該版本有 n 條，○ 表示有條目但日期不是具體月日（如「每月」「六十甲子日」）。<span style="color:var(--accent)">紅字</span>表示該格含「少數日期」：在已獲完整文本的版本中，持此日期的不到該神見證的一半（該神須見於 ≥3 個見證；1882、1891 兩本算一個見證；一本內同類日期超過 3 個的多日期神不判），與「<a href="#kin">版本親疏</a>」及工作簿「日期異文」頁同一算法；格中只顯示第一個日期，紅字可能來自同一格的其他條目，懸停可見。未納入比較的版本不標紅。灰底的列是《玉匣記》系統以外的文本。點一行看各版本的原文。',
@@ -2526,7 +2543,7 @@ function viewEditions() {
 }
 function edEntryRow(e, withV) {
   var v = ED.versions[e.v];
-  return '<tr data-id="' + esc(e.id) + '"' + (fNorm(e.k) ? ' class="focus"' : '') + '><td' + (e.m && e.d ? ' class="dlink" data-day="' + e.m + '/' + e.d + '" title="' + esc(L('打開「這一天」', 'Open “this day”')) + '"' : '') + '>' + edDate(e) + edMinorNote(e) + '</td><td>' + yt(e.t) + (e.g && e.g !== e.k ? '<div class="muted small">' + L('神名照錄：', 'Name as written: ') + N(e.g) + '</div>' : '') + pLinks(e) + '</td><td>' + (e.l ? N(e.l) : '—') + '</td><td>' + esc(C(e.c) || '—') + '</td><td>' + esc(e.q || '—') + '</td><td class="small muted">' + esc(C(e.p)) + (e.pg ? '<br>' + esc(e.pg) : '') + '</td></tr>';
+  return '<tr data-id="' + esc(e.id) + '"' + (fNorm(e.k) ? ' class="focus"' : '') + '><td' + (e.m && e.d ? ' class="dlink" data-day="' + e.m + '/' + e.d + '" title="' + esc(L('打開「這一天」', 'Open “this day”')) + '"' : '') + '>' + edDate(e) + edMinorNote(e) + '</td><td>' + yt(e.t) + (e.g && e.g !== e.k ? '<div class="muted small">' + L('神名照錄：', 'Name as written: ') + N(e.g) + '</div>' : '') + pLinks(e) + '</td><td>' + (e.l ? N(e.l) : '—') + '</td><td>' + esc(C(e.c) || '—') + '</td><td>' + esc(e.q || '—') + '</td><td class="small muted">' + esc(C(e.p)) + (e.pg ? '<br>' + esc(I.loc(e.pg)) : '') + '</td></tr>';
 }
 var ED_HEAD = function () { return '<th>' + L('日期', 'Date') + '</th><th>' + L('原文', 'Original text') + '</th><th>' + L('原文所標', 'Label') + '</th><th>' + L('編碼', 'Code') + '</th><th>' + L('持齋／戒／修持要求', 'Abstinence / precepts') + '</th><th>' + L('位置', 'Position') + '</th>'; };
 function edCommon(k) {
@@ -2561,9 +2578,9 @@ function viewEdVersion(i, jump) {
   if (!v) { app.innerHTML = '<p>' + L('找不到該版本。', 'Edition not found.') + '</p>'; return; }
   var es = ED.entries.filter(function (e) { return e.v === v.i; });
   var h = '<p class="small"><a href="#editions">' + L('← 版本目錄和內容對照', '← Editions and contents') + '</a></p><h1>' + N(v.short) + '</h1>' +
-    '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + esc(v.era) : '') + (v.date ? '<div class="muted small">' + esc(v.date) + '</div>' : '') + '</dd>' +
-    '<dt>' + L('書名', 'Title') + '</dt><dd>' + esc(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + esc(v.pub) + '</dd>' : '') +
-    '<dt>' + L('文本類型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('資料來源', 'Source') + '</dt><dd class="small">' + esc(v.src) + '</dd>' +
+    '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + FT(v.era, 1) : '') + (v.date ? '<div class="muted small">' + FT(v.date) + '</div>' : '') + '</dd>' +
+    '<dt>' + L('書名', 'Title') + '</dt><dd>' + FT(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + FT(v.pub, 1) + '</dd>' : '') +
+    '<dt>' + L('文本類型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('資料來源', 'Source') + '</dt><dd class="small">' + FT(v.src) + '</dd>' +
     (v.solo ? '' : '<dt>' + L('對照', 'Compare') + '</dt><dd><a href="#kin/' + esc(v.no) + '/' + (+v.no === 1 ? 9 : 1) + '">' + L('與另一版本逐條細看（版本親疏）', 'Compare entry by entry with another edition (kinship)') + '</a></dd>') + '</dl>' +
     '<div class="controls" style="margin-top:14px"><input type="search" id="evq" placeholder="' + L('在本版本中搜索', 'Search this edition') + '"><span class="muted small" id="evc"></span></div>' +
     '<div class="scroll"><table><thead><tr><th>#</th>' + ED_HEAD() + '<th>' + L('規範名', 'Normalized name') + '</th></tr></thead><tbody id="evb"></tbody></table></div>';
@@ -2631,7 +2648,7 @@ function ringAll() {
     ringRules(v).forEach(function (x) { if (x.type !== 'none') x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; }); });
     var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
     Object.keys(day).forEach(function (c) { var k = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'].filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
-    return { no: String(v.no), label: v.when + ' ' + v.short, solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number) };
+    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number) };
   });
   return RALL;
 }
@@ -2639,7 +2656,7 @@ function ringData(v) {
   var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
   var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
   return {
-    meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + esc(v.pub) : ''),
+    meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + FT(v.pub, 1) : ''),
       sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
       fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30], rules: ringRules(v), solo: !!v.solo, ruleAll: ringAll(), no: String(v.no) },
     entries: es.filter(function (e) { return e.m && e.d; }).map(function (e) {
@@ -2846,8 +2863,8 @@ function crow(lab, val) { return val ? '<div><span class="muted">' + lab + '</sp
 function cardHTML(k) {
   var h = '', id = k, p, e, g, v, w, x;
   if ((p = PBYID[id])) {
-    h = '<div class="hc-t"><b>' + esc(id) + '</b> ' + esc(p.year || p.when || '') + ' · ' + N(p.place) + '</div>' +
-      crow(L('出處：', 'Source: '), bookT(p.wt) + esc(locT(p.loc))) + crow(L('齋名：', 'Fast: '), p.zhai ? N(p.zhai) : '') + crow(L('日期：', 'Date: '), esc(DT(p.date))) +
+    h = '<div class="hc-t"><b>' + esc(id) + '</b> ' + (p.year ? esc(p.year) : FT(p.when || '', 1)) + ' · ' + N(p.place) + '</div>' +
+      crow(L('出處：', 'Source: '), bookT(p.wt) + (I.en() && p.loc ? ', ' + FT(p.loc, 1) : esc(locT(p.loc)))) + crow(L('齋名：', 'Fast: '), p.zhai ? NF(p.zhai) : '') + crow(L('日期：', 'Date: '), esc(DTX(p.date))) +
       crow(L('神明：', 'Deity: '), p.g && G[p.g] ? N(G[p.g].name) : '') + crow(L('對應：', 'Match: '), esc(C(p.rel)) + (p.cal ? ' → ' + esc(p.cal) : ''));
   } else if ((e = EBYID[id])) {
     v = ED.versions[e.v];
@@ -2857,17 +2874,17 @@ function cardHTML(k) {
   } else if ((g = G[id])) {
     var b = byG[id] || {};
     h = '<div class="hc-t"><b>' + N(g.name) + '</b> <span class="muted">' + esc(id) + ' · ' + esc(C(g.type)) + '</span></div>' +
-      crow(L('異名：', 'Aliases: '), g.alias ? esc(g.alias) : '') + crow(L('主要日期：', 'Main dates: '), esc(DT(g.dates))) +
+      crow(L('異名：', 'Aliases: '), g.alias ? esc(g.alias) : '') + crow(L('主要日期：', 'Main dates: '), esc(DTX(g.dates))) +
       crow(L('數量：', 'Counts: '), L('齋曆條目 ' + (b.nCal || 0) + ' · 實踐 ' + (b.prac || []).length + ' · 申報 ' + (b.sb || []).length + ' · 風俗志 ' + (b.fs || []).length,
         (b.nCal || 0) + ' calendar entries · ' + (b.prac || []).length + ' practice · ' + (b.sb || []).length + ' Shenbao · ' + (b.fs || []).length + ' customs',
         (b.nCal || 0) + ' entrées · ' + (b.prac || []).length + ' pratiques · ' + (b.sb || []).length + ' Shenbao · ' + (b.fs || []).length + ' coutumes'));
   } else if ((w = WBYID[id])) {
-    h = '<div class="hc-t"><b>' + esc(id) + '</b> ' + bookT(w.title) + '</div>' + crow(L('版本：', 'Edition: '), esc(w.ed)) + crow(L('作者：', 'Author: '), esc(w.author)) + crow(L('年代：', 'Date: '), esc(w.date)) + crow(L('獲取：', 'Status: '), esc(C(w.status)));
+    h = '<div class="hc-t"><b>' + esc(id) + '</b> ' + bookT(w.title) + '</div>' + crow(L('版本：', 'Edition: '), FT(w.ed, 1)) + crow(L('作者：', 'Author: '), NF(w.author)) + crow(L('年代：', 'Date: '), FT(w.date, 1)) + crow(L('獲取：', 'Status: '), esc(C(w.status)));
   } else if ((x = HBYID[id])) {
-    h = '<div class="hc-t"><b>' + esc(id) + '</b> ' + bookT(x.book) + ' ' + esc(x.item || '') + '</div>' + crow(L('年代：', 'Date: '), esc(x.when)) + crow(L('地點：', 'Place: '), N(x.place)) + crow(L('日期：', 'Day: '), esc(DT(x.date))) + crow(L('類別：', 'Tag: '), esc(C(x.tag)));
+    h = '<div class="hc-t"><b>' + esc(id) + '</b> ' + bookT(x.book) + ' ' + FT(x.item || '', 1) + '</div>' + crow(L('年代：', 'Date: '), FT(x.when, 1)) + crow(L('地點：', 'Place: '), N(x.place)) + crow(L('日期：', 'Day: '), esc(DTX(x.date))) + crow(L('類別：', 'Tag: '), esc(C(x.tag)));
   } else if (id.indexOf('ev:') === 0 && (v = ED.versions[+id.slice(3)])) {
-    h = '<div class="hc-t"><b>' + edWhen(v) + ' ' + N(v.short) + '</b></div>' + crow(L('書名：', 'Title: '), esc(v.title)) + crow(L('類型：', 'Type: '), esc(C(v.type))) +
-      crow(L('刊刻：', 'Publisher: '), v.pub ? N(v.pub) : '') + crow(L('條目：', 'Entries: '), String(v.n || '')) + crow(L('編號：', 'No.: '), esc(v.no));
+    h = '<div class="hc-t"><b>' + edWhen(v) + ' ' + N(v.short) + '</b></div>' + crow(L('書名：', 'Title: '), FT(v.title, 1)) + crow(L('類型：', 'Type: '), esc(C(v.type))) +
+      crow(L('刊刻：', 'Publisher: '), v.pub ? NF(v.pub) : '') + crow(L('條目：', 'Entries: '), String(v.n || '')) + crow(L('編號：', 'No.: '), esc(v.no));
   } else if (id.indexOf('k:') === 0) {
     var nm = id.slice(2), K = window.ZHAI_KIN, com = K && K.common && K.common[nm], idx = edIndex && edIndex() && edIndex().rows[nm];
     var nv = idx ? (idx.nv || Object.keys(idx.by).length) : 0;
@@ -3031,7 +3048,7 @@ function footer() {
   SIDX = null; focusBar();
   document.getElementById('foot').innerHTML = L('數據來源：' + esc(D.source) + '。' + (D.noQuotes ? '公開版：實踐記錄、《申報》、風俗志及識典古籍所收齋期文本的原文摘錄未收入，只列編號、摘要與編碼。' : '') + '「已覈對原書」目前全部爲「否」：原文摘錄多據電子文本或資料庫全文，引用前請核原書。',
     'Data: ' + esc(D.source) + '. ' + (D.noQuotes ? 'Public version: quotations from practice records, the <i>Shenbao</i>, records of customs and calendar texts read in the Shidian guji 識典古籍 database are omitted; only IDs, summaries and codes are given. ' : '') +
-    'No entry has yet been checked against the original book; quotations mostly follow electronic texts or database full text, so verify before citing. Proper names are given in pinyin with Chinese characters (pinyin generated automatically). Dates are lunar month/day. Research notes and summaries remain in Chinese.', 'Données : ' + esc(D.source) + '. ' + (D.noQuotes ? 'Version publique : les citations des témoignages de pratique, du <i>Shenbao</i>, des descriptions de coutumes et des textes de calendriers lus dans la base Shidian guji 識典古籍 sont omises ; seuls les identifiants, résumés et codes sont donnés. ' : '') + 'Aucune entrée n’a encore été vérifiée sur l’ouvrage original ; les citations suivent le plus souvent des textes électroniques ou le texte intégral des bases de données : à vérifier avant de citer. Les noms propres sont donnés en pinyin avec les caractères chinois (pinyin généré automatiquement). Les dates sont lunaires, au format mois/jour. Les notes de recherche et les résumés restent en chinois.');
+    'No entry has yet been checked against the original book; quotations mostly follow electronic texts or database full text, so verify before citing. Proper names are given in pinyin with Chinese characters (pinyin generated automatically). Dates are lunar month/day. Research notes and summaries are translated from the researcher’s Chinese; hover over a translated passage to see the original. Quoted source text stays in Chinese.', 'Données : ' + esc(D.source) + '. ' + (D.noQuotes ? 'Version publique : les citations des témoignages de pratique, du <i>Shenbao</i>, des descriptions de coutumes et des textes de calendriers lus dans la base Shidian guji 識典古籍 sont omises ; seuls les identifiants, résumés et codes sont donnés. ' : '') + 'Aucune entrée n’a encore été vérifiée sur l’ouvrage original ; les citations suivent le plus souvent des textes électroniques ou le texte intégral des bases de données : à vérifier avant de citer. Les noms propres sont donnés en pinyin avec les caractères chinois (pinyin généré automatiquement). Les dates sont lunaires, au format mois/jour. Les notes de recherche et les résumés sont traduits du chinois de la chercheuse ; survoler un passage traduit affiche l’original. Les citations des sources restent en chinois.');
   document.getElementById('foot').innerHTML += ' <span class="fontkey">' + L('<span class="yt">楷體字</span>是史料原文，黑體字是研究者的說明。', '<span class="yt">Kaishu type</span> marks text quoted from the sources; sans-serif type is the researcher’s commentary.', '<span class="yt">Les caractères kaishu</span> signalent le texte cité des sources ; les caractères sans empattement, le commentaire de la recherche.') + '</span>';
 }
 I.apply();

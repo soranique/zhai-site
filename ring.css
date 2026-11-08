@@ -182,3 +182,4 @@
 .zr .zr-sm svg { display: block; width: 100%; height: auto; margin-bottom: 4px; }
 .zr .zr-smbg { fill: var(--zr-cell); }
 .zr .zr-smc { fill: var(--zr-six-ink); }
+.zr .zr-manytab .zr-lede { font-size: 13px; color: var(--zr-muted); margin: 0 0 8px; }

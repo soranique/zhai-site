@@ -1484,7 +1484,21 @@ function fitHeatHTML() {
     '<span class="muted small" id="fhs"></span><span class="fzoom" role="group" aria-label="' + L('縮放熱力圖', 'Zoom the heat map', 'Zoom de la carte de chaleur') + '"><button type="button" data-fz="-1" aria-label="' + L('縮小', 'Zoom out', 'Réduire') + '">－</button><button type="button" data-fz="1" aria-label="' + L('放大', 'Zoom in', 'Agrandir') + '">＋</button></span><button type="button" class="csvbtn" id="fhcsv">' + L('下載 CSV', 'Download CSV', 'Télécharger CSV') + '</button></div><div class="fheat-wrap"><div class="fheat" id="fheat"></div></div><div class="fheat-key small muted" id="fhk"></div>';
 }
 // 分組：有神明的按神明；沒有神明的（經齋名找到）按所對條目的規範名
-function fitKey(p) { var e = EBYID[pCal(p)]; return p.g || ('k:' + (e.k || p.zhai || '—')); }
+// 每月週期齋（六齋、十齋）的條目多半沒有規範名，各實踐記錄的齋名寫法又不一（「六齋」「六齋（六齋會）」「六齋日、十齋日（加課）」），
+// 按所對條目實際列出的日子歸組，不按實踐記錄的寫法
+var CN_D = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+function cnDay(t) { t = t.replace(/^初/, '').replace(/^廿/, '二十').replace(/^卅/, '三十'); if (t === '十') return 10; var m = t.match(/^([二三])?十([一二三四五六七八九])?$/); if (m) return (m[1] ? CN_D[m[1]] : 1) * 10 + (m[2] ? CN_D[m[2]] : 0); return CN_D[t] || 0; }
+function periodicFast(e) {
+  if (!e || (e.mo || '').indexOf('每月') < 0) return '';
+  var dy = (e.dy || '').replace(/（.*?）|\(.*?\)/g, ''), seen = {}, ds = [];
+  (dy.match(/(初[一二三四五六七八九十]|[二三]?十[一二三四五六七八九]?|廿[一二三四五六七八九]?|卅|[一二三四五六七八九])(?=日|、|，|$)/g) || []).forEach(function (t) { var n = cnDay(t); if (n && !seen[n]) { seen[n] = 1; ds.push(n); } });
+  var key = ds.sort(function (a, b) { return a - b; }).join(',');
+  return key === '8,14,15,23,29,30' ? '六齋' : key === '1,8,14,15,18,23,24,28,29,30' ? '十齋' : '';
+}
+var PF_DAYS = { '六齋': '每月初八、十四、十五、廿三、廿九、三十', '十齋': '每月初一、初八、十四、十五、十八、廿三、廿四、廿八、廿九、三十' };
+var KSET = null;
+function hasNorm(k) { if (!KSET) { KSET = {}; ED.entries.forEach(function (e) { if (e.k) KSET[e.k] = 1; }); } return !!KSET[k]; }
+function fitKey(p) { var e = EBYID[pCal(p)]; return p.g || ('k:' + (e.k || periodicFast(e) || p.zhai || '—')); }
 function fitName(k) { return k.indexOf('k:') === 0 ? k.slice(2) : gName(k); }
 function viewFit() {
   var nFit = LINKED.filter(function (p) { return p.rel === REL_FIT; }).length, nDev = LINKED.filter(isDev).length;
@@ -1535,13 +1549,13 @@ function viewFit() {
       // 對上的齋曆日期：按條目的月日歸併，計實踐條數與版本數
       var days = {}, dord = [];
       rs.forEach(function (p) {
-        var e = EBYID[pCal(p)], d = ((e.mo || '') + (e.dy || '')).replace(/日/g, '') || e.mo || '—';
+        var e = EBYID[pCal(p)], pf = periodicFast(e), d = pf ? PF_DAYS[pf] : ((e.mo || '') + (e.dy || '')).replace(/日/g, '') || e.mo || '—';
         if (!days[d]) { days[d] = { n: 0, v: {} }; dord.push(d); }
         days[d].n++; days[d].v[e.v] = 1;
       });
       dord.sort(function (a, b) { return days[b].n - days[a].n; });
       var open = !!FIT.open[k];
-      var name = k.indexOf('k:') === 0 ? '<a href="#ed/' + encodeURIComponent(k.slice(2)) + '">' + N(k.slice(2)) + '</a> <span class="muted small">' + L('（無神明，經齋名）', '(no deity; via fast name)') + '</span>' : godLink(k);
+      var name = k.indexOf('k:') === 0 ? (hasNorm(k.slice(2)) ? '<a href="#ed/' + encodeURIComponent(k.slice(2)) + '">' + N(k.slice(2)) + '</a>' : N(k.slice(2))) + ' <span class="muted small">' + L('（無神明，經齋名）', '(no deity; via fast name)') + '</span>' : godLink(k);
       return '<tr class="fitg' + (open ? ' open' : '') + '" data-k="' + esc(k) + '"><td><span class="tw" aria-hidden="true"></span> ' + name + '</td>' +
         '<td><b>' + rs.length + '</b> ' + L('條', '') + (nd ? ' <span class="small muted">' + L('（貼合 ' + nf + '，偏差 ' + nd + '）', '(fit ' + nf + ', dev. ' + nd + ')', '(conformes ' + nf + ', écart ' + nd + ')') + '</span>' : '') + '</td>' +
         '<td class="small" style="white-space:nowrap">' + yr + '</td>' +

@@ -441,62 +441,47 @@ var DOM_ALL = false;
 function dom(root, D) {
   var sec = document.createElement('section'); sec.className = 'zr-sec'; sec.id = 'r-dom';
   sec.innerHTML = '<div class="zr-eyebrow">' + L('檢驗 · 週期齋戒的底層節奏', 'Test · the underlying rhythm of periodic fasting') + '</div><h2 style="margin:0">' + L('每月第幾日最擁擠', 'Which day of the month is most crowded') + '</h2><p class="zr-lede"></p>' +
-    '<div class="zr-steps zr-domopt" role="group" aria-label="' + L('十齋日、六齋日', 'Ten and six fast days', 'Dix et six jours de jeûne') + '" style="justify-content:flex-start;margin:0">' +
-    '<button type="button" data-all="0">' + L('不含十齋日、六齋日', 'Without the ten and six fast days', 'Sans les dix et six jours de jeûne') + '</button>' +
-    '<button type="button" data-all="1">' + L('含十齋日、六齋日', 'With the ten and six fast days', 'Avec les dix et six jours de jeûne') + '</button></div>' +
     '<div class="zr-chart"><svg viewBox="0 0 960 300" role="img"></svg></div><p class="zr-finding"></p>';
   root.appendChild(sec);
   var S = sec.querySelector('svg'), lede = sec.querySelector('.zr-lede'), fd = sec.querySelector('.zr-finding'), cnt = []; for (var i = 0; i <= 30; i++) cnt[i] = 0;
+  // 只數有具體月日的神聖日條目（神誕、下降、成道等）；十齋日、六齋日這類「每月某日」的週期齋規則沒有具體月份，本來就不計入，
+  // 所以十齋日當天的神誕照常計入，不清零。跨多日的齋期（如九皇齋）也不計入。
   D.daily.forEach(function (r) { cnt[r.d]++; });
-  function isFast(d) { return D.TEN.indexOf(d) >= 0 || D.SIX.indexOf(d) >= 0; }
   function draw() {
-    sec.querySelectorAll('.zr-domopt button').forEach(function (b) { b.setAttribute('aria-pressed', String((b.getAttribute('data-all') === '1') === DOM_ALL)); });
     while (S.firstChild) S.removeChild(S.firstChild);
-    var BARB = fastGrad(S, '--zr-gold', '--zr-six-ink', true);
-    // 始終是一月三十日；「不含」時十齋日、六齋日計作 0，平均值按三十日計
     var days = []; for (var d = 1; d <= 30; d++) days.push(d);
-    var val = function (d) { return !DOM_ALL && isFast(d) ? 0 : cnt[d]; };
-    var tot = days.reduce(function (s, d) { return s + val(d); }, 0), avg = tot / 30;
-    var mx = Math.max.apply(null, days.map(val)), max = Math.ceil((mx + 2) / 5) * 5;
+    var tot = days.reduce(function (s, d) { return s + cnt[d]; }, 0), avg = tot / 30;
+    var mx = Math.max.apply(null, days.map(function (d) { return cnt[d]; })), max = Math.ceil((mx + 2) / 5) * 5;
     var W = 960, H = 300, ml = 36, mr = 8, mt = 28, mb = 44, bw = (W - ml - mr) / 30;
     function y(v) { return mt + (H - mt - mb) * (1 - v / max); }
-    lede.textContent = DOM_ALL ? L('三十根柱子是一月三十日，泥金色是十齋日，石青色是六齋日（日期下另有短線），兩者重合的柱子各佔一半；其餘日子中高於平均的是朱色；虛線是平均值。', 'Thirty bars for the thirty days of a lunar month; gold marks the ten fast days and blue the six fast days (also underlined below the date); bars on days in both are half of each. Among the other days, those above average are in vermilion. The dashed line is the average.', 'Trente barres pour les trente jours du mois lunaire ; l’or marque les dix jours de jeûne et le bleu les six jours de jeûne (aussi soulignés sous la date) ; les barres des jours communs aux deux sont mi-partie. Parmi les autres jours, ceux au-dessus de la moyenne sont en vermillon. La ligne pointillée est la moyenne.')
-      : L('不含十齋日、六齋日：這十天（六齋日都在十齋日之內）計作 0，平均值仍按一月三十日計算；朱色是高於平均的日子，虛線是平均值。', 'Without the ten and six fast days: those ten days (the six all fall within the ten) are counted as 0, and the average is still taken over all thirty days. Days above average are in vermilion; the dashed line is the average.', 'Sans les dix et six jours de jeûne : ces dix jours (les six sont tous compris dans les dix) comptent pour 0, et la moyenne est toujours calculée sur les trente jours. Les jours au-dessus de la moyenne sont en vermillon ; la ligne pointillée est la moyenne.');
-    S.setAttribute('aria-label', DOM_ALL ? L('每月各日的條目數，十齋日以金色、六齋日以石青色標出', 'Entries per day of the month, ten fast days in gold, six fast days in blue', 'Entrées par jour du mois, dix jours de jeûne en or, six jours de jeûne en bleu') : L('十齋日、六齋日以外各日的條目數', 'Entries per day of the month, fast days left out', 'Entrées par jour du mois, hors jours de jeûne'));
+    lede.textContent = L('三十根柱子是一月三十日，柱高是這一天有具體月日的神聖日條目數（十二個月合計）。十齋日、六齋日是每月重複的週期齋，不屬於任何神聖日，本身不計入；落在這些日子的神誕照常計入。日期用泥金標十齋日、石青短線標六齋日；朱色是高於平均的日子，虛線是平均值。',
+      'Thirty bars for the thirty days of a lunar month; each bar counts the sacred-day entries with a specific month and day on that day (twelve months together). The ten and six fast days are monthly periodic fasts, not sacred days of any deity, so they are not counted themselves; deity days falling on them are counted as usual. Ten fast days are marked in gold on the date axis and six fast days with a blue underline; days above average are in vermilion; the dashed line is the average.',
+      'Trente barres pour les trente jours du mois lunaire ; chaque barre compte les entrées de jours sacrés datées au mois et au jour près ce jour-là (les douze mois ensemble). Les dix et six jours de jeûne sont des jeûnes périodiques mensuels, non des jours sacrés d’une divinité : ils ne sont pas comptés eux-mêmes ; les jours divins qui y tombent sont comptés normalement. Les dix jours de jeûne sont marqués en or sur l’axe des dates et les six jours d’un trait bleu ; les jours au-dessus de la moyenne sont en vermillon ; la ligne pointillée est la moyenne.');
+    S.setAttribute('aria-label', L('每月各日的神聖日條目數', 'Sacred-day entries per day of the month', 'Entrées de jours sacrés par jour du mois'));
     for (var v = 0; v <= max; v += max > 20 ? 10 : 5) {
       svgEl('line', { x1: ml, x2: W - mr, y1: y(v), y2: y(v), stroke: 'var(--zr-line)' }, S);
       svgEl('text', { x: ml - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = v;
     }
     for (var dd = 1; dd <= 30; dd++) (function (d) {
       var k = d - 1, on = D.TEN.indexOf(d) >= 0, six = D.SIX.indexOf(d) >= 0;
-      var n = val(d), up = !on && !six && n > avg, x = ml + k * bw + 3, w = bw - 6, top = y(n), rr = Math.min(3, w / 2, y(0) - top);
-      svgEl('path', { d: 'M' + x + ',' + y(0) + 'V' + (top + rr) + 'Q' + x + ',' + top + ' ' + (x + rr) + ',' + top + 'H' + (x + w - rr) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + rr) + 'V' + y(0) + 'Z', fill: on && six ? BARB : on ? 'var(--zr-gold)' : six ? 'var(--zr-six-ink)' : up ? 'var(--zr-hi)' : 'var(--zr-wei)' }, S);
+      var n = cnt[d], up = n > avg, x = ml + k * bw + 3, w = bw - 6, top = y(n), rr = Math.min(3, w / 2, y(0) - top);
+      svgEl('path', { d: 'M' + x + ',' + y(0) + 'V' + (top + rr) + 'Q' + x + ',' + top + ' ' + (x + rr) + ',' + top + 'H' + (x + w - rr) + 'Q' + (x + w) + ',' + top + ' ' + (x + w) + ',' + (top + rr) + 'V' + y(0) + 'Z', fill: up ? 'var(--zr-hi)' : 'var(--zr-wei)' }, S);
       var hit = svgEl('rect', { x: ml + k * bw, y: mt, width: bw, height: H - mt - mb, fill: 'transparent' }, S);
-      hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + (!DOM_ALL && (on || six) ? fastLab(D, d) + L(' · 計作 0（原有 ' + cnt[d] + ' 條）', ' · counted as 0 (' + cnt[d] + ' in the edition)', ' · compté 0 (' + cnt[d] + ' dans l’édition)') : nEntries(n) + (on || six ? ' · ' + fastLab(D, d) : up ? L(' · 高於平均', ' · above average', ' · au-dessus de la moyenne') : ''))); });
+      hit.addEventListener('pointermove', function (ev) { showTip(ev, '<b>' + L(DN(d), 'Day ' + d, 'Jour ' + d) + '</b> · ' + nEntries(n) + (up ? L(' · 高於平均', ' · above average', ' · au-dessus de la moyenne') : '') + (on || six ? ' · ' + fastLab(D, d) : '')); });
       hit.addEventListener('pointerleave', hideTip);
-      svgEl('text', { x: ml + (k + 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: on ? 'var(--zr-gold)' : six ? 'var(--zr-six-ink)' : up ? 'var(--zr-hi)' : 'var(--zr-muted)', 'font-weight': on || six || up ? 700 : 400 }, S).textContent = DN(d).replace('初', '');
+      svgEl('text', { x: ml + (k + 0.5) * bw, y: H - mb + 18, 'text-anchor': 'middle', 'font-size': 12, fill: on ? 'var(--zr-gold)' : 'var(--zr-muted)', 'font-weight': on ? 700 : 400 }, S).textContent = DN(d).replace('初', '');
       if (six) svgEl('rect', { x: ml + (k + 0.5) * bw - 7, y: H - mb + 25, width: 14, height: 3, rx: 1.5, fill: 'var(--zr-six-ink)' }, S);
-      if (!DOM_ALL || on || cnt[d] >= 13) svgEl('text', { x: ml + (k + 0.5) * bw, y: top - 7, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S).textContent = n;
+      svgEl('text', { x: ml + (k + 0.5) * bw, y: top - 7, 'text-anchor': 'middle', 'font-size': 12, fill: 'var(--zr-ink)' }, S).textContent = n;
     })(dd);
     svgEl('line', { x1: ml, x2: W - mr, y1: y(avg), y2: y(avg), stroke: 'var(--zr-muted)', 'stroke-dasharray': '3 4' }, S);
     svgEl('text', { x: W - mr, y: y(avg) - 6, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = L('平均 ', 'average ', 'moyenne ') + avg.toFixed(1);
-    if (!DOM_ALL) {
-      // 結論文字按數據自動生成：非齋日中最擁擠的三天，以及遠高於平均的日子
-      var rest = days.filter(function (d) { return !isFast(d); }), ord = rest.slice().sort(function (a, b) { return cnt[b] - cnt[a] || a - b; }), top3 = ord.slice(0, 3), hi = rest.filter(function (d) { return cnt[d] > avg * 1.3; });
-      fd.textContent = L('十齋日、六齋日計作 0，全月共 ' + tot + ' 條，平均每天 ' + avg.toFixed(1) + ' 條。最擁擠的是' + top3.map(function (d) { return DN(d) + '（' + cnt[d] + ' 條）'; }).join('、') + '。' + (hi.length ? '遠高於平均（超過平均 1.3 倍）的有 ' + hi.length + ' 天：' + hi.map(DN).join('、') + '。' : '沒有遠高於平均的日子。'),
-        'With the fast days counted as 0, the month carries ' + tot + ' entries, ' + avg.toFixed(1) + ' a day on average. The most crowded are days ' + top3.map(function (d) { return d + ' (' + cnt[d] + ')'; }).join(', ') + '. ' + (hi.length ? hi.length + ' days are well above average (over 1.3 times): ' + hi.join(', ') + '.' : 'No day is well above average.'),
-        'Les jours de jeûne comptant pour 0, le mois porte ' + tot + ' entrées, soit ' + avg.toFixed(1) + ' par jour en moyenne. Les plus chargés sont les jours ' + top3.map(function (d) { return d + ' (' + cnt[d] + ')'; }).join(', ') + '. ' + (hi.length ? hi.length + ' jours sont nettement au-dessus de la moyenne (plus de 1,3 fois) : ' + hi.join(', ') + '.' : 'Aucun jour n’est nettement au-dessus de la moyenne.'));
-      return;
-    }
-    // 結論文字按數據自動生成：十齋日中高於／低於平均的日子
-    var hi = D.TEN.filter(function (d) { return cnt[d] > avg * 1.3; }), lo = D.TEN.filter(function (d) { return cnt[d] < avg * 0.75; });
-    var tenE = D.TEN.reduce(function (s, d) { return s + cnt[d]; }, 0), sixE = D.SIX.reduce(function (s, d) { return s + cnt[d]; }, 0), sixPct = Math.round(sixE / tot * 100);
-  fd.textContent = L('十齋日佔一月的三分之一，承載了 ' + Math.round(tenE / tot * 100) + '% 的條目，但並不均勻：' +
-    hi.map(DN).join('、') + ' 遠高於平均，' + lo.map(DN).join('、') + ' 卻低於平均。神誕曆貼合的是其中幾個節點，而不是整套十齋。',
-    'The ten fast days are a third of the month and carry ' + Math.round(tenE / tot * 100) + '% of the entries, but unevenly: days ' +
-    hi.join(', ') + ' are well above average, while days ' + lo.join(', ') + ' fall below it. The birthday calendar follows a few of these points, not the whole set of ten fasts.', 'Les dix jours de jeûne forment un tiers du mois et portent ' + Math.round(tenE / tot * 100) + ' % des entrées, mais inégalement : les jours ' + hi.join(', ') + ' sont nettement au-dessus de la moyenne, tandis que les jours ' + lo.join(', ') + ' sont en dessous. Le calendrier des anniversaires suit quelques-uns de ces points, non l’ensemble des dix jeûnes.') + ' ' + L('六齋日佔一月的五分之一，承載了 ' + sixPct + '% 的條目。', 'The six fast days are a fifth of the month and carry ' + sixPct + '% of the entries.', 'Les six jours de jeûne forment un cinquième du mois et portent ' + sixPct + ' % des entrées.');
+    // 結論文字按數據自動生成：最擁擠的三天、遠高於平均的日子，以及其中有幾天是十齋日
+    var ord = days.slice().sort(function (a, b) { return cnt[b] - cnt[a] || a - b; }), top3 = ord.slice(0, 3), hi = days.filter(function (d) { return cnt[d] > avg * 1.3; });
+    var hiTen = hi.filter(function (d) { return D.TEN.indexOf(d) >= 0; });
+    fd.textContent = L('全月共 ' + tot + ' 條，平均每天 ' + avg.toFixed(1) + ' 條。最擁擠的是' + top3.map(function (d) { return DN(d) + '（' + cnt[d] + ' 條）'; }).join('、') + '。' + (hi.length ? '遠高於平均（超過平均 1.3 倍）的有 ' + hi.length + ' 天：' + hi.map(DN).join('、') + '；其中 ' + hiTen.length + ' 天是十齋日。' : '沒有遠高於平均的日子。'),
+      'The month carries ' + tot + ' entries, ' + avg.toFixed(1) + ' a day on average. The most crowded are days ' + top3.map(function (d) { return d + ' (' + cnt[d] + ')'; }).join(', ') + '. ' + (hi.length ? hi.length + ' days are well above average (over 1.3 times): ' + hi.join(', ') + '; ' + hiTen.length + ' of them are ten fast days.' : 'No day is well above average.'),
+      'Le mois porte ' + tot + ' entrées, soit ' + avg.toFixed(1) + ' par jour en moyenne. Les plus chargés sont les jours ' + top3.map(function (d) { return d + ' (' + cnt[d] + ')'; }).join(', ') + '. ' + (hi.length ? hi.length + ' jours sont nettement au-dessus de la moyenne (plus de 1,3 fois) : ' + hi.join(', ') + ' ; ' + hiTen.length + ' d’entre eux sont des dix jours de jeûne.' : 'Aucun jour n’est nettement au-dessus de la moyenne.'));
   }
-  sec.querySelectorAll('.zr-domopt button').forEach(function (b) { b.onclick = function () { DOM_ALL = b.getAttribute('data-all') === '1'; hideTip(); draw(); }; });
   draw();
 }
 

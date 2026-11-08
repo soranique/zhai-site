@@ -100,6 +100,7 @@ h3 { font-size: 16px; margin: 22px 0 8px; }
 .card { background: var(--surface); border: 1px solid var(--grid); border-radius: 10px; padding: 16px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .tile .n { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile .n small { font-size: 0.55em; font-weight: 500; color: var(--muted); }
 .tile .l { color: var(--ink-2); font-size: 13px; }
 .tile .s { color: var(--muted); font-size: 12px; }
 .muted { color: var(--muted); }
@@ -1504,9 +1505,13 @@ function viewFit() {
   var nFit = LINKED.filter(function (p) { return p.rel === REL_FIT; }).length, nDev = LINKED.filter(isDev).length;
   var nNo = D.practice.filter(function (p) { return p.rel === '不對應'; }).length;
   var keys = {}; LINKED.forEach(function (p) { if (fPrac(p)) keys[fitKey(p)] = 1; });
+  // 有持齋實踐記錄的神明佔齋庫神明總數：只計言及持齋的記錄（明確、可推斷），「僅日期巧合」不算；不受年代、聚焦篩選影響
+  var gFast = {}, gAny = {}; D.practice.forEach(function (p) { if (!p.g) return; gAny[p.g] = 1; if (p.ev !== NOFAST) gFast[p.g] = 1; });
+  var nGF = Object.keys(gFast).length, nGA = Object.keys(gAny).length, nG = D.deities.length, pG = nG ? Math.round(nGF * 1000 / nG) / 10 : 0;
   var h = L('<h1>實踐與齋曆</h1><p class="lede">實踐記錄（敘事史料）與齋曆條目（規範文本）對上的部分，按神明歸在一起：每位神一行，標出對上的實踐記錄有幾條、年代跨度，以及對上的是齋曆中的哪一天；點一行展開逐條明細。沒有神明的實踐（經齋名對上，如中元）按所對條目歸組。每條實踐記錄只取一個對應條目：同一條見於多個版本時，取年代離實踐最近的版本（同樣近時優先《玉匣記》系統），其他版本見「諸本」。「存在偏差」指實踐與規定對得上，但日期、齋期長短、神名或齋名有出入；說明暫空者留待日後論述。對應由研究者逐條覈定（2026-10-28）。</p>',
       '<h1>Practice × calendar</h1><p class="lede">Where practice records (narrative sources) line up with calendar entries (normative texts), grouped by deity: one row per deity, giving how many practice records match, their date range, and which calendar day they match; click a row to see the records one by one. Practice without a deity (matched through the name of the fast, e.g. Zhongyuan) is grouped by the entry it matches. Each practice record is matched to one entry: when the same entry appears in several editions, the edition closest in date to the practice is used (on a tie, the <i>Yuxiaji</i> line is preferred); see “all editions” for the rest. “With deviation” means practice and prescription correspond but differ in date, length of fast, or name of deity or fast; notes left blank will be filled in later. All matches checked by the researcher (28 Oct 2026).</p>') +
-    '<div class="tiles">' + tile(Object.keys(keys).length, L('神明／齋', 'Deities / fasts'), L('有實踐對上齋曆', 'with practice matched to a calendar')) +
+    '<div class="tiles">' + tile(nGF + ' / ' + nG + ' <small>(' + pG + '%)</small>', L('有持齋實踐的神明', 'Deities with fasting practice', 'Divinités avec pratique de jeûne'), L('佔齋庫神明總數；只計言及持齋的實踐記錄，另有 ' + (nGA - nGF) + ' 位只有日期巧合', 'of all deities in the fasting database; only records mentioning fasting count; ' + (nGA - nGF) + ' more have date coincidences only', 'sur l’ensemble des divinités de la base ; seuls comptent les témoignages mentionnant le jeûne ; ' + (nGA - nGF) + ' autres n’ont que des coïncidences de date')) +
+    tile(Object.keys(keys).length, L('神明／齋', 'Deities / fasts'), L('有實踐對上齋曆', 'with practice matched to a calendar')) +
     tile(nFit, L('貼合', 'Fit'), L('實踐與齋曆條目一致', 'practice and calendar entry agree')) +
     tile(nDev, L('存在偏差', 'With deviation'), L('對得上，但有出入', 'corresponding, but differing')) +
     tile(nNo, L('不對應', 'No match'), L('齋曆未載的實踐（研究者判定）', 'practice absent from the calendars (researcher’s judgement)')) + '</div>' + timeBarHTML() + fitHeatHTML() +

@@ -553,7 +553,7 @@ function fastRules(root, D, data) {
     if (x.solo && !smSolo) smh += '<div class="zr-smsep">' + L('專門單獨齋期', 'Standalone fast calendars', 'Calendriers de jeûne autonomes') + '</div>';
     smSolo = x.solo;
     var cells = x.cells.map(function (c) { var m = Math.floor(c / 100), d = c % 100; return '<rect x="' + ((d - 1) * 4) + '" y="' + ((m - 1) * 4) + '" width="3.4" height="3.4"/>'; }).join('');
-    smh += '<a class="zr-sm' + (x === cur ? ' on' : '') + '" href="#ring/' + esc(x.no) + '" title="' + esc(x.label) + '"><svg viewBox="-1 -1 122 50" aria-hidden="true"><rect x="-1" y="-1" width="122" height="50" class="zr-smbg"/><g class="zr-smc">' + cells + '</g></svg><span>' + NH(x.label) + ' · ' + L(x.tot + ' 天', x.tot + ' days', x.tot + ' jours') + '</span></a>';
+    smh += '<a class="zr-sm' + (x === cur ? ' on' : '') + '" href="#ring/' + esc(x.no) + '" title="' + esc(I18 && I18.en() ? x.label.split(' ')[0] + ' ' + I18.NT(x.label.split(' ').slice(1).join(' ')) : x.label) + '"><svg viewBox="-1 -1 122 50" aria-hidden="true"><rect x="-1" y="-1" width="122" height="50" class="zr-smbg"/><g class="zr-smc">' + cells + '</g></svg><span>' + (x.labelHtml || NH(x.label)) + ' · ' + L(x.tot + ' 天', x.tot + ' days', x.tot + ' jours') + '</span></a>';
   });
   sec.querySelector('[data-p="sm"]').innerHTML = '<p class="zr-muted-s" style="margin:0 0 8px">' + L('每張小圖是一個版本的一年：12 行是月，30 列是日，有神聖日的格子著色。十齋日這類每月週期在圖上是縱紋，多日齋期是橫條。點一張換到該版本。', 'Each tile is one edition’s year: 12 rows of months, 30 columns of days, with sacred days filled. Monthly cycles such as the ten fast days show as vertical stripes, multi-day fasts as horizontal runs. Click a tile to switch to that edition.', 'Chaque vignette est l’année d’une édition : 12 lignes de mois, 30 colonnes de jours, jours sacrés remplis. Les cycles mensuels comme les dix jours de jeûne forment des bandes verticales, les jeûnes de plusieurs jours des segments horizontaux. Cliquer une vignette pour passer à cette édition.') + '</p><div class="zr-smgrid">' + smh + '</div>';
   // 類型組合：UpSet 圖（本版本）
@@ -599,7 +599,7 @@ function fastRules(root, D, data) {
     if (x.solo && !prevSolo) h += '<div class="zr-edsep">' + L('專門單獨齋期', 'Standalone fast calendars', 'Calendriers de jeûne autonomes') + '</div>';
     prevSolo = x.solo;
     var on = x === cur;
-    h += '<a class="zr-edrow' + (on ? ' on' : '') + '" href="#ring/' + esc(x.no) + '"><span class="zr-edn">' + NH(x.label) + '</span><span class="zr-edb"><span class="zr-edbar" style="width:' + (x.tot / mx * 88).toFixed(1) + '%">' +
+    h += '<a class="zr-edrow' + (on ? ' on' : '') + '" href="#ring/' + esc(x.no) + '"><span class="zr-edn">' + (x.labelHtml || NH(x.label)) + '</span><span class="zr-edb"><span class="zr-edbar" style="width:' + (x.tot / mx * 88).toFixed(1) + '%">' +
       (function (a) { return a.keys.map(function (k) { return '<i style="flex:' + a.v[k] + ';background:' + rkCss(k) + '" data-tip="' + esc(rkTip(a, k)) + '"></i>'; }).join(''); })(rkAgg(x.seg)) + '</span><span class="zr-edt">' + x.tot + '</span></span></a>';
   });
   var eb = sec.querySelector('.zr-edbars'); eb.innerHTML = h;
@@ -635,7 +635,7 @@ function fastRules(root, D, data) {
     });
     return ord.map(function (k) { return g[k]; });
   }
-  var li = function (g) { return '<li><i class="zr-sw" style="background:' + rkCss(g.kind) + '"></i>' + NH(g.name) + (g.dy ? ' <span class="zr-muted-s">' + esc(g.dy) + '</span>' : '') + ' · ' + L(Object.keys(g.cells).length + ' 天', Object.keys(g.cells).length + ' days', Object.keys(g.cells).length + ' jours') + '</li>'; };
+  var li = function (g) { return '<li><i class="zr-sw" style="background:' + rkCss(g.kind) + '"></i>' + NH(g.name) + (g.dy ? ' <span class="zr-muted-s">' + esc(I18 ? I18.D(g.dy) : g.dy) + '</span>' : '') + ' · ' + L(Object.keys(g.cells).length + ' 天', Object.keys(g.cells).length + ' days', Object.keys(g.cells).length + ' jours') + '</li>'; };
   var nYear = rules.filter(function (x) { return x.type === 'year'; }).length;
   sec.querySelector('.zr-rulelist').innerHTML = '<h3 class="zr-subh">' + L('本版本的規則形式', 'Rule forms in this edition', 'Formes de règle dans cette édition') + '</h3><div class="zr-rulecols">' +
     ['month', 'range'].map(function (t) { var gs = groups(t); return '<div><h4>' + rtLab(t) + ' <span class="zr-muted-s">' + L(gs.length + ' 條規則', gs.length + ' rules', gs.length + ' règles') + '</span></h4>' + (gs.length ? '<ul>' + gs.map(li).join('') + '</ul>' : '<p class="zr-muted-s">' + L('本版本沒有。', 'None in this edition.', 'Aucune dans cette édition.') + '</p>'); }).join('') +

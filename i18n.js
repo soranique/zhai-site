@@ -65,6 +65,10 @@ var CODES = {
   '通書（寫本）': 'Almanac (manuscript)', '通書（鉛印本）': 'Almanac (letterpress)', '日用類書': 'Daily-use encyclopedia', '善書': 'Morality book', '附刻（魯班經）': 'Appended to the Lu Ban jing 魯班經', '詞義噪音（素事等）': 'Lexical noise', '是': 'Yes', '否': 'No'
 };
 
+// 條目裏研究者加的括注（不是原文）：「（僅列日期）」等 → [英文, 法文]
+var ANNO = {"（六十甲子日）": ["sexagenary-cycle days","jours du cycle sexagésimal"],"（不定）": ["unfixed","non fixe"],"（未標）": ["not labelled","non indiqué"],"（未标）": ["not labelled","non indiqué"],"（六戊日）": ["the six wu days","les six jours wu"],"（總述）": ["general statement","exposé général"],"（未列日期）": ["no date given","aucune date donnée"],"（全月）": ["whole month","mois entier"],"（凡遇聖誕之辰）": ["on every holy birthday","à chaque anniversaire divin"],"（凡遇聖誕之日）": ["on every holy birthday","à chaque anniversaire divin"],"（十王聖誕日）": ["birthdays of the Ten Kings","anniversaires des Dix Rois"],"（十王神誕）": ["birthdays of the Ten Kings","anniversaires des Dix Rois"],"（十閻君降生之日）": ["birthdays of the ten Yama kings","naissances des dix rois Yama"],"（十殿閻君聖誕）": ["birthdays of the Yama kings of the ten courts","anniversaires des rois Yama des dix tribunaux"],"（總則）": ["general rule","règle générale"],"（僅列日期）": ["date only","date seule"],"（標題）": ["heading","titre"],"（庚申日）": ["gengshen days","jours gengshen"],"（法師選擇記）": ["Fashi xuanze ji 法師選擇記","Fashi xuanze ji 法師選擇記"],"（引言）": ["introduction","introduction"],"（附）": ["appendix","annexe"],"（僅標犯忌後果）": ["only the consequence of a breach is given","seule la conséquence d’une infraction est donnée"],"（全年）": ["whole year","toute l’année"],"（結語）": ["closing words","conclusion"],"（神誕表，未標）": ["birthday table, not labelled","table des anniversaires, non indiqué"],"（未見原書）": ["original not seen","original non consulté"],"（十日，文中未列）": ["ten days, not listed in the text","dix jours, non énumérés dans le texte"]};
+function anno(t) { var a = ANNO[t]; return a ? '(' + (lang === 'fr' ? a[1] : a[0]) + ')' : null; }
+
 var MON = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12, '冬': 11, '臘': 12, '臘': 12 };
 var DIG = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
 function cnDay(t) {
@@ -86,6 +90,7 @@ var DW = {
 function monName(n) { return lang === 'fr' ? (n === 1 ? '1er' : n + 'e') + ' mois' : ord(n) + ' month'; }
 function dateSeg(s) {
   var W = DW[lang] || DW.en, dw = W.day.trim();
+  s = s.replace(/（[^（）]*）/g, function (m) { var a = anno(m); return a ? ' ' + a + ' ' : m; });
   s = s.replace(new RegExp(MON_RE + DAY_RE, 'g'), function (_, leap, m, d) { return (leap ? W.ic : '') + MON[m] + '/' + cnDay(d) + ' '; });
   s = s.replace(new RegExp(MON_RE, 'g'), function (_, leap, m) { return lang === 'fr' ? monName(MON[m]) + (leap ? ' intercalaire' : '') + ' ' : (leap ? W.icm : '') + monName(MON[m]) + ' '; });
   s = s.replace(/每月[：:]?/g, W.every);
@@ -100,6 +105,8 @@ function ord(n) { var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
 function FR() { return window.ZHAI_FR || {}; }
+/** 研究者文字（筆記、摘要、說明）的譯文：tx.js（window.ZHAI_TX：中文 → [英文, 法文]），由 tools/tx/build_tx.cjs 生成 */
+function TXM() { return window.ZHAI_TX || {}; }
 /** 英文 → 當前西文（法文界面查 fr.js，查不到原樣返回英文） */
 function T(en) { if (lang !== 'fr' || en == null) return en; var f = FR()[en]; return f != null ? f : en; }
 var I = {
@@ -114,6 +121,13 @@ var I = {
   /** 按當前語言取字串 */
   L: function (zh, en, fr) { return lang === 'zh' ? zh : lang === 'fr' ? (fr != null ? fr : T(en)) : en; },
   T: T,
+  /** 研究者文字的譯文：中文界面或沒有譯文時返回 null；法文沒有譯文時用英文 */
+  X: function (zh) {
+    if (lang === 'zh' || zh == null || zh === '') return null;
+    var t = TXM()[String(zh).trim()];
+    if (!t) return null;
+    return lang === 'fr' && t[1] ? t[1] : t[0];
+  },
   /** 月份名：「正月」/「1st month」/「1er mois」；帶日：「1st month, day 8」/「1er mois, jour 8」 */
   mon: function (m) { return monName(m); },
   monDay: function (m, d) { return monName(m) + (lang === 'fr' ? ', jour ' : ', day ') + d; },
@@ -125,14 +139,18 @@ var I = {
   /** 專有名詞，返回 HTML：中文界面原樣；英文界面「拼音 漢字」，書名拼音爲斜體 */
   N: function (t) {
     if (t == null || t === '') return '';
+    if (lang !== 'zh' && ANNO[t]) return esc(anno(t));
     if (lang === 'zh' || !PY[t]) return esc(t);
     return (TITLE[t] ? '<i>' + esc(PY[t]) + '</i>' : esc(PY[t])) + ' ' + esc(t);
   },
   /** 同上，純文字（用於提示框、SVG） */
   NT: function (t) {
     if (t == null || t === '') return '';
+    if (lang !== 'zh' && ANNO[t]) return anno(t);
     return lang !== 'zh' && PY[t] ? PY[t] + ' ' + t : String(t);
   },
+  /** 研究者括注（「（僅列日期）」等）：西文界面返回譯文，否則 null */
+  anno: function (t) { return lang === 'zh' ? null : anno(t); },
   /** 編碼取值 */
   C: function (v) {
     if (lang === 'zh' || v == null || v === '') return v == null ? '' : v;
@@ -144,6 +162,22 @@ var I = {
     if (lang === 'zh' || !t) return t || '';
     // 「」內是原文引文，不改
     return String(t).split(/(「[^」]*」)/).map(function (seg, i) { return i % 2 ? seg : dateSeg(seg); }).join('');
+  },
+  /** 版本條目的頁碼位置（「原表第 12 行」「葉 14b」「PDF頁 3」等）轉成西文；其餘（篇名、欄名）是原文，不改 */
+  loc: function (t) {
+    if (lang === 'zh' || !t) return t || '';
+    var F = lang === 'fr';
+    return String(t)
+      .replace(/^用戶提供錄文$/, F ? 'transcription fournie par la chercheuse' : 'transcription supplied by the researcher')
+      .replace(/原表第(\d+)行/g, F ? 'tableau, ligne $1' : 'table row $1')
+      .replace(/原表出處：/g, F ? 'source indiquée : ' : 'source given: ')
+      .replace(/第(\d+)段/g, ' §$1')
+      .replace(/ANU藏本PDF頁/g, F ? 'exemplaire ANU, PDF p. ' : 'ANU copy, PDF p. ')
+      .replace(/PDF頁/g, 'PDF p. ')
+      .replace(/圖片(\d+)/g, 'image $1')
+      .replace(/葉(\d+[ab])/g, 'fol. $1')
+      .replace(/(^|｜)頁(\d+)/g, '$1p. $2')
+      .replace(/｜/g, ' | ');
   },
   /** 月日數字 */
   MD: function (m, d) { return m + '/' + d; },

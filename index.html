@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@400;500;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ring.css?v=ef9a54dd">
+<link rel="stylesheet" href="ring.css?v=cd87500c">
 <style>
 :root {
   color-scheme: light;
@@ -23,7 +23,7 @@
   --axis: #c3c2b7;
   --accent: #8a2b1a;
   /* 配色規則：硃紅（--accent）只用於強調與數量（熱力圖、重合度矩陣）；分類一律用下面這套礦物色（--cat1…6 + 兩種灰），已過色盲檢驗 */
-  --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4; --cat7: #b4443f;   /* 石青 青蓮 石綠 藤黃 天青 苔綠 暖灰 鉛灰 */
+  --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4; --cat7: #b4443f; --cat8: #c2578f;   /* 石青 青蓮 石綠 藤黃 天青 苔綠 暖灰 鉛灰；cat7 紅（集會）、cat8 胭脂（誓願）只用於日期類型 */
   --v1: var(--cat1); --v2: var(--cat2); --v3: var(--cat3); --v4: var(--cat4);
   --ev1: #245f94; --ev2: #6b95c4; --ev3: #b3cbe5;   /* 證據強度（有序）：石青由深到淺 */
   /* 字體：中文一律黑體；英文、法文、數字用蘋果系統字體（SF），非蘋果設備用外觀相近的 Inter；史料原文用楷體
@@ -41,7 +41,7 @@
     --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
     --ink: #f0efec; --ink-2: #c3c2b7; --muted: #9a9892;
     --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
-    --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f;
+    --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f; --cat8: #d77aa5;
     --ev1: #8fb3e0; --ev2: #4f7fc0; --ev3: #2c4b78;
     --hl: #4a3f12;
     --yuan: #2c201c; --yuan-line: #5a3a30;
@@ -52,7 +52,7 @@
   --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
   --ink: #f0efec; --ink-2: #c3c2b7; --muted: #9a9892;
   --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
-  --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f;
+  --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f; --cat8: #d77aa5;
   --ev1: #8fb3e0; --ev2: #4f7fc0; --ev3: #2c4b78;
   --hl: #4a3f12;
   --yuan: #2c201c; --yuan-line: #5a3a30;
@@ -589,15 +589,15 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=b60ff7e3"></script>
-<script src="fr.js?v=0972c55f"></script>
+<script src="fr.js?v=69407dc3"></script>
 <script src="tx.js?v=d17ca429"></script>
-<script src="i18n.js?v=8abcdfb2"></script>
+<script src="i18n.js?v=3c33e8de"></script>
 <script src="data.js?v=dba1d6e8"></script>
-<script src="editions-data.js?v=88e2242c"></script>
-<script src="kinship-data.js?v=30c22f5f"></script>
+<script src="editions-data.js?v=c3682202"></script>
+<script src="kinship-data.js?v=8398bbe4"></script>
 <script src="spread-data.js?v=9d5df462"></script>
 <script src="search-data.js?v=bae77b1a"></script>
-<script src="ring.js?v=3af69c06"></script>
+<script src="ring.js?v=75ca533f"></script>
 <script>
 (function () {
 'use strict';
@@ -1143,14 +1143,15 @@ function renderCmp(a, b) {
   var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && e.id && !KOMIT[e.id] && (!CMP.main || !e.p || e.p === '正文'); }); };
   var EA = take(A), EB = take(B);
   var ident = function (e) { return e.k + '|' + (e.c || '其他'); };
-  // 每個比較單位：{u, e, m, d}；一條「初一至初九」的條目拆成九個單位
-  var units = function (es) { var U = {}; es.forEach(function (e) { var md = kDays(e); if (!md) return; md[1].forEach(function (d) { var u = ident(e) + '|' + md[0] + '|' + d; if (!U[u]) U[u] = { u: u, e: e, m: md[0], d: d }; }); }); return U; };
+  var uid = function (x) { return x.u.split('|').slice(0, 2).join('|'); };   // 單位所屬的「規範名＋類型」（兼標兩類的條目按單位的類型歸）
+  // 每個比較單位：{u, e, m, d}；一條「初一至初九」的條目拆成九個單位；兼標兩類（「下降、巡察」）的條目在兩類各算一個單位，與 build_kinship.py 相同
+  var units = function (es) { var U = {}; es.forEach(function (e) { var md = kDays(e); if (!md) return; cTypes(e.c).forEach(function (ty) { md[1].forEach(function (d) { var u = e.k + '|' + ty + '|' + md[0] + '|' + d; if (!U[u]) U[u] = { u: u, e: e, m: md[0], d: d }; }); }); }); return U; };
   var UA = units(EA), UB = units(EB);
   var shared = Object.keys(UA).filter(function (u) { return UB[u]; });
   var onlyA = Object.keys(UA).filter(function (u) { return !UB[u]; }), onlyB = Object.keys(UB).filter(function (u) { return !UA[u]; });
   var union = Object.keys(UA).length + onlyB.length, j = union ? shared.length / union : 0;
   // 只見於一本的單位：同一神（同日期類型）在另一本作別的日子 → 同月異日（連線）或異月（註明）
-  var IA = {}, IB = {}; onlyA.forEach(function (u) { var x = UA[u]; (IA[ident(x.e)] = IA[ident(x.e)] || []).push(x); }); onlyB.forEach(function (u) { var y = UB[u]; (IB[ident(y.e)] = IB[ident(y.e)] || []).push(y); });
+  var IA = {}, IB = {}; onlyA.forEach(function (u) { var x = UA[u]; (IA[uid(x)] = IA[uid(x)] || []).push(x); }); onlyB.forEach(function (u) { var y = UB[u]; (IB[uid(y)] = IB[uid(y)] || []).push(y); });
   var pairs = [], other = {}, nDM = 0;   // other[單位] = 另一本的同神單位
   Object.keys(IA).forEach(function (id) {
     if (!IB[id]) return;
@@ -1971,9 +1972,11 @@ function vennUnits(v, unit) {
     var md = kDays(e);
     if (unit === 'god') { (U[e.k] = U[e.k] || { k: e.k, es: [] }).es.push(e); return; }
     if (!md) return;
-    md[1].forEach(function (d) {
-      var u = e.k + '|' + (e.c || '其他') + '|' + md[0] + '|' + d;
-      (U[u] = U[u] || { k: e.k, c: e.c, m: md[0], d: d, es: [] }).es.push(e);
+    cTypes(e.c).forEach(function (ty) {   // 兼標兩類的條目在兩類各算一個單位
+      md[1].forEach(function (d) {
+        var u = e.k + '|' + ty + '|' + md[0] + '|' + d;
+        (U[u] = U[u] || { k: e.k, c: ty, m: md[0], d: d, es: [] }).es.push(e);
+      });
     });
   });
   return U;
@@ -2392,13 +2395,13 @@ function viewContext() {
       { t: SL, s: L('真人昇仙、降現日', 'Days when Perfected ascend or appear'), y: 1, i: 's' },
       { t: L('《朝修吉辰章》等', CX + ' etc.', CX + ', etc.'), s: L('真人、祖師飛昇', 'Ascensions of Perfected and patriarchs', 'Ascensions de Parfaits et de patriarches'), i: 's',
         tip: L('《朝修吉辰章》45 項成就類單位中 33 項見於《事林廣記》；《萬寶全書》另有祖師飛昇 11 條。', '33 of the 45 attainment units in the ' + CX + ' also appear in the ' + SL + '; the ' + WB + ' adds 11 ascensions of patriarchs.', '33 des 45 unités d’accomplissement du ' + CX + ' figurent dans le ' + SL + ' ; le ' + WB + ' ajoute 11 ascensions de patriarches.') }] },
-    { n: L('④ 神誕', '④ Deity birthdays'), s: L('誕日作爲紀念類別', 'Birthdays as a commemorative category'), out: 's', c: [
+    { n: L('④ 神誕', '④ Deity birthdays'), s: L('誕日作爲誕辰類別', 'Birthdays as a category of their own', 'Les anniversaires comme catégorie à part'), out: 's', c: [
       null,
       { t: L('佛誕、帝王誕節', 'Buddha’s birthday; imperial birthday festivals'), s: L('老君降聖節（二月十五）', 'Laojun jiangsheng jie 老君降聖節 (2/15)') },
       { t: L('汴京、臨安筆記', 'Biji on Bianjing 汴京 and Lin’an 臨安'), s: L('地方神生日與社會', 'Local gods’ birthdays and society'), i: 'd' },
       { t: SL, s: L('約 46 日記有誕日', 'Birthdays recorded on about 46 days'), y: 1, i: 's' },
       { t: L('道藏本', 'Daozang ed. ', 'éd. du Daozang ') + ZS, s: L('以神誕爲主', 'Mainly birthdays', 'Surtout des anniversaires'), i: 's',
-        tip: L('萬曆續道藏（1607），93 條中紀念類 75 條；與 1827 年本共有 71 項，與《事林廣記》只有 20 項。《萬寶全書》（萬曆）紀念類 66 條。', 'Wanli supplement to the Daozang (1607): 75 of 93 entries are commemorations; 71 units in common with the 1827 edition but only 20 with the ' + SL + '. The ' + WB + ' (Wanli) has 66 commemorations.', 'Supplément Wanli du Daozang (1607) : 75 des 93 entrées sont des commémorations ; 71 unités communes avec l’édition de 1827, 20 seulement avec le ' + SL + '. Le ' + WB + ' (Wanli) a 66 commémorations.') }] },
+        tip: L('萬曆續道藏（1607），93 條中誕辰類 74 條；與 1827 年本共有 72 項，與《事林廣記》只有 20 項。《萬寶全書》（萬曆）誕辰類 66 條。', 'Wanli supplement to the Daozang (1607): 74 of 93 entries are birthdays; 72 units in common with the 1827 edition but only 20 with the ' + SL + '. The ' + WB + ' (Wanli) has 66 birthdays.', 'Supplément Wanli du Daozang (1607) : 74 des 93 entrées sont des anniversaires de naissance ; 72 unités communes avec l’édition de 1827, 20 seulement avec le ' + SL + '. Le ' + WB + ' (Wanli) a 66 anniversaires de naissance.') }] },
     { n: L('⑤ 國家節日、地方神', '⑤ State festivals and local gods'), s: L('宋代禮制與封祀', 'Song ritual system and canonization'), s2: L('假設：封祀→信仰興起→收錄', 'Hypothesis: canonization → rise of a cult → inclusion'), out: 'd', c: [
       null, null,
       { t: L('天書、聖祖降節', 'Tianshu 天書 and Shengzu jiang 聖祖降 festivals'), s: L('神祠封爵：侯、公、王、妃', 'Titles for shrines: marquis, duke, king, consort') },
@@ -2662,7 +2665,10 @@ function ringVersion(no) {
 function soloName(e) { return /未見原書/.test(e.t) ? e.l : /僅列日期/.test(e.l) ? (e.q || e.k) : e.t; }
 // 齋期規則：把一個版本的條目分成年度定日、每月週期、多日齋期、不能排入月日四類，並展開到一年 12 個月 × 30 日
 // 齋曆整體就是持齋日程（序言等處推薦持齋），所以凡能排入月日的神聖日都計入，不逐條看是否寫明持齋
-var RKIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
+// 編碼日期類型 → 代碼；一條可兼標兩類（工作簿寫「下降、巡察」），kinds 列出全部，kind 取第一類（規則清單的色塊用）
+var RKIND = { '誕辰': 'T', '成就': 'B', '下降': 'D', '巡察': 'L', '集會': 'A', '節令': 'C', '諱辰': 'H', '誓願': 'V', '其他': 'Q' };
+function cTypes(c) { return String(c || '其他').split('、').filter(Boolean); }
+function rkinds(c) { return c ? cTypes(c).map(function (t) { return RKIND[t] || 'U'; }) : ['U']; }
 function rangeCells(r) {
   var out = [];
   String(r).split(/[；;]/).forEach(function (seg) {
@@ -2683,22 +2689,24 @@ function ringRules(v) {
       type = cells.length ? 'month' : 'none';
     } else if (e.m && e.d && e.d <= 30) { type = 'year'; cells = [e.m * 100 + e.d]; }
     var lab = e.l && !/^（/.test(e.l) ? e.l : '';
-    return { id: e.id, type: type, cells: cells, kind: RKIND[e.c] || 'U', k: e.k || '', mo: e.mo || '', dy: e.dy || '',
+    var ks = rkinds(e.c);
+    return { id: e.id, type: type, cells: cells, kind: ks[0], kinds: ks, k: e.k || '', mo: e.mo || '', dy: e.dy || '',
       name: e.k ? e.k + (lab ? '・' + lab : '') : (lab || e.t || e.g || '—'), t: v.solo ? soloName(e) : (e.t || '') };
   });
 }
-// 十齋日・六齋日（性質相同，合爲一類）：每月週期、不編爲巡察，且文字提到十齋、六齋、十直齋、短齋、準提齋，或所列日子正好是十齋日或六齋日。
-// 「北斗下降之辰」雖落在六齋日上，工作簿編爲巡察，仍算神聖日。十齋日・六齋日不算神聖日，在「各類型佔多少」中單列
+// 十齋日・六齋日（性質相同，合爲一類）：每月週期、不編爲下降或巡察，且文字提到十齋、六齋、十直齋、短齋、準提齋，或所列日子正好是十齋日或六齋日。
+// 「北斗下降之辰」雖落在六齋日上，工作簿編爲下降，仍算神聖日。十齋日・六齋日不算神聖日，在「各類型佔多少」中單列
 var TS10 = '1,8,14,15,18,23,24,28,29,30', TS6 = '8,14,15,23,29,30';
 function tenSix(x) {
-  if (x.type !== 'month' || x.kind === 'L') return false;
+  if (x.type !== 'month' || x.kinds.some(function (k) { return k === 'D' || k === 'L'; })) return false;
   if (/十齋|六齋|十直齋|短齋|[準准]提齋/.test(x.name + ' ' + x.t)) return true;
   var ds = {}; x.cells.forEach(function (c) { ds[c % 100] = 1; });
   var k = Object.keys(ds).map(Number).sort(function (a, b) { return a - b; }).join(',');
   return k === TS10 || k === TS6;
 }
-// 各版本的齋期總長：每年、每月有多少天，按日期類型分。每天只算一次，鍵是該日兼有的全部類型（如 T/L 表示紀念兼巡察），
-// 類型按紀念、成就、巡察、集會、節令、其他、未標排列
+// 各版本的齋期總長：每年、每月有多少天，按日期類型分。每天只算一次，鍵是該日兼有的全部類型（如 T/D 表示誕辰兼下降），
+// 類型按誕辰、成就、下降、巡察、集會、節令、諱辰、誓願、其他、未標排列；兼標兩類的條目兩類都算
+var RK_ORDER = ['T', 'B', 'D', 'L', 'A', 'C', 'H', 'V', 'Q', 'U'];
 var RALL = null;
 function ringAll() {
   if (RALL) return RALL;
@@ -2707,28 +2715,27 @@ function ringAll() {
     ringRules(v).forEach(function (x) {
       if (x.type === 'none') return;
       var f = tenSix(x);
-      x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; if (f) fd[c] = 1; else (typ[c] = typ[c] || {})[x.kind] = 1; });
+      x.cells.forEach(function (c) { x.kinds.forEach(function (k) { (day[c] = day[c] || {})[k] = 1; if (!f) (typ[c] = typ[c] || {})[k] = 1; }); if (f) fd[c] = 1; });
     });
     // 各類型佔多少：只看神聖日（十齋日・六齋日之外的條目）；cov 有此類的天數，only 只有此類的天數，tf 其中同時是十齋日・六齋日的天數
     var cov = {}, only = {}, tf = {}, fs = 0;
     Object.keys(typ).forEach(function (c) { var ks = Object.keys(typ[c]); ks.forEach(function (k) { cov[k] = (cov[k] || 0) + 1; if (ks.length === 1) only[k] = (only[k] || 0) + 1; if (fd[c]) tf[k] = (tf[k] || 0) + 1; }); if (fd[c]) fs++; });
     var share = { sac: Object.keys(typ).length, cov: cov, only: only, tf: tf, f: Object.keys(fd).length, fs: fs };
     var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
-    Object.keys(day).forEach(function (c) { var k = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'].filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
+    Object.keys(day).forEach(function (c) { var k = RK_ORDER.filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
     return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number), share: share };
   });
   return RALL;
 }
 function ringData(v) {
   var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
-  var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
   return {
     meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + FT(v.pub, 1) : ''),
       sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
       fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30], rules: ringRules(v), solo: !!v.solo, ruleAll: ringAll(), no: String(v.no) },
     entries: es.filter(function (e) { return e.m && e.d; }).map(function (e) {
       var src = /原表出處：([^｜]+)/.exec(e.pg || '');
-      return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: KIND[e.c] || '?', src: src ? src[1].trim() : '',
+      return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: e.c ? cTypes(e.c).map(function (t) { return RKIND[t] || '?'; }).join('&') : '?', src: src ? src[1].trim() : '',
         note: '', code: e.id, god: e.k || '', suf: '' };
     })
   };

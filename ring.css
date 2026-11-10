@@ -11,6 +11,9 @@
   --zr-qi:  var(--cat-o, #a59c8e);   /* 暖灰 其他 */
   --zr-wei: var(--cat-u, #cfccc4);   /* 铅灰 未定 */
   --zr-hui: var(--cat7, #b4443f);   /* 红 集会（只用于日期类型配色） */
+  --zr-jiang: var(--cat5, #3f9ad0);    /* 天青 下降（只用于日期类型配色） */
+  --zr-huichen: var(--cat6, #5f7f3a);  /* 苔绿 讳辰 */
+  --zr-shiyuan: var(--cat8, #c2578f);  /* 胭脂 誓愿 */
   --zr-cell: var(--surface-2, #f2f1ed);
   --zr-fast: #efe2bf;  /* 十斋日空格 */
   --zr-six: #cfe0e6;   /* 六斋日空格（与十斋日并列；重合日各占一半） */

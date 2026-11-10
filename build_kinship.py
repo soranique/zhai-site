@@ -5,7 +5,7 @@
 
 方法（与工作簿「日期异文」页相同）：
 - 只用 INCL 里的版本（已获完整文本）；每个版本取「位置」为正文、有具体月日的条目，
-  以「建議規範名＋编码日期类型＋月＋日」为比较单位
+  以「建議規範名＋编码日期类型＋月＋日」为比较单位；兼标两类的条目（「下降、巡察」）在两类中各计一次
 - 重合度 = 两本共有单位数 ÷ 两本单位数的并集；另给两个方向的包含比例
 - 少数日期：某神（同一日期类型）见于 3 个以上见证、某日期见于该神半数以下的见证者；
   同一本中同类日期超过 3 个者（如逐月下降）不判。同版本（WIT）合为一个见证
@@ -116,14 +116,16 @@ def main(path):
                 continue
             if r[12] in SKIP.get(no, ()):
                 continue
+            tys = [t for t in (r[6] or '其他').split('、') if t]   # 兼标两类（如「下降、巡察」）的条目在两类中各计一次
             md = days_of(r[1], r[2])
-            if md:
-                for d in md[1]:
-                    E[(r[15], r[6] or '其他')][no].add((md[0], d))
             sd = strict_day(r[1], r[2])
-            if sd:
-                J[(r[15], r[6] or '其他')][no].add(sd)
-                EID[(r[15], r[6] or '其他', no) + sd].append(r[16])
+            for ty in tys:
+                if md:
+                    for d in md[1]:
+                        E[(r[15], ty)][no].add((md[0], d))
+                if sd:
+                    J[(r[15], ty)][no].add(sd)
+                    EID[(r[15], ty, no) + sd].append(r[16])
     S = {v: set() for v in INCL}
     for (k, ty), byv in E.items():
         for v, ds in byv.items():

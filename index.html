@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@400;500;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="ring.css?v=ef9a54dd">
+<link rel="stylesheet" href="ring.css?v=cd87500c">
 <style>
 :root {
   color-scheme: light;
@@ -23,7 +23,7 @@
   --axis: #c3c2b7;
   --accent: #8a2b1a;
   /* 配色規則：硃紅（--accent）只用於強調與數量（熱力圖、重合度矩陣）；分類一律用下面這套礦物色（--cat1…6 + 兩種灰），已過色盲檢驗 */
-  --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4; --cat7: #b4443f;   /* 石青 青蓮 石綠 藤黃 天青 苔綠 暖灰 鉛灰 */
+  --cat1: #245f94; --cat2: #9a7fd1; --cat3: #1a9178; --cat4: #bd8b18; --cat5: #3f9ad0; --cat6: #5f7f3a; --cat-o: #a59c8e; --cat-u: #cfccc4; --cat7: #b4443f; --cat8: #c2578f;   /* 石青 青蓮 石綠 藤黃 天青 苔綠 暖灰 鉛灰；cat7 紅（集會）、cat8 胭脂（誓願）只用於日期類型 */
   --v1: var(--cat1); --v2: var(--cat2); --v3: var(--cat3); --v4: var(--cat4);
   --ev1: #245f94; --ev2: #6b95c4; --ev3: #b3cbe5;   /* 證據強度（有序）：石青由深到淺 */
   /* 字體：中文一律黑體；英文、法文、數字用蘋果系統字體（SF），非蘋果設備用外觀相近的 Inter；史料原文用楷體
@@ -41,7 +41,7 @@
     --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
     --ink: #f0efec; --ink-2: #c3c2b7; --muted: #9a9892;
     --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
-    --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f;
+    --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f; --cat8: #d77aa5;
     --ev1: #8fb3e0; --ev2: #4f7fc0; --ev3: #2c4b78;
     --hl: #4a3f12;
     --yuan: #2c201c; --yuan-line: #5a3a30;
@@ -52,7 +52,7 @@
   --page: #0d0d0d; --surface: #1a1a19; --surface-2: #242422;
   --ink: #f0efec; --ink-2: #c3c2b7; --muted: #9a9892;
   --grid: #2c2c2a; --axis: #383835; --accent: #e0846f;
-  --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f;
+  --cat1: #3567b0; --cat2: #9a82d6; --cat3: #2aa470; --cat4: #ba881a; --cat5: #4f9bd9; --cat6: #6f9440; --cat-o: #8d877c; --cat-u: #55595d; --cat7: #b4443f; --cat8: #d77aa5;
   --ev1: #8fb3e0; --ev2: #4f7fc0; --ev3: #2c4b78;
   --hl: #4a3f12;
   --yuan: #2c201c; --yuan-line: #5a3a30;
@@ -589,15 +589,15 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
 <script src="demo.js?v=b60ff7e3"></script>
-<script src="fr.js?v=0972c55f"></script>
+<script src="fr.js?v=69407dc3"></script>
 <script src="tx.js?v=d17ca429"></script>
-<script src="i18n.js?v=8abcdfb2"></script>
+<script src="i18n.js?v=3c33e8de"></script>
 <script src="data.js?v=dba1d6e8"></script>
-<script src="editions-data.js?v=88e2242c"></script>
-<script src="kinship-data.js?v=30c22f5f"></script>
+<script src="editions-data.js?v=c3682202"></script>
+<script src="kinship-data.js?v=e48e67bb"></script>
 <script src="spread-data.js?v=9d5df462"></script>
 <script src="search-data.js?v=bae77b1a"></script>
-<script src="ring.js?v=3af69c06"></script>
+<script src="ring.js?v=75ca533f"></script>
 <script>
 (function () {
 'use strict';
@@ -1072,6 +1072,12 @@ function timeBarSync() {
 // 比較單位與 build_kinship.py 相同：建議規範名＋編碼日期類型＋月＋日；「初一至初九」等拆成逐日；位置空白者算正文
 var CMP = { main: true, undated: false, a: 1, b: 9 };
 var KOMIT = {}; ((window.ZHAI_KIN && window.ZHAI_KIN.omit) || []).forEach(function (id) { KOMIT[id] = 1; });   // 不計入「版本親疏」比較的條目，由 build_kinship.py 給出
+// 沒有建議規範名的條目（天臘、月朔、九毒日等無神名日）：build_kinship.py 的 INCLUDE_OTHER 爲 False 時不參與比較（目前），爲 True 時一律當作「其他」
+var KOTHER = {}; ((window.ZHAI_KIN && window.ZHAI_KIN.other) || []).forEach(function (id) { KOTHER[id] = 1; });
+var KOTHER_NAME = (window.ZHAI_KIN && window.ZHAI_KIN.otherName) || '其他';
+var KINC = !!(window.ZHAI_KIN && window.ZHAI_KIN.includeOther);
+function kName(e) { return KOTHER[e.id] ? KOTHER_NAME : e.k ? e.k : KINC ? KOTHER_NAME : ''; }   // 空字串＝不參與比較
+function kLink(e) { return kName(e) === KOTHER_NAME ? '<span>' + L('其他', 'Other', 'Autre') + '</span><span class="muted small">' + L('（無神名日）', ' (no named deity)', ' (sans divinité nommée)') + '</span>' : '<a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a>'; }
 var KCN = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
 var KMON = { '正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12, '冬': 11, '臘': 12, '臘': 12 };
 var KDAY = '(?:初日|初[一二三四五六七八九十]|廿[一二三四五六七八九]?|卅|三十|二十[一二三四五六七八九]?|十[一二三四五六七八九]?|朔|望|晦|元日)';
@@ -1140,17 +1146,20 @@ function renderCmp(a, b) {
   var want = '#kin/' + A.no + '/' + B.no;
   if (location.hash !== want) history.replaceState(null, '', location.pathname + location.search + want);
   var opt = function (sel) { return EVS.map(function (v) { return '<option value="' + esc(v.no) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v.when) + ' ' + esc(I.en() ? NT(v.short) : v.short) + '</option>'; }).join(''); };
-  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.k && e.id && !KOMIT[e.id] && (!CMP.main || !e.p || e.p === '正文'); }); };
+  var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.id && !KOMIT[e.id] && kName(e) && (!CMP.main || !e.p || e.p === '正文'); }); };
   var EA = take(A), EB = take(B);
-  var ident = function (e) { return e.k + '|' + (e.c || '其他'); };
-  // 每個比較單位：{u, e, m, d}；一條「初一至初九」的條目拆成九個單位
-  var units = function (es) { var U = {}; es.forEach(function (e) { var md = kDays(e); if (!md) return; md[1].forEach(function (d) { var u = ident(e) + '|' + md[0] + '|' + d; if (!U[u]) U[u] = { u: u, e: e, m: md[0], d: d }; }); }); return U; };
+  var ident = function (e) { return kName(e) + '|' + (e.c || '其他'); };
+  var uid = function (x) { return x.u.split('|').slice(0, 2).join('|'); };   // 單位所屬的「規範名＋類型」（兼標兩類的條目按單位的類型歸）
+  // 每個比較單位：{u, e, m, d}；一條「初一至初九」的條目拆成九個單位；兼標兩類（「下降、巡察」）的條目在兩類各算一個單位，與 build_kinship.py 相同
+  var units = function (es) { var U = {}; es.forEach(function (e) { var md = kDays(e); if (!md) return; cTypes(e.c).forEach(function (ty) { md[1].forEach(function (d) { var u = kName(e) + '|' + ty + '|' + md[0] + '|' + d; if (!U[u]) U[u] = { u: u, e: e, m: md[0], d: d }; }); }); }); return U; };
   var UA = units(EA), UB = units(EB);
   var shared = Object.keys(UA).filter(function (u) { return UB[u]; });
   var onlyA = Object.keys(UA).filter(function (u) { return !UB[u]; }), onlyB = Object.keys(UB).filter(function (u) { return !UA[u]; });
   var union = Object.keys(UA).length + onlyB.length, j = union ? shared.length / union : 0;
   // 只見於一本的單位：同一神（同日期類型）在另一本作別的日子 → 同月異日（連線）或異月（註明）
-  var IA = {}, IB = {}; onlyA.forEach(function (u) { var x = UA[u]; (IA[ident(x.e)] = IA[ident(x.e)] || []).push(x); }); onlyB.forEach(function (u) { var y = UB[u]; (IB[ident(y.e)] = IB[ident(y.e)] || []).push(y); });
+  // 無神名日都當作「其他」，彼此不是同一位神，不配「同月異日／異月」
+  var isOther = function (x) { return uid(x).indexOf(KOTHER_NAME + '|') === 0; };
+  var IA = {}, IB = {}; onlyA.forEach(function (u) { var x = UA[u]; if (isOther(x)) return; (IA[uid(x)] = IA[uid(x)] || []).push(x); }); onlyB.forEach(function (u) { var y = UB[u]; if (isOther(y)) return; (IB[uid(y)] = IB[uid(y)] || []).push(y); });
   var pairs = [], other = {}, nDM = 0;   // other[單位] = 另一本的同神單位
   Object.keys(IA).forEach(function (id) {
     if (!IB[id]) return;
@@ -1178,13 +1187,13 @@ function renderCmp(a, b) {
   var item = function (x, side) {
     var e = x.e, o = (other[side + x.u] || []).map(function (y) { return y.m + '/' + y.d; });
     var nm = e.t || e.g || e.k;
-    return '<div class="ci' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + x.u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> <a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a>' +
+    return '<div class="ci' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + x.u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> ' + kLink(e) +
       '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + span(e) + (nm && nm !== e.k ? '<div class="small">' + esc(nm) + '</div>' : '') +
       (o.length ? '<div class="small ci-o">' + (side === 'a' ? L('乙本作 ', 'B: ') : L('甲本作 ', 'A: ')) + o.join(L('、', ', ')) + '</div>' : '') + '</div>';
   };
   var itemS = function (u) {
     var x = UA[u].e, y = UB[u].e;
-    return '<div class="ci' + (fNorm(x.k) ? ' fx' : '') + '"><span class="ci-d dlink" data-day="' + UA[u].m + '/' + UA[u].d + '">' + UA[u].d + '</span> <a href="#ed/' + encodeURIComponent(x.k) + '">' + N(x.k) + '</a><span class="muted small"> ' + esc(C(x.c) || '') + '</span>' + span(x) +
+    return '<div class="ci' + (fNorm(x.k) ? ' fx' : '') + '"><span class="ci-d dlink" data-day="' + UA[u].m + '/' + UA[u].d + '">' + UA[u].d + '</span> ' + kLink(x) + '<span class="muted small"> ' + esc(C(x.c) || '') + '</span>' + span(x) +
       ((x.t || '') !== (y.t || '') ? '<div class="small">' + L('甲：', 'A: ') + (x.t ? yt(x.t) : esc(x.g || '—')) + '</div><div class="small">' + L('乙：', 'B: ') + (y.t ? yt(y.t) : esc(y.g || '—')) + '</div>' : (x.t && x.t !== x.k ? '<div class="small">' + yt(x.t) + '</div>' : '')) + '</div>';
   };
   var ccl = function (xs, t) { return xs.length ? '<div class="cc-l">' + t + '</div>' : ''; };   // 窄屏三欄上下排列時每段的小標題
@@ -1201,7 +1210,7 @@ function renderCmp(a, b) {
   if (CMP.undated) {
     var nk = function (es) { var o = {}; es.filter(function (e) { return !kDays(e); }).forEach(function (e) { (o[ident(e)] = o[ident(e)] || []).push(e); }); return o; };
     var NA = nk(EA), NB = nk(EB), keys = Object.keys(NA).concat(Object.keys(NB).filter(function (x) { return !NA[x]; }));
-    var col = function (f) { return keys.filter(f).map(function (x) { var e = (NA[x] || NB[x])[0]; return '<div class="ci"><a href="#ed/' + encodeURIComponent(e.k) + '">' + N(e.k) + '</a> <span class="muted small">' + esc((e.mo || '') + (e.dy || '')) + '</span></div>'; }).join(''); };
+    var col = function (f) { return keys.filter(f).map(function (x) { var e = (NA[x] || NB[x])[0]; return '<div class="ci">' + kLink(e) + ' <span class="muted small">' + esc((e.mo || '') + (e.dy || '')) + '</span></div>'; }).join(''); };
     h += '<div class="cmp-m"><div class="cmp-mn">' + L('無具體月日（每月、六十甲子日等）', 'No specific day (monthly, sixty jiazi days, etc.)') + '</div><div class="cmp-cols"><div class="cc">' + col(function (x) { return NA[x] && NB[x]; }) + '</div><div class="cc">' + col(function (x) { return NA[x] && !NB[x]; }) + '</div><div class="cc">' + col(function (x) { return !NA[x] && NB[x]; }) + '</div></div></div>';
   }
   var body = document.querySelector('#cmppanel .cp-body');
@@ -1967,13 +1976,16 @@ var VN_C = ['var(--cat1)', 'var(--cat4)', 'var(--cat3)'];
 function vennUnits(v, unit) {
   var U = {};
   ED.entries.forEach(function (e) {
-    if (e.v !== v.i || !e.k || KOMIT[e.id] || (e.p && e.p !== '正文' && e.p !== '專門單獨齋期')) return;
-    var md = kDays(e);
-    if (unit === 'god') { (U[e.k] = U[e.k] || { k: e.k, es: [] }).es.push(e); return; }
+    if (e.v !== v.i || KOMIT[e.id] || (e.p && e.p !== '正文' && e.p !== '專門單獨齋期')) return;
+    var md = kDays(e), kn = kName(e);
+    if (!kn) return;
+    if (unit === 'god') { if (kn === KOTHER_NAME) return; (U[e.k] = U[e.k] || { k: e.k, es: [] }).es.push(e); return; }   // 只比神名時不計無神名日
     if (!md) return;
-    md[1].forEach(function (d) {
-      var u = e.k + '|' + (e.c || '其他') + '|' + md[0] + '|' + d;
-      (U[u] = U[u] || { k: e.k, c: e.c, m: md[0], d: d, es: [] }).es.push(e);
+    cTypes(e.c).forEach(function (ty) {   // 兼標兩類的條目在兩類各算一個單位
+      md[1].forEach(function (d) {
+        var u = kn + '|' + ty + '|' + md[0] + '|' + d;
+        (U[u] = U[u] || { k: kn, c: ty, m: md[0], d: d, es: [] }).es.push(e);
+      });
     });
   });
   return U;
@@ -2101,7 +2113,9 @@ function viewVenn(el) {
   var more = document.getElementById('vnmore'); if (more) more.onclick = function () { VN.more = true; viewVenn(el); };
   if (el.isConnected) decorate();
 }
-var KIN = { mode: 'j', thr: 0.4, dir: true };
+// mode：j 重合度（交集÷並集）、c 包含度（交集÷較小一本，即較小一本有幾成見於另一本）、sv 共有的少數日期；hm：矩陣格中數字用 j 或 c
+var KIN = { mode: 'j', thr: 0.4, thrc: 0.6, dir: true, hm: 'j' };
+function kinC(p) { return Math.max(p.ca, p.cb); }
 function viewKinship() {
   var K = window.ZHAI_KIN;
   if (!K) { app.innerHTML = '<p>' + L('缺少 kinship-data.js。', 'kinship-data.js is missing.') + '</p>'; return; }
@@ -2118,14 +2132,14 @@ function viewKinship() {
   ORD.forEach(function (n, i) { n.x = X0 + (i + 0.5) * (X1 - X0) / ORD.length; n.y = 20 + LANES.indexOf(n.lane) * LH + LH / 2 - 6; });
   ORD.forEach(function (n, i) { var q = ORD[i - 1]; n.up = !!(q && q.lane === n.lane && !q.up); });
   ORD.forEach(function (n) { if (n.no === 8) n.up = true; if (n.no === 9) n.up = false; });   // 1882、1891 兩本相鄰，標註一上一下，免得互相壓住
-  var h = L('<h1>版本親疏</h1><p class="lede">按條目內容比較已獲完整文本的 ' + K.nodes.length + ' 個版本。每個版本取正文中有具體月日的條目，以「規範名＋編碼日期類型＋月日」爲單位；兩本之間的<b>重合度</b>爲共有條目佔兩本條目總數（並集）的比例。橫軸按年代先後等距排列，縱向按文本類型分道（據工作簿「文本類型」，空缺者暫歸，見懸停說明）。線越粗，兩本越相近；<b>重合度只說明相近，不說明誰據誰</b>。切換到「共有的少數日期」，紅線顯示兩本都作、而多數本子不作的日期（見工作簿「日期異文」頁），這類共同偏離更能提示兩本之間有直接關係。黑色箭頭是有文本依據的先後關係（實線確定，虛線候選）。</p>',
-      '<h1>Edition kinship</h1><p class="lede">A comparison by content of the ' + K.nodes.length + ' editions for which a complete text is available. For each edition the dated entries of the main table are taken, with “normalized name + coded date type + month/day” as the unit; the <b>overlap</b> of two editions is the share of shared units in the union of both. Editions are spaced evenly in chronological order and placed in lanes by text type (from the workbook; missing types assigned provisionally, see hover). Thicker lines mean closer editions; <b>overlap shows closeness, not who copied whom</b>. Switch to “shared minority dates” to see, in red, dates that both editions give but most others do not (see the workbook sheet 日期異文); such shared departures point more strongly to a direct relation. Black arrows mark sequences supported by textual evidence (solid: certain; dashed: candidate).</p>', '<h1>Parenté des éditions</h1><p class="lede">Comparaison par le contenu des ' + K.nodes.length + ' éditions dont on possède le texte complet. Pour chaque édition, on retient les entrées datées de la table principale, avec pour unité « nom normalisé + type de jour codé + mois/jour » ; le <b>recouvrement</b> de deux éditions est la part des unités communes dans leur réunion. Les éditions sont espacées régulièrement par ordre chronologique et placées en couloirs selon le type de texte (d’après le classeur ; types manquants attribués provisoirement, voir au survol). Plus le trait est épais, plus les éditions sont proches ; <b>le recouvrement mesure la proximité, non qui a copié qui</b>. Passer à « dates minoritaires communes » pour voir en rouge les dates que les deux éditions donnent mais que la plupart des autres ne donnent pas (voir la feuille 日期異文 du classeur) ; ces écarts partagés indiquent plus nettement une relation directe. Les flèches noires marquent les filiations appuyées par des preuves textuelles (trait plein : certaine ; tirets : candidate).</p>') +
-    '<div class="kin"><div class="controls card"><label>' + L('連線：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少數日期', 'Shared minority dates') + '</option></select></label>' +
-    '<label id="kthrw">' + L('只顯示重合度 ≥ ', 'Only overlap ≥ ') + '<input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + KIN.thr + '"> <b id="kthrv">' + KIN.thr.toFixed(2) + '</b></label>' +
+  var h = L('<h1>版本親疏</h1><p class="lede">按條目內容比較已獲完整文本的 ' + K.nodes.length + ' 個版本。每個版本取正文中有具體月日的條目，以「規範名＋編碼日期類型＋月日」爲單位（沒有規範名的無神名日，如天臘、月朔、九毒日，不參與比較）；兩本之間的<b>重合度</b>爲共有條目佔兩本條目總數（並集）的比例；兩本大小懸殊時，重合度會被大本拉低，可改看<b>包含度</b>，即較小一本的條目有幾成見於另一本。橫軸按年代先後等距排列，縱向按文本類型分道（據工作簿「文本類型」，空缺者暫歸，見懸停說明）。線越粗，兩本越相近；<b>重合度只說明相近，不說明誰據誰</b>。切換到「共有的少數日期」，紅線顯示兩本都作、而多數本子不作的日期（見工作簿「日期異文」頁），這類共同偏離更能提示兩本之間有直接關係。黑色箭頭是有文本依據的先後關係（實線確定，虛線候選）。</p>',
+      '<h1>Edition kinship</h1><p class="lede">A comparison by content of the ' + K.nodes.length + ' editions for which a complete text is available. For each edition the dated entries of the main table are taken, with “normalized name + coded date type + month/day” as the unit (days without a named deity, such as the la 臘 days, new moons or the nine poison days, are left out); the <b>overlap</b> of two editions is the share of shared units in the union of both; when the two differ greatly in size the larger one pulls the overlap down, so <b>containment</b> can be shown instead: the share of the smaller edition’s units found in the other. Editions are spaced evenly in chronological order and placed in lanes by text type (from the workbook; missing types assigned provisionally, see hover). Thicker lines mean closer editions; <b>overlap shows closeness, not who copied whom</b>. Switch to “shared minority dates” to see, in red, dates that both editions give but most others do not (see the workbook sheet 日期異文); such shared departures point more strongly to a direct relation. Black arrows mark sequences supported by textual evidence (solid: certain; dashed: candidate).</p>', '<h1>Parenté des éditions</h1><p class="lede">Comparaison par le contenu des ' + K.nodes.length + ' éditions dont on possède le texte complet. Pour chaque édition, on retient les entrées datées de la table principale, avec pour unité « nom normalisé + type de jour codé + mois/jour » ; le <b>recouvrement</b> de deux éditions est la part des unités communes dans leur réunion. Les éditions sont espacées régulièrement par ordre chronologique et placées en couloirs selon le type de texte (d’après le classeur ; types manquants attribués provisoirement, voir au survol). Plus le trait est épais, plus les éditions sont proches ; <b>le recouvrement mesure la proximité, non qui a copié qui</b>. Passer à « dates minoritaires communes » pour voir en rouge les dates que les deux éditions donnent mais que la plupart des autres ne donnent pas (voir la feuille 日期異文 du classeur) ; ces écarts partagés indiquent plus nettement une relation directe. Les flèches noires marquent les filiations appuyées par des preuves textuelles (trait plein : certaine ; tirets : candidate).</p>') +
+    '<div class="kin"><div class="controls card"><label>' + L('連線：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="c"' + (KIN.mode === 'c' ? ' selected' : '') + '>' + L('包含度', 'Containment', 'Inclusion') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少數日期', 'Shared minority dates') + '</option></select></label>' +
+    '<label id="kthrw"><span id="kthrl"></span><input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + (KIN.mode === 'c' ? KIN.thrc : KIN.thr) + '"> <b id="kthrv"></b></label>' +
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('顯示有依據的先後關係', 'Show evidenced sequences') + '</label></div>' +
     '<div class="card" id="knet"></div>' +
     '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目；要按月日逐條對齊，用圖下的按鈕，或點下方矩陣的格子。比較單位與逐條細看相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries; to align two editions day by day, use the button below the diagram or click a cell of the matrix further down. The unit is the same as in that view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées ; pour aligner deux éditions jour par jour, utilisez le bouton sous le diagramme ou une case de la matrice plus bas. L’unité est celle de cette vue ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
-    '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('格中數字爲重合度（×100）；鼠標移上去看雙向包含比例與共有的少數日期，點格子逐條細看這兩本。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.') + '</p><div class="card scroll" id="khm"></div></div><div>' +
+    '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><div class="controls"><label>' + L('格中數字：', 'Cells show: ', 'Cases : ') + '<select id="khmode"><option value="j"' + (KIN.hm === 'j' ? ' selected' : '') + '>' + L('重合度（對稱）', 'Overlap (symmetric)', 'Recouvrement (symétrique)') + '</option><option value="c"' + (KIN.hm === 'c' ? ' selected' : '') + '>' + L('包含度（行本見於列本的比例）', 'Containment (share of the row edition found in the column edition)', 'Inclusion (part de l’édition en ligne présente dans l’édition en colonne)') + '</option></select></label></div><p class="small muted" style="margin:0 0 6px" id="khmd"></p><div class="card scroll" id="khm"></div></div><div>' +
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
     '<h2>' + L('未計入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + FT(x) + '</li>'; }).join('') + '</ul></div>' +
     '<h2>' + L('讀圖須知', 'Reading notes') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' +
@@ -2142,20 +2156,24 @@ function viewKinship() {
   viewVenn(document.getElementById('kvenn'));
   var pairTip = function (p) {
     var A = NB[p.a], B = NB[p.b];
-    return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b><div>' + L('重合度 ', 'Overlap ') + '<b>' + (p.j * 100).toFixed(0) + '</b>' +
+    var small = p.ca >= p.cb ? A : B, big = small === A ? B : A;
+    return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b><div>' + L('包含度 ', 'Containment ', 'Inclusion ') + '<b>' + (kinC(p) * 100).toFixed(0) + '</b>' + L('（' + small.yr + ' 本有 ' + (kinC(p) * 100).toFixed(0) + '% 見於 ' + big.yr + ' 本）', ' (' + (kinC(p) * 100).toFixed(0) + '% of ' + small.yr + ' found in ' + big.yr + ')', ' (' + (kinC(p) * 100).toFixed(0) + ' % de ' + small.yr + ' dans ' + big.yr + ')') + '</div><div>' + L('重合度 ', 'Overlap ') + '<b>' + (p.j * 100).toFixed(0) + '</b>' +
       L('（' + A.yr + ' 本的條目有 ' + (p.ca * 100).toFixed(0) + '% 見於 ' + B.yr + ' 本；反之 ' + (p.cb * 100).toFixed(0) + '%）', ' (' + (p.ca * 100).toFixed(0) + '% of ' + A.yr + ' found in ' + B.yr + '; ' + (p.cb * 100).toFixed(0) + '% the other way)', ' (' + (p.ca * 100).toFixed(0) + ' % de ' + A.yr + ' se retrouvent dans ' + B.yr + ' ; ' + (p.cb * 100).toFixed(0) + ' % dans l’autre sens)') + '</div>' +
       '<div>' + L('共有的少數日期：', 'Shared minority dates: ') + '<b>' + p.sv + '</b>' + (p.ex.length ? '<div class="small muted">' + p.ex.map(esc).join('；') + (p.sv > p.ex.length ? '……' : '') + '</div>' : '') + '</div>';
   };
   function draw() {
-    document.getElementById('kthrw').style.display = KIN.mode === 'j' ? '' : 'none';
+    var thr = KIN.mode === 'c' ? KIN.thrc : KIN.thr, val = function (p) { return KIN.mode === 'c' ? kinC(p) : p.j; };
+    document.getElementById('kthrw').style.display = KIN.mode === 'sv' ? 'none' : '';
+    document.getElementById('kthrl').textContent = KIN.mode === 'c' ? L('只顯示包含度 ≥ ', 'Only containment ≥ ', 'Inclusion ≥ ') : L('只顯示重合度 ≥ ', 'Only overlap ≥ ');
+    document.getElementById('kthr').value = thr; document.getElementById('kthrv').textContent = thr.toFixed(2);
     var s = '<svg class="knet" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + L('版本親疏圖', 'Edition kinship network') + '"><defs><marker id="karr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="var(--ink)"/></marker></defs>';
     LANES.forEach(function (l, i) { var y = 20 + i * LH; s += '<rect class="lane" x="0" y="' + (y + 2) + '" width="' + W + '" height="' + (LH - 4) + '" rx="4" opacity="' + (i % 2 ? 0.55 : 1) + '"/><text class="lanet" x="8" y="' + (y + LH / 2 + 4) + '">' + esc(lname(l)) + '</text>'; });
     ORD.forEach(function (n) { s += '<line class="tick" x1="' + n.x + '" x2="' + n.x + '" y1="20" y2="' + (H - 20) + '"/>'; });
     s += '<text class="tickt" x="' + X0 + '" y="' + (H - 6) + '">' + L('← 早', '← earlier') + '</text><text class="tickt" x="' + X1 + '" y="' + (H - 6) + '" text-anchor="end">' + L('晚 →（按年代先後等距排列，不按年數比例）', 'later → (evenly spaced in order, not to scale)') + '</text>';
-    var ps = K.pairs.filter(function (p) { return KIN.mode === 'j' ? p.j >= KIN.thr : p.sv > 0; });
-    ps.sort(function (a, b) { return KIN.mode === 'j' ? a.j - b.j : a.sv - b.sv; });
+    var ps = K.pairs.filter(function (p) { return KIN.mode === 'sv' ? p.sv > 0 : val(p) >= thr; });
+    ps.sort(function (a, b) { return KIN.mode === 'sv' ? a.sv - b.sv : val(a) - val(b); });
     ps.forEach(function (p) {
-      var A = NB[p.a], B = NB[p.b], w = KIN.mode === 'j' ? 0.8 + p.j * 6 : 1.2 + Math.min(p.sv, 14) * 0.5, op = KIN.mode === 'j' ? 0.2 + p.j * 0.6 : 0.75;
+      var A = NB[p.a], B = NB[p.b], w = KIN.mode !== 'sv' ? 0.8 + val(p) * 6 : 1.2 + Math.min(p.sv, 14) * 0.5, op = KIN.mode !== 'sv' ? 0.2 + val(p) * 0.6 : 0.75;
       var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2 - Math.min(70, Math.abs(A.x - B.x) * 0.18) - (A.y === B.y ? 14 : 0);
       var d = 'M' + A.x + ',' + A.y + ' Q' + mx + ',' + my + ' ' + B.x + ',' + B.y;
       s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="e' + (KIN.mode === 'sv' ? ' sv' : '') + '" d="' + d + '" stroke-width="' + w.toFixed(1) + '" opacity="' + op.toFixed(2) + '"/></g>';
@@ -2184,7 +2202,7 @@ function viewKinship() {
     el.querySelectorAll('g.nd').forEach(function (g) {
       var no = +g.getAttribute('data-n'), n = NB[no];
       g.addEventListener('mousemove', function (e) {
-        var near = K.pairs.filter(function (p) { return p.a === no || p.b === no; }).sort(function (a, b) { return b.j - a.j; }).slice(0, 4);
+        var near = K.pairs.filter(function (p) { return p.a === no || p.b === no; }).sort(function (a, b) { return KIN.mode === 'c' ? (b.a === no ? b.ca : b.cb) - (a.a === no ? a.ca : a.cb) : b.j - a.j; }).slice(0, 4);
         showTip(e, '<b>' + vname(n) + '</b>' + L('（編號' + no + '）', ' (no. ' + no + ')', ' (n° ' + no + ')') + '<div class="small muted">' + esc(lname(n.lane)) + (n.tent ? L('（暫定：', ' (provisional: ') + FT(n.tent, 1) + L('）', ')') : '') + (n.note ? L('；', '; ') + FT(n.note, 1) : '') + '</div><div>' + L('可比條目 ' + n.n + ' 條；少數日期 ' + n.nmin + ' 處', n.n + ' comparable entries; ' + n.nmin + ' minority dates', n.n + ' entrées comparables ; ' + n.nmin + ' dates minoritaires') + '</div><div class="small">' + L('最相近：', 'Closest: ') + near.map(function (p) { var o = NB[p.a === no ? p.b : p.a]; return esc(o.yr) + ' ' + esc(o.sh) + ' ' + (p.j * 100).toFixed(0); }).join('；') + '</div>');
         var ks = {}; K.pairs.forEach(function (p) { if (p.a === no || p.b === no) ks[pk(p.a, p.b)] = 1; });
         el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'); x.classList.toggle('dim', !!k && !ks[k]); });
@@ -2193,26 +2211,29 @@ function viewKinship() {
       g.addEventListener('click', function () { var v = ED.versions.filter(function (x) { return +x.no === no; })[0]; if (v) { hideTip(); location.hash = 'ev/' + v.i; } });
     });
   }
-  (function heat() {
+  function heat() {
+    document.getElementById('khmd').textContent = KIN.hm === 'c' ? L('格中數字爲包含度（×100）：該行版本的條目有幾成見於該列版本，所以矩陣不對稱。鼠標移上去看重合度與共有的少數日期，點格子逐條細看這兩本。版本按年代排列。', 'Containment × 100: the share of the row edition’s units found in the column edition, so the matrix is not symmetric. Hover for overlap and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.', 'Inclusion × 100 : part des unités de l’édition en ligne présentes dans l’édition en colonne ; la matrice n’est donc pas symétrique. Survoler pour le recouvrement et les dates minoritaires communes ; cliquer une case pour comparer les deux éditions entrée par entrée. Éditions par ordre chronologique.') : L('格中數字爲重合度（×100）；鼠標移上去看雙向包含比例與共有的少數日期，點格子逐條細看這兩本。版本按年代排列。', 'Overlap × 100; hover for containment in both directions and shared minority dates; click a cell to compare the two editions entry by entry. Editions in chronological order.');
     var hm = '<table class="hm"><thead><tr><th></th>' + ORD.map(function (n) { return '<th class="c2" title="' + esc(NT(n.sh)) + '">' + esc(n.sh) + '<br><span class="muted">' + esc((n.yr.match(/^\d{4}/) || [L('未定', 'n.d.')])[0]) + '</span></th>'; }).join('') + '</tr></thead><tbody>';
     ORD.forEach(function (a) {
       hm += '<tr><th class="r">' + esc(a.yr) + ' ' + N(a.sh) + '<span class="ksw" style="background:' + LC[a.lane] + '"></span></th>';
       ORD.forEach(function (b) {
         if (a.no === b.no) { hm += '<td style="background:var(--surface-2)"></td>'; return; }
-        var p = PB[pk(a.no, b.no)], j = p ? p.j : 0;
+        var p = PB[pk(a.no, b.no)], j = !p ? 0 : KIN.hm === 'c' ? (p.a === a.no ? p.ca : p.cb) : p.j;
         hm += '<td data-k="' + pk(a.no, b.no) + '" data-ab="' + a.no + '/' + b.no + '" title="' + esc(L('點擊兩本並排對照', 'Click to compare side by side')) + '" style="background:color-mix(in srgb, var(--heat1) ' + Math.round(j * 100) + '%, var(--heat0));color:' + (j > 0.55 ? 'var(--page)' : 'var(--ink-2)') + '">' + (j >= 0.05 ? Math.round(j * 100) : '') + '</td>';
       });
       hm += '</tr>';
     });
     var el = document.getElementById('khm'); el.innerHTML = hm + '</tbody></table>';
     el.querySelectorAll('td[data-k]').forEach(function (td) { td.addEventListener('mousemove', function (e) { var p = PB[td.getAttribute('data-k')]; if (p) showTip(e, pairTip(p)); }); td.addEventListener('mouseleave', hideTip); td.style.cursor = 'pointer'; td.addEventListener('click', function () { hideTip(); location.hash = 'kin/' + td.getAttribute('data-ab'); }); });
-  })();
+  }
+  heat();
   document.getElementById('kret').innerHTML = ORD.filter(function (n) { return n.no !== K.base && K.ret[n.no] != null; }).map(function (n) {
     var v = K.ret[n.no];
     return '<div style="display:grid;grid-template-columns:150px 1fr 34px;gap:6px;align-items:center;font-size:12.5px;margin:2px 0"><span>' + esc(n.yr) + ' ' + N(n.sh) + '</span><span style="background:var(--surface-2);height:10px;border-radius:3px;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:' + (v * 100).toFixed(0) + '%;background:' + LC[n.lane] + ';border-radius:3px"></span></span><span class="muted">' + (v * 100).toFixed(0) + '%</span></div>';
   }).join('');
   document.getElementById('kmode').onchange = function (e) { KIN.mode = e.target.value; draw(); };
-  document.getElementById('kthr').oninput = function (e) { KIN.thr = +e.target.value; document.getElementById('kthrv').textContent = KIN.thr.toFixed(2); draw(); };
+  document.getElementById('kthr').oninput = function (e) { if (KIN.mode === 'c') KIN.thrc = +e.target.value; else KIN.thr = +e.target.value; draw(); };
+  document.getElementById('khmode').onchange = function (e) { KIN.hm = e.target.value; heat(); };
   document.getElementById('kdir').onchange = function (e) { KIN.dir = e.target.checked; draw(); };
   draw();
 }
@@ -2385,26 +2406,26 @@ function viewContext() {
       { t: L('道教吉辰曆', 'Daoist calendars of auspicious days'), s: L('《朝修吉辰章》等，待考', B('朝修吉辰章', 'Chaoxiu jichen zhang') + ' etc.; to be examined', B('朝修吉辰章', 'Chaoxiu jichen zhang') + ', etc. ; à examiner'), q: 1 },
       { t: L('《事林廣記》逐月聖降', SL + ': monthly descents', SL + ' : descentes mensuelles'), s: L('每月固定降日循環', 'Fixed monthly cycle of descent days'), y: 1, i: 'd' },
       { t: CX, s: L('逐日降現；承襲或共同來源待考', 'Daily descents; descent or common source to be determined', 'Descentes jour par jour ; filiation ou source commune à déterminer'), i: 's',
-        tip: L('朱權撰，正統九年（1444）序，萬曆續道藏本。與《事林廣記》共有 208 項降日（《事林》410 項，《朝修》338 項）；兩者是承襲還是共同來源，需比對共同異文才能判斷。', 'By Zhu Quan 朱權, 1444 preface, Wanli supplement to the Daozang. Shares 208 descent units with the ' + SL + ' (410 there, 338 here); whether one descends from the other or both from a common source needs a comparison of shared variants.', 'Par Zhu Quan 朱權, préface de 1444, supplément Wanli du Daozang. 208 unités de descente en commun avec le ' + SL + ' (410 contre 338) ; filiation ou source commune : il faut comparer les variantes communes.') }] },
+        tip: L('朱權撰，正統九年（1444）序，萬曆續道藏本。與《事林廣記》共有 172 項降日（《事林》353 項，《朝修》293 項；只計編爲下降者，不含巡察）；兩者是承襲還是共同來源，需比對共同異文才能判斷。', 'By Zhu Quan 朱權, 1444 preface, Wanli supplement to the Daozang. Shares 172 descent units with the ' + SL + ' (353 there, 293 here; descents only, inspections excluded); whether one descends from the other or both from a common source needs a comparison of shared variants.', 'Par Zhu Quan 朱權, préface de 1444, supplément Wanli du Daozang. 172 unités de descente en commun avec le ' + SL + ' (353 contre 293 ; descentes seulement, inspections exclues) ; filiation ou source commune : il faut comparer les variantes communes.') }] },
     { n: L('③ 昇仙、降現事件', '③ Ascension and manifestation events'), s: L('仙傳中有日期的事件', 'Dated events in hagiographies'), out: 'd', note: L('有日期的事件轉爲日曆條目', 'Dated events become calendar entries'), c: [
       { t: L('《列仙傳》王子喬<br>漢武故事 西王母降', B('列仙傳', 'Liexian zhuan') + ': Wang Ziqiao 王子喬<br>' + B('漢武故事', 'Han Wu gushi') + ': descent of Xiwangmu 西王母', B('列仙傳', 'Liexian zhuan') + ' : Wang Ziqiao 王子喬<br>' + B('漢武故事', 'Han Wu gushi') + ' : descente de Xiwangmu 西王母'), s: L('七月七日', '7th day of the 7th month') },
       null, null,
       { t: SL, s: L('真人昇仙、降現日', 'Days when Perfected ascend or appear'), y: 1, i: 's' },
       { t: L('《朝修吉辰章》等', CX + ' etc.', CX + ', etc.'), s: L('真人、祖師飛昇', 'Ascensions of Perfected and patriarchs', 'Ascensions de Parfaits et de patriarches'), i: 's',
-        tip: L('《朝修吉辰章》45 項成就類單位中 33 項見於《事林廣記》；《萬寶全書》另有祖師飛昇 11 條。', '33 of the 45 attainment units in the ' + CX + ' also appear in the ' + SL + '; the ' + WB + ' adds 11 ascensions of patriarchs.', '33 des 45 unités d’accomplissement du ' + CX + ' figurent dans le ' + SL + ' ; le ' + WB + ' ajoute 11 ascensions de patriarches.') }] },
-    { n: L('④ 神誕', '④ Deity birthdays'), s: L('誕日作爲紀念類別', 'Birthdays as a commemorative category'), out: 's', c: [
+        tip: L('《朝修吉辰章》45 項成就類單位中 33 項見於《事林廣記》；《萬寶全書》另有成就類 11 條，其中祖師、真人飛昇（翀昇）10 條。', '33 of the 45 attainment units in the ' + CX + ' also appear in the ' + SL + '; the ' + WB + ' adds 11 attainment entries, 10 of them ascensions of patriarchs and Perfected.', '33 des 45 unités d’accomplissement du ' + CX + ' figurent dans le ' + SL + ' ; le ' + WB + ' ajoute 11 entrées d’accomplissement, dont 10 ascensions de patriarches et de Parfaits.') }] },
+    { n: L('④ 神誕', '④ Deity birthdays'), s: L('誕日作爲誕辰類別', 'Birthdays as a category of their own', 'Les anniversaires comme catégorie à part'), out: 's', c: [
       null,
       { t: L('佛誕、帝王誕節', 'Buddha’s birthday; imperial birthday festivals'), s: L('老君降聖節（二月十五）', 'Laojun jiangsheng jie 老君降聖節 (2/15)') },
       { t: L('汴京、臨安筆記', 'Biji on Bianjing 汴京 and Lin’an 臨安'), s: L('地方神生日與社會', 'Local gods’ birthdays and society'), i: 'd' },
       { t: SL, s: L('約 46 日記有誕日', 'Birthdays recorded on about 46 days'), y: 1, i: 's' },
       { t: L('道藏本', 'Daozang ed. ', 'éd. du Daozang ') + ZS, s: L('以神誕爲主', 'Mainly birthdays', 'Surtout des anniversaires'), i: 's',
-        tip: L('萬曆續道藏（1607），93 條中紀念類 75 條；與 1827 年本共有 71 項，與《事林廣記》只有 20 項。《萬寶全書》（萬曆）紀念類 66 條。', 'Wanli supplement to the Daozang (1607): 75 of 93 entries are commemorations; 71 units in common with the 1827 edition but only 20 with the ' + SL + '. The ' + WB + ' (Wanli) has 66 commemorations.', 'Supplément Wanli du Daozang (1607) : 75 des 93 entrées sont des commémorations ; 71 unités communes avec l’édition de 1827, 20 seulement avec le ' + SL + '. Le ' + WB + ' (Wanli) a 66 commémorations.') }] },
+        tip: L('萬曆續道藏（1607），93 條中誕辰類 74 條；與 1827 年本共有 72 項，與《事林廣記》只有 18 項。《萬寶全書》（萬曆）誕辰類 66 條。', 'Wanli supplement to the Daozang (1607): 74 of 93 entries are birthdays; 72 units in common with the 1827 edition but only 18 with the ' + SL + '. The ' + WB + ' (Wanli) has 66 birthdays.', 'Supplément Wanli du Daozang (1607) : 74 des 93 entrées sont des anniversaires de naissance ; 72 unités communes avec l’édition de 1827, 18 seulement avec le ' + SL + '. Le ' + WB + ' (Wanli) a 66 anniversaires de naissance.') }] },
     { n: L('⑤ 國家節日、地方神', '⑤ State festivals and local gods'), s: L('宋代禮制與封祀', 'Song ritual system and canonization'), s2: L('假設：封祀→信仰興起→收錄', 'Hypothesis: canonization → rise of a cult → inclusion'), out: 'd', c: [
       null, null,
       { t: L('天書、聖祖降節', 'Tianshu 天書 and Shengzu jiang 聖祖降 festivals'), s: L('神祠封爵：侯、公、王、妃', 'Titles for shrines: marquis, duke, king, consort') },
       { t: SL, s: L('收宋代節日與封號', 'Includes Song festivals and titles'), y: 1, i: 's' },
-      { t: CX, s: L('宋代節名只存三個', 'Only three Song festival names', 'Trois noms de fêtes Song seulement'), i: 's',
-        tip: L('開基節、先天節、降聖節（《事林廣記》有 14 項）。', 'Kaiji 開基, Xiantian 先天 and Jiangsheng 降聖 (14 in the ' + SL + ').', 'Kaiji 開基, Xiantian 先天 et Jiangsheng 降聖 (14 dans le ' + SL + ').') }] },
+      { t: CX, s: L('節名大多保留', 'Most festival names kept', 'La plupart des noms de fêtes conservés'), i: 's',
+        tip: L('《事林廣記》節令中有 14 個節名（天慶、開基、天正、中和、芳春、貞元、天祺、寧貺、天休、天貺、先天、元成、降聖、天符），其中 12 個同日見於《朝修》（《朝修》作真元、天棋、寧肌），只缺天慶、天貺；《朝修》另有上元、延生、天應等節。', '14 festival names among the seasonal entries of the ' + SL + ' (Tianqing 天慶, Kaiji 開基, Tianzheng 天正, Zhonghe 中和, Fangchun 芳春, Zhenyuan 貞元, Tianqi 天祺, Ningkuang 寧貺, Tianxiu 天休, Tiankuang 天貺, Xiantian 先天, Yuancheng 元成, Jiangsheng 降聖, Tianfu 天符); 12 of them appear on the same day in the ' + CX + ' (written 真元, 天棋, 寧肌 there), missing only Tianqing and Tiankuang. The ' + CX + ' adds Shangyuan 上元, Yansheng 延生, Tianying 天應 and others.', '14 noms de fêtes parmi les entrées saisonnières du ' + SL + ' (Tianqing 天慶, Kaiji 開基, Tianzheng 天正, Zhonghe 中和, Fangchun 芳春, Zhenyuan 貞元, Tianqi 天祺, Ningkuang 寧貺, Tianxiu 天休, Tiankuang 天貺, Xiantian 先天, Yuancheng 元成, Jiangsheng 降聖, Tianfu 天符) ; 12 figurent le même jour dans le ' + CX + ' (écrits 真元, 天棋, 寧肌), seuls Tianqing et Tiankuang manquent. Le ' + CX + ' ajoute Shangyuan 上元, Yansheng 延生, Tianying 天應, etc.') }] },
     { n: L('⑥ 齋期', '⑥ Fasting periods'), s: L('佛道齋戒傳統', 'Buddhist and Daoist fasting traditions'), s2: L('十齋日與逐月降日循環只重合十五、廿九兩日', 'The ten fast days coincide with the monthly descent cycle only on the 15th and 29th'), out: 's', c: [
       { t: L('六齋日', 'Six fast days (liuzhai ri 六齋日)'), s: L('漢譯佛典、四天王巡察', 'Chinese Buddhist translations; inspection by the Four Heavenly Kings') },
       { t: L('敦煌十齋日', 'Ten fast days at Dunhuang 敦煌'), s: L('三長月、十齋日入律', 'Three long fast months and ten fast days enter the precepts'), i: 's' },
@@ -2451,7 +2472,7 @@ function viewContext() {
     '<p class="small muted swipe" style="margin:0 0 6px">' + L('在手機上可左右滑動查看全圖', 'On a phone, swipe sideways to see the whole diagram') + '</p>' +
     '<div class="scroll"><div class="flow">' + g + '</div></div>' +
     '<div class="lg"><span><i></i>' + L('有文本對應或直接見證', 'Textual correspondence or direct witness') + '</span><span><i class="d"></i>' + L('推測或待覈', 'Conjectural or to be verified') + '</span><span><i class="bxq"></i>' + L('來源待考', 'Source to be identified') + '</span><span><i class="bxy"></i>' + L('元代匯合點', 'Yuan convergence point') + '</span></div>' +
-    '<p class="small muted" style="margin:4px 0 0">' + L('帶紅點的格子可懸停或點按查看依據。明代格子中的「項」以規範名＋月日爲單位，據版本對比工作簿已錄的明代文本計算：《朝修吉辰章》、道藏本《諸神聖誕日玉匣記》、胡文煥校《新刻許真君玉匣記》（江戶寫本）、《萬寶全書》。', 'Hover over or tap a cell with a red dot for its evidence. In the Ming cells a “unit” is a standard name + month-day, counted from the Ming texts entered in the comparison workbook: the ' + CX + ', the Daozang ' + ZS + ', Hu Wenhuan’s ' + B('新刻許真君玉匣記', 'Xinke Xu zhenjun yuxiaji') + ' (Edo manuscript) and the ' + WB + '.', 'Survoler ou toucher une case à point rouge pour voir ses preuves. Dans les cases Ming, une « unité » est un nom normalisé + jour du mois, comptée sur les textes Ming saisis dans le classeur : le ' + CX + ', le ' + ZS + ' du Daozang, le ' + B('新刻許真君玉匣記', 'Xinke Xu zhenjun yuxiaji') + ' de Hu Wenhuan (manuscrit d’Edo) et le ' + WB + '.') + '</p>' +
+    '<p class="small muted" style="margin:4px 0 0">' + L('帶紅點的格子可懸停或點按查看依據。明代格子中的「項」以規範名＋月日爲單位（沒有規範名的無神名日不計），據版本對比工作簿已錄的明代文本計算：《朝修吉辰章》、道藏本《諸神聖誕日玉匣記》、胡文煥校《新刻許真君玉匣記》（江戶寫本）、《萬寶全書》。', 'Hover over or tap a cell with a red dot for its evidence. In the Ming cells a “unit” is a standard name + month-day (days without a named deity are left out), counted from the Ming texts entered in the comparison workbook: the ' + CX + ', the Daozang ' + ZS + ', Hu Wenhuan’s ' + B('新刻許真君玉匣記', 'Xinke Xu zhenjun yuxiaji') + ' (Edo manuscript) and the ' + WB + '.', 'Survoler ou toucher une case à point rouge pour voir ses preuves. Dans les cases Ming, une « unité » est un nom normalisé + jour du mois (les jours sans divinité nommée ne sont pas comptés), comptée sur les textes Ming saisis dans le classeur : le ' + CX + ', le ' + ZS + ' du Daozang, le ' + B('新刻許真君玉匣記', 'Xinke Xu zhenjun yuxiaji') + ' de Hu Wenhuan (manuscrit d’Edo) et le ' + WB + '.') + '</p>' +
     '<h2>' + L('二、齋曆文本的「三層一軸」分類框架', '2. A “three layers, one axis” framework for classifying fasting-calendar texts') + '</h2>' +
     '<p class="small muted" style="margin-top:0">' + L('每個維度描述同一對象的不同層次，各自獨立記錄，不合成單一分類。', 'Each dimension describes a different level of the same object and is recorded separately, not merged into a single classification.') + '</p>' +
     '<div class="fw">' +
@@ -2662,7 +2683,10 @@ function ringVersion(no) {
 function soloName(e) { return /未見原書/.test(e.t) ? e.l : /僅列日期/.test(e.l) ? (e.q || e.k) : e.t; }
 // 齋期規則：把一個版本的條目分成年度定日、每月週期、多日齋期、不能排入月日四類，並展開到一年 12 個月 × 30 日
 // 齋曆整體就是持齋日程（序言等處推薦持齋），所以凡能排入月日的神聖日都計入，不逐條看是否寫明持齋
-var RKIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
+// 編碼日期類型 → 代碼；一條可兼標兩類（工作簿寫「下降、巡察」），kinds 列出全部，kind 取第一類（規則清單的色塊用）
+var RKIND = { '誕辰': 'T', '成就': 'B', '下降': 'D', '巡察': 'L', '集會': 'A', '節令': 'C', '諱辰': 'H', '誓願': 'V', '其他': 'Q' };
+function cTypes(c) { return String(c || '其他').split('、').filter(Boolean); }
+function rkinds(c) { return c ? cTypes(c).map(function (t) { return RKIND[t] || 'U'; }) : ['U']; }
 function rangeCells(r) {
   var out = [];
   String(r).split(/[；;]/).forEach(function (seg) {
@@ -2683,34 +2707,53 @@ function ringRules(v) {
       type = cells.length ? 'month' : 'none';
     } else if (e.m && e.d && e.d <= 30) { type = 'year'; cells = [e.m * 100 + e.d]; }
     var lab = e.l && !/^（/.test(e.l) ? e.l : '';
-    return { id: e.id, type: type, cells: cells, kind: RKIND[e.c] || 'U', k: e.k || '', mo: e.mo || '', dy: e.dy || '',
+    var ks = rkinds(e.c);
+    return { id: e.id, type: type, cells: cells, kind: ks[0], kinds: ks, k: e.k || '', mo: e.mo || '', dy: e.dy || '',
       name: e.k ? e.k + (lab ? '・' + lab : '') : (lab || e.t || e.g || '—'), t: v.solo ? soloName(e) : (e.t || '') };
   });
 }
-// 各版本的齋期總長：每年、每月有多少天，按日期類型分。每天只算一次，鍵是該日兼有的全部類型（如 T/L 表示紀念兼巡察），
-// 類型按紀念、成就、巡察、集會、節令、其他、未標排列
+// 十齋日・六齋日（性質相同，合爲一類）：每月週期、不編爲下降或巡察，且文字提到十齋、六齋、十直齋、短齋、準提齋，或所列日子正好是十齋日或六齋日。
+// 「北斗下降之辰」雖落在六齋日上，工作簿編爲下降，仍算神聖日。十齋日・六齋日不算神聖日，在「各類型佔多少」中單列
+var TS10 = '1,8,14,15,18,23,24,28,29,30', TS6 = '8,14,15,23,29,30';
+function tenSix(x) {
+  if (x.type !== 'month' || x.kinds.some(function (k) { return k === 'D' || k === 'L'; })) return false;
+  if (/十齋|六齋|十直齋|短齋|[準准]提齋/.test(x.name + ' ' + x.t)) return true;
+  var ds = {}; x.cells.forEach(function (c) { ds[c % 100] = 1; });
+  var k = Object.keys(ds).map(Number).sort(function (a, b) { return a - b; }).join(',');
+  return k === TS10 || k === TS6;
+}
+// 各版本的齋期總長：每年、每月有多少天，按日期類型分。每天只算一次，鍵是該日兼有的全部類型（如 T/D 表示誕辰兼下降），
+// 類型按誕辰、成就、下降、巡察、集會、節令、諱辰、誓願、其他、未標排列；兼標兩類的條目兩類都算
+var RK_ORDER = ['T', 'B', 'D', 'L', 'A', 'C', 'H', 'V', 'Q', 'U'];
 var RALL = null;
 function ringAll() {
   if (RALL) return RALL;
   RALL = EVS.filter(function (x) { return !x.solo; }).concat(ED.solo || []).map(function (v) {
-    var day = {};
-    ringRules(v).forEach(function (x) { if (x.type !== 'none') x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; }); });
+    var day = {}, typ = {}, fd = {};
+    ringRules(v).forEach(function (x) {
+      if (x.type === 'none') return;
+      var f = tenSix(x);
+      x.cells.forEach(function (c) { x.kinds.forEach(function (k) { (day[c] = day[c] || {})[k] = 1; if (!f) (typ[c] = typ[c] || {})[k] = 1; }); if (f) fd[c] = 1; });
+    });
+    // 各類型佔多少：只看神聖日（十齋日・六齋日之外的條目）；cov 有此類的天數，only 只有此類的天數，tf 其中同時是十齋日・六齋日的天數
+    var cov = {}, only = {}, tf = {}, fs = 0;
+    Object.keys(typ).forEach(function (c) { var ks = Object.keys(typ[c]); ks.forEach(function (k) { cov[k] = (cov[k] || 0) + 1; if (ks.length === 1) only[k] = (only[k] || 0) + 1; if (fd[c]) tf[k] = (tf[k] || 0) + 1; }); if (fd[c]) fs++; });
+    var share = { sac: Object.keys(typ).length, cov: cov, only: only, tf: tf, f: Object.keys(fd).length, fs: fs };
     var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
-    Object.keys(day).forEach(function (c) { var k = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'].filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
-    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number) };
+    Object.keys(day).forEach(function (c) { var k = RK_ORDER.filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
+    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number), share: share };
   });
   return RALL;
 }
 function ringData(v) {
   var es = v.solo ? v.es : ED.entries.filter(function (e) { return e.v === v.i; });
-  var KIND = { '紀念': 'T', '成就': 'B', '巡察': 'L', '集會': 'A', '節令': 'C', '其他': 'Q' };
   return {
     meta: { scheme: 'kind', edition: v.sheet, editionHtml: edWhen(v) + ' ' + N(v.short) + (v.pub && v.pub !== '待填' ? ' · ' + FT(v.pub, 1) : ''),
       sourceFile: ED.source + ' ／ ' + v.sheet, undated: v.solo ? 0 : es.filter(function (e) { return !(e.m && e.d); }).length, noText: v.noText,
       fastDays10: [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], fastDays6: [8, 14, 15, 23, 29, 30], rules: ringRules(v), solo: !!v.solo, ruleAll: ringAll(), no: String(v.no) },
     entries: es.filter(function (e) { return e.m && e.d; }).map(function (e) {
       var src = /原表出處：([^｜]+)/.exec(e.pg || '');
-      return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: KIND[e.c] || '?', src: src ? src[1].trim() : '',
+      return { m: e.m, d: e.d, range: e.r || '', name: (v.solo ? soloName(e) : e.t) || e.g || e.k || e.l || '—', nat: e.c ? cTypes(e.c).map(function (t) { return RKIND[t] || '?'; }).join('&') : '?', src: src ? src[1].trim() : '',
         note: '', code: e.id, god: e.k || '', suf: '' };
     })
   };
@@ -2770,8 +2813,8 @@ var SHARE = {
     set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; }
   },
   kin: {
-    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', dir: KIN.dir ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
-    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' ? 'sv' : 'j'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.dir = o.dir !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
+    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
+    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' ? o.mode : 'j'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' ? 'c' : 'j'; KIN.dir = o.dir !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
   },
   ring: {
     get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; return o; },

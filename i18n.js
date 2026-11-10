@@ -33,7 +33,7 @@ var CODES = {
   // D 承諾途徑
   '誓願': 'Vow', '家庭慣例': 'Household custom', '社區': 'Community', '專業人員': 'Religious specialists', '不明': 'Unclear',
   // A 在場方式
-  '紀念': 'Commemoration', '成就': 'Attainment', '聚會': 'Assembly', '集會': 'Assembly', '巡察': 'Inspection', '經驗性顯靈': 'Experiential manifestation', '未說明': 'Not stated',
+  '紀念': 'Commemoration', '誕辰': 'Birthday', '下降': 'Descent', '下降、巡察': 'Descent, inspection', '諱辰': 'Death anniversary', '誓願': 'Vow', '成就': 'Attainment', '聚會': 'Assembly', '集會': 'Assembly', '巡察': 'Inspection', '經驗性顯靈': 'Experiential manifestation', '未說明': 'Not stated',
   // C 知識來源
   '援引書名': 'Cites a text', '降示': 'Revelation', '習俗': 'Custom',
   // B 關係形態

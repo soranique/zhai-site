@@ -11,6 +11,9 @@
   --zr-qi:  var(--cat-o, #a59c8e);   /* 暖灰 其他 */
   --zr-wei: var(--cat-u, #cfccc4);   /* 铅灰 未定 */
   --zr-hui: var(--cat7, #b4443f);   /* 红 集会（只用于日期类型配色） */
+  --zr-jiang: var(--cat5, #3f9ad0);    /* 天青 下降（只用于日期类型配色） */
+  --zr-huichen: var(--cat6, #5f7f3a);  /* 苔绿 讳辰 */
+  --zr-shiyuan: var(--cat8, #c2578f);  /* 胭脂 誓愿 */
   --zr-cell: var(--surface-2, #f2f1ed);
   --zr-fast: #efe2bf;  /* 十斋日空格 */
   --zr-six: #cfe0e6;   /* 六斋日空格（与十斋日并列；重合日各占一半） */
@@ -183,3 +186,25 @@
 .zr .zr-smbg { fill: var(--zr-cell); }
 .zr .zr-smc { fill: var(--zr-six-ink); }
 .zr .zr-manytab .zr-lede { font-size: 13px; color: var(--zr-muted); margin: 0 0 8px; }
+/* 各類型佔全年多少：每類單獨計算（可重疊），橫條按 360 天；實心＝只有此類，淺色＝與其他類同日 */
+.zr .zr-cov { margin: 14px 0 10px; max-width: 820px; }
+.zr .zr-covrow { display: grid; grid-template-columns: minmax(90px, 160px) minmax(0, 1fr) minmax(0, auto); gap: 10px; align-items: center; padding: 4px 0; font-size: 13.5px; border-bottom: 1px solid var(--zr-line); cursor: default; }
+.zr .zr-covrow.ts { border-top: 1px dashed var(--zr-muted); margin-top: 4px; }
+.zr .zr-covl .zr-sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin: 0 6px 0 0; vertical-align: -1px; }
+.zr .zr-covt { display: block; height: 12px; background: var(--zr-cell); border-radius: 2px; overflow: hidden; }
+.zr .zr-covb { display: flex; height: 100%; }
+.zr .zr-covb i { display: block; height: 100%; }
+.zr .zr-covb i.sh { opacity: .35; }
+.zr .zr-covn { color: var(--zr-muted); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zr .zr-covn b { color: var(--zr-ink); font-weight: 600; }
+@media (max-width: 600px) { .zr .zr-covrow { grid-template-columns: 1fr auto; } .zr .zr-covt { grid-column: 1 / -1; grid-row: 2; } }
+.zr .zr-sharew { overflow-x: auto; }
+.zr .zr-sharet { border-collapse: collapse; font-size: 13px; width: 100%; }
+.zr .zr-sharet th, .zr .zr-sharet td { padding: 3px 8px; border-bottom: 1px solid var(--zr-line); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.zr .zr-sharet th { font-weight: 600; color: var(--zr-ink-2); }
+.zr .zr-sharet .l { text-align: left; }
+.zr .zr-sharet td small { color: var(--zr-muted); margin-left: 4px; font-size: 11.5px; }
+.zr .zr-sharet .zr-sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.zr .zr-sharet tr.on td { background: var(--zr-cell); font-weight: 600; }
+.zr .zr-sharet tr.sep td { text-align: left; color: var(--zr-muted); font-size: 12px; padding-top: 10px; }
+.zr .zr-sharet a { color: inherit; }

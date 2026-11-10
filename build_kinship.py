@@ -4,8 +4,8 @@
 用法：python3 build_kinship.py 玉匣記版本对比.xlsx
 
 方法（与工作簿「日期异文」页相同）：
-- 没有建議規範名的条目（天臘、月朔、九毒日等无神名日）暂一律当作「其他」，按「其他＋类型＋月日」比较重合度；
-  判定少数日期、通行日期时不计这些条目
+- 没有建議規範名的条目（天臘、月朔、九毒日等无神名日）不参与比较（INCLUDE_OTHER = False）；
+  设为 True 时一律当作「其他」，按「其他＋类型＋月日」比较重合度，判定少数日期、通行日期时仍不计
 - 只用 INCL 里的版本（已获完整文本）；每个版本取「位置」为正文、有具体月日的条目，
   以「建議規範名＋编码日期类型＋月＋日」为比较单位；兼标两类的条目（「下降、巡察」）在两类中各计一次
 - 重合度 = 两本共有单位数 ÷ 两本单位数的并集；另给两个方向的包含比例
@@ -43,7 +43,8 @@ DIR = [dict(a=8, b=9, st='确定', d='同版重印：1891 年劉誠印据 1882 �
        dict(a=6, b=8, st='候选', d='1827 本条目有九成见于 1882 本，1882 本另有增补；劉誠印跋称「逐月神佛聖誕未列者細心搜求重加增補」。1827 本只是工作簿中年代最近的同组本子，不一定是劉誠印所据之本'),
        dict(a=14, b=15, st='候选', d='《朝修吉辰章》条目绝大多数见于《穹窿山志》；按年代先后（1607 刊／1444 序 → 康熙初年）')]
 BASE = 1   # 计算「条目保留」所用的基准本：1607 道藏本
-OTHER_NAME = '其他'   # 没有建議規範名的条目（无神名日）比较时统一用的名称（2026-11-10 研究者决定，暂不逐条定名）
+INCLUDE_OTHER = False   # 没有建議規範名的条目（无神名日）是否参与比较：False＝排除（2026-11-10 研究者决定）；True＝一律当作 OTHER_NAME
+OTHER_NAME = '其他'
 
 CN = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10}
 MON = {'正': 1, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '十一': 11, '十二': 12,
@@ -109,7 +110,7 @@ def main(path):
     E = defaultdict(lambda: defaultdict(set))   # (规范名, 类型) → 版本 → {(月, 日)}
     J = defaultdict(lambda: defaultdict(set))   # 同上，但只含单一月日（判定通行、少数日期用，与「日期异文」同）
     EID = defaultdict(list)                     # (规范名, 类型, 版本, 月, 日) → [条目ID]
-    OMIT = []                                   # 条目ID：不计入比较的条目（在 SKIP 里）
+    OMIT = []                                   # 条目ID：不计入比较的条目（在 SKIP 里，或没有建議規範名而 INCLUDE_OTHER 为 False）
     OTHER = []                                  # 条目ID：没有建議規範名、比较时当作「其他」的条目
     for no in INCL:
         for r in wb[vers[no]].iter_rows(min_row=2, values_only=True):
@@ -120,9 +121,12 @@ def main(path):
                 continue
             if r[12] in SKIP.get(no, ()):
                 continue
-            name = r[15] or OTHER_NAME   # 没有建議規範名的条目（天臘、月朔、九毒日等无神名日）比较时一律当作「其他」
-            if not r[15]:
+            if not r[15]:   # 没有建議規範名的条目（天臘、月朔、九毒日等无神名日）
+                if not INCLUDE_OTHER:
+                    OMIT.append(r[16])
+                    continue
                 OTHER.append(r[16])
+            name = r[15] or OTHER_NAME
             tys = [t for t in (r[6] or '其他').split('、') if t]   # 兼标两类（如「下降、巡察」）的条目在两类中各计一次
             md = days_of(r[1], r[2])
             sd = strict_day(r[1], r[2])
@@ -184,7 +188,7 @@ def main(path):
         if BASE in (p['a'], p['b']):
             ret[p['b'] if p['a'] == BASE else p['a']] = p['ca'] if p['a'] == BASE else p['cb']
     excl = ['%s（编号%d）：%s' % (' '.join((vers[k].split('_') + [''])[i] for i in (0, 2)).strip(), k, why) for k, why in EXCL.items() if k in vers]
-    out = dict(source=SOURCE_NAME, omit=OMIT, other=OTHER, otherName=OTHER_NAME, nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
+    out = dict(source=SOURCE_NAME, omit=OMIT, other=OTHER, otherName=OTHER_NAME, includeOther=INCLUDE_OTHER, nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
                incl=INCL, minor=minor_e, common=common)
     with open('kinship-data.js', 'w', encoding='utf-8') as f:
         f.write('// 由 build_kinship.py 自动生成，请勿手改\nwindow.ZHAI_KIN = ')

@@ -227,19 +227,20 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* ---- 版本親疏 ---- */
 .kin {
-  /* 文本類型的顏色分兩族，與版本線索圖「玉匣記系統／其他齋曆」的兩分對應：
-     玉匣記系統的三類（道藏本、單行本、通書）用藤黃一族，由深到淺按出現先後；其他齋曆（宮觀手冊、善書、日用類書）用石綠一族；未定用鉛灰。
+  /* 文本類型按體系分色：道藏系統（道藏本）石青；玉匣記系統（單行本、通書）藤黃一族，與版本線索圖的玉匣記系統同色；
+     日用類書自成一個文類體系，青蓮；其他齋曆（宮觀手冊、善書）石綠一族，與版本線索圖的其他齋曆同色；未定鉛灰。
+     道藏系統不等於玉匣記系統，日用類書也不歸其他齋曆，故各自單列。
      深淺用 color-mix 從分類色推出，深色模式下自動反轉，族內仍可分辨；泳道位置本身也區分類型 */
-  --l1: color-mix(in srgb, var(--cat4) 62%, var(--ink));     /* 道藏本：深赭 */
+  --l1: var(--cat1);                                          /* 道藏本：石青（道藏系統） */
   --l4: var(--cat4);                                          /* 單行本：藤黃 */
   --l5: color-mix(in srgb, var(--cat4) 55%, var(--page));    /* 通書：淺金 */
   --l2: color-mix(in srgb, var(--cat3) 62%, var(--ink));     /* 宮觀手冊：深青綠 */
   --l6: var(--cat3);                                          /* 善書：石綠 */
-  --l3: color-mix(in srgb, var(--cat3) 50%, var(--page));    /* 日用類書：淺青綠 */
+  --l3: var(--cat2);                                          /* 日用類書：青蓮（自成文類體系） */
   --l7: var(--cat-u); --edge:#52514e; --heat0:#f2f1ed; --heat1:var(--accent); }   /* 文本類型＝兩族分類色；重合度矩陣＝數量，用硃紅 */
 .kin .klg { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12.5px; color: var(--ink-2); margin: 8px 2px 0; } .kin .klg b { font-weight: 600; color: var(--ink); margin-right: 6px; } .kin .klg span { margin-right: 10px; white-space: nowrap; } .kin .klg .ksw { margin: 0 4px 0 0; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .kin { --edge:#bdbbb3; --heat0:#262624; --l5: color-mix(in srgb, var(--cat4) 72%, var(--page)); --l3: color-mix(in srgb, var(--cat3) 70%, var(--page)); } }
-:root[data-theme="dark"] .kin { --edge:#bdbbb3; --heat0:#262624; --l5: color-mix(in srgb, var(--cat4) 72%, var(--page)); --l3: color-mix(in srgb, var(--cat3) 70%, var(--page)); }   /* 深色模式下淺色一端與底色太近，提高分類色比例 */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .kin { --edge:#bdbbb3; --heat0:#262624; --l5: color-mix(in srgb, var(--cat4) 72%, var(--page)); } }
+:root[data-theme="dark"] .kin { --edge:#bdbbb3; --heat0:#262624; --l5: color-mix(in srgb, var(--cat4) 72%, var(--page)); }   /* 深色模式下淺色一端與底色太近，提高分類色比例 */
 .kin svg.knet { display: block; width: 100%; height: auto; }
 .kin .lane { fill: var(--surface-2); } .kin .lanet { font-size: 12.5px; fill: var(--ink-2); } .kin .tick { stroke: var(--grid); stroke-width: 1; } .kin .kpy { font-style: italic; } .kin .tickt { font-size: 11px; fill: var(--muted); }
 .kin .e { fill: none; stroke: var(--edge); stroke-linecap: round; cursor: pointer; } .kin .e.sv { stroke: var(--accent); } .kin .e:hover, .kin .e.hl { stroke: var(--accent); opacity: 1 !important; }
@@ -2151,7 +2152,7 @@ function viewKinship() {
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('顯示有依據的先後關係', 'Show evidenced sequences') + '</label></div>' +
     '<div class="card" id="knet"></div>' + (function () {
       var sw = function (l) { return '<span><i class="ksw" style="background:' + LC[l] + '"></i>' + esc(lname(l)) + '</span>'; };
-      return '<div class="klg"><div><b>' + L('玉匣記系統', 'Yuxiaji tradition', 'Tradition du Yuxiaji') + '</b>' + ['道藏本', '單行本', '通書'].map(sw).join('') + '</div><div><b>' + L('其他齋曆', 'Other fasting calendars', 'Autres calendriers de jeûne') + '</b>' + ['宮觀手冊', '善書', '日用類書'].map(sw).join('') + '</div><div>' + sw('未定') + '</div></div>';
+      return '<div class="klg"><div><b>' + L('道藏系統', 'Daoist canon', 'Canon taoïste') + '</b>' + sw('道藏本') + '</div><div><b>' + L('玉匣記系統', 'Yuxiaji tradition', 'Tradition du Yuxiaji') + '</b>' + ['單行本', '通書'].map(sw).join('') + '</div><div><b>' + L('其他齋曆', 'Other fasting calendars', 'Autres calendriers de jeûne') + '</b>' + ['宮觀手冊', '善書'].map(sw).join('') + '</div><div><b>' + L('日用類書', 'Encyclopaedias', 'Encyclopédies') + '</b>' + sw('日用類書') + '</div><div>' + sw('未定') + '</div></div>';
     })() +
     '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目；要按月日逐條對齊，用圖下的按鈕，或點下方矩陣的格子。比較單位與逐條細看相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries; to align two editions day by day, use the button below the diagram or click a cell of the matrix further down. The unit is the same as in that view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées ; pour aligner deux éditions jour par jour, utilisez le bouton sous le diagramme ou une case de la matrice plus bas. L’unité est celle de cette vue ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
     '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><div class="controls"><label>' + L('格中數字：', 'Cells show: ', 'Cases : ') + '<select id="khmode"><option value="j"' + (KIN.hm === 'j' ? ' selected' : '') + '>' + L('重合度（對稱）', 'Overlap (symmetric)', 'Recouvrement (symétrique)') + '</option><option value="c"' + (KIN.hm === 'c' ? ' selected' : '') + '>' + L('包含度（行本見於列本的比例）', 'Containment (share of the row edition found in the column edition)', 'Inclusion (part de l’édition en ligne présente dans l’édition en colonne)') + '</option></select></label></div><p class="small muted" style="margin:0 0 6px" id="khmd"></p><div class="card scroll" id="khm"></div></div><div>' +

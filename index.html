@@ -2739,9 +2739,11 @@ function ringAll() {
     var cov = {}, only = {}, tf = {}, fs = 0;
     Object.keys(typ).forEach(function (c) { var ks = Object.keys(typ[c]); ks.forEach(function (k) { cov[k] = (cov[k] || 0) + 1; if (ks.length === 1) only[k] = (only[k] || 0) + 1; if (fd[c]) tf[k] = (tf[k] || 0) + 1; }); if (fd[c]) fs++; });
     var share = { sac: Object.keys(typ).length, cov: cov, only: only, tf: tf, f: Object.keys(fd).length, fs: fs };
-    var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
+    // mon：每月天數（含十齋日・六齋日）；monS：每月只算神聖日的天數（不含十齋日・六齋日，與 share.sac 口徑一致）；兩者都按日期類型組合分計
+    var seg = {}, mon = [], monS = []; for (var m = 0; m < 12; m++) { mon.push({}); monS.push({}); }
     Object.keys(day).forEach(function (c) { var k = RK_ORDER.filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
-    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number), share: share };
+    Object.keys(typ).forEach(function (c) { var k = RK_ORDER.filter(function (x) { return typ[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; monS[mi][k] = (monS[mi][k] || 0) + 1; });
+    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, monS: monS, cells: Object.keys(day).map(Number), share: share };
   });
   return RALL;
 }
@@ -2817,8 +2819,8 @@ var SHARE = {
     set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' ? o.mode : 'j'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' ? 'c' : 'j'; KIN.dir = o.dir !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
   },
   ring: {
-    get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; return o; },
-    set: function (o) { RING_SET = { month: +o.month || 0, layers: o.layers }; if (window.ZhaiRing && ZhaiRing.prefs) ZhaiRing.prefs({ tab: o.tab || 'sm', dom: o.dom === 'all' }); }
+    get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; o.sac = p.sac ? 1 : ''; return o; },
+    set: function (o) { RING_SET = { month: +o.month || 0, layers: o.layers }; if (window.ZhaiRing && ZhaiRing.prefs) ZhaiRing.prefs({ tab: o.tab || 'sm', dom: o.dom === 'all', sac: o.sac === '1' || o.sac === 1 }); }
   }
 };
 var RING_SET = null, FIT_ZOOM = 1;

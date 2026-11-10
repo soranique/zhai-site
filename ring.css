@@ -208,3 +208,7 @@
 .zr .zr-sharet tr.on td { background: var(--zr-cell); font-weight: 600; }
 .zr .zr-sharet tr.sep td { text-align: left; color: var(--zr-muted); font-size: 12px; padding-top: 10px; }
 .zr .zr-sharet a { color: inherit; }
+/* 齋期總長：每月總表（各版本 × 十二個月）與「含十齋日・六齋日／只算神聖日」開關 */
+.zr .zr-sharet tr.med td { border-top: 2px solid var(--zr-ink-2); color: var(--zr-ink-2); font-weight: 600; }
+.zr .zr-mtab td[data-tip] { cursor: default; }
+.zr .zr-sacsw button[aria-pressed="true"] { border-color: var(--zr-gold); }

@@ -2687,17 +2687,35 @@ function ringRules(v) {
       name: e.k ? e.k + (lab ? '・' + lab : '') : (lab || e.t || e.g || '—'), t: v.solo ? soloName(e) : (e.t || '') };
   });
 }
+// 十齋日・六齋日（性質相同，合爲一類）：每月週期、不編爲巡察，且文字提到十齋、六齋、十直齋、短齋、準提齋，或所列日子正好是十齋日或六齋日。
+// 「北斗下降之辰」雖落在六齋日上，工作簿編爲巡察，仍算神聖日。十齋日・六齋日不算神聖日，在「各類型佔多少」中單列
+var TS10 = '1,8,14,15,18,23,24,28,29,30', TS6 = '8,14,15,23,29,30';
+function tenSix(x) {
+  if (x.type !== 'month' || x.kind === 'L') return false;
+  if (/十齋|六齋|十直齋|短齋|[準准]提齋/.test(x.name + ' ' + x.t)) return true;
+  var ds = {}; x.cells.forEach(function (c) { ds[c % 100] = 1; });
+  var k = Object.keys(ds).map(Number).sort(function (a, b) { return a - b; }).join(',');
+  return k === TS10 || k === TS6;
+}
 // 各版本的齋期總長：每年、每月有多少天，按日期類型分。每天只算一次，鍵是該日兼有的全部類型（如 T/L 表示紀念兼巡察），
 // 類型按紀念、成就、巡察、集會、節令、其他、未標排列
 var RALL = null;
 function ringAll() {
   if (RALL) return RALL;
   RALL = EVS.filter(function (x) { return !x.solo; }).concat(ED.solo || []).map(function (v) {
-    var day = {};
-    ringRules(v).forEach(function (x) { if (x.type !== 'none') x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; }); });
+    var day = {}, typ = {}, fd = {};
+    ringRules(v).forEach(function (x) {
+      if (x.type === 'none') return;
+      var f = tenSix(x);
+      x.cells.forEach(function (c) { (day[c] = day[c] || {})[x.kind] = 1; if (f) fd[c] = 1; else (typ[c] = typ[c] || {})[x.kind] = 1; });
+    });
+    // 各類型佔多少：只看神聖日（十齋日・六齋日之外的條目）；cov 有此類的天數，only 只有此類的天數，tf 其中同時是十齋日・六齋日的天數
+    var cov = {}, only = {}, tf = {}, fs = 0;
+    Object.keys(typ).forEach(function (c) { var ks = Object.keys(typ[c]); ks.forEach(function (k) { cov[k] = (cov[k] || 0) + 1; if (ks.length === 1) only[k] = (only[k] || 0) + 1; if (fd[c]) tf[k] = (tf[k] || 0) + 1; }); if (fd[c]) fs++; });
+    var share = { sac: Object.keys(typ).length, cov: cov, only: only, tf: tf, f: Object.keys(fd).length, fs: fs };
     var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
     Object.keys(day).forEach(function (c) { var k = ['T', 'B', 'L', 'A', 'C', 'Q', 'U'].filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
-    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number) };
+    return { no: String(v.no), label: v.when + ' ' + v.short, labelHtml: edWhen(v) + ' ' + N(v.short), solo: !!v.solo, tot: Object.keys(day).length, seg: seg, mon: mon, cells: Object.keys(day).map(Number), share: share };
   });
   return RALL;
 }

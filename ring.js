@@ -516,25 +516,32 @@ function fastRules(root, D, data) {
   var key = '<div class="zr-legend zr-rulekey">' + used.map(function (k) { return '<span><i class="zr-sw" style="background:' + rkCss(k) + '"></i>' + rkLab(k) + '</span>'; }).join('') +
     '<span><i class="zr-sw" style="background:' + MIX_CSS + '"></i>' + L('兼類：一天兼有幾類（懸停看組合）', 'Several types on one day (hover for the combinations)', 'Plusieurs types le même jour (survoler pour les combinaisons)') + '</span></div>';
   sec.innerHTML = '<div class="zr-eyebrow">' + L('齋期總長', 'Total fasting time', 'Durée totale du jeûne') + '</div><h2 style="margin:0">' + L('每月、每年有多少神聖日：各版本對比', 'How many sacred days a month and a year: editions compared', 'Combien de jours sacrés par mois et par an : comparaison des éditions') + '</h2>' +
-    '<p class="zr-lede">' + L('齋曆整體是一份持齋日程，推薦持齋常寫在序言裏，不逐日標註，所以這裏凡能排入月日的神聖日都計入。每月週期（如十齋日）和多日齋期（如九皇齋）展開到十二個月、每月三十日上；同一天有幾條也只算一天。顏色是工作簿編碼的日期類型；同一天兼有幾類的，如既是某神誕辰（紀念）又是十齋日（其他），記作「紀念/其他」；這類日子在圖上合成一段「兼類」（斜線紋），懸停可見各組合的天數，仍只算一天。六十甲子日、八節等日期隨年份或節氣而變，不計入。',
-      'A fasting calendar as a whole is a schedule for fasting; the recommendation to fast usually sits in the preface rather than under each day, so every sacred day that can be placed on a month-day is counted here. Monthly cycles (such as the ten fast days) and multi-day fasts (such as the Nine Emperors fast) are laid out over twelve thirty-day months, and a day with several entries counts once. Colours are the workbook’s coded day types. A day of several types, say both a deity’s birthday (commemoration) and one of the ten fast days (other), is labelled “commemoration/other”; such days are drawn together as one hatched “several types” segment, with the combinations listed on hover, and each still counts once. The sixty-day jiazi cycle, the eight nodal days and the like shift with the year or solar terms and are not counted.',
-      'Un calendrier de jeûne est dans son ensemble un programme de jeûne ; la recommandation de jeûner figure d’ordinaire dans la préface plutôt que sous chaque jour, si bien que tout jour sacré plaçable sur un jour du mois est compté. Les cycles mensuels (dix jours de jeûne, par ex.) et les jeûnes de plusieurs jours (Neuf Empereurs, par ex.) sont reportés sur douze mois de trente jours ; un jour portant plusieurs entrées ne compte qu’une fois. Les couleurs sont les types de jour codés du classeur. Un jour de plusieurs types, par exemple anniversaire d’une divinité (commémoration) et l’un des dix jours de jeûne (autre), est noté « commémoration/autre » ; ces jours forment ensemble un segment hachuré « plusieurs types », les combinaisons s’affichant au survol, et chacun ne compte qu’une fois. Le cycle sexagésimal, les huit nœuds, etc., varient selon l’année ou les termes solaires et ne sont pas comptés.') + '</p>' +
-    '<div class="zr-pie"><svg viewBox="0 0 240 240" role="img" aria-label="' + L('全年 360 天中神聖日的構成，按日期類型', 'Make-up of the sacred days in the 360-day year, by day type', 'Composition des jours sacrés sur 360 jours, par type de jour') + '"></svg><div class="zr-piekey"></div></div>' + key +
-    '<div class="zr-tabs" role="tablist">' + [['sm', L('小倍數：各版本的一年', 'Small multiples: each edition’s year', 'Petits multiples : l’année de chaque édition')], ['bars', L('全年天數：各版本', 'Days a year: all editions', 'Jours par an : toutes les éditions')], ['month', L('每月：本版本', 'Per month: this edition', 'Par mois : cette édition')], ['many', L('一神多日', 'One deity, many days', 'Une divinité, plusieurs jours')]].map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<p class="zr-lede">' + L('齋曆整體是一份持齋日程，推薦持齋常寫在序言裏，不逐日標註，所以這裏凡能排入月日的神聖日都計入。每月週期（如十齋日）和多日齋期（如九皇齋）展開到十二個月、每月三十日上；同一天有幾條也只算一天。十齋日・六齋日性質相同，合爲一類；它們是不針對神明的週期齋日，不算神聖日，單獨列出（「北斗下降之辰」雖落在六齋日上，工作簿編爲巡察，仍算神聖日）。環形圖把全年 360 天分成四段：只有神聖日、神聖日兼十齋日・六齋日、只有十齋日・六齋日、兩者皆無，每天只算一次。右邊的橫條看各類型神聖日各佔全年多少。下面各標籤頁的顏色是工作簿編碼的日期類型；同一天兼有幾類的合成一段「兼類」（斜線紋），懸停可見各組合的天數。六十甲子日、八節等日期隨年份或節氣而變，不計入。',
+      'A fasting calendar as a whole is a schedule for fasting; the recommendation to fast usually sits in the preface rather than under each day, so every sacred day that can be placed on a month-day is counted here. Monthly cycles (such as the ten fast days) and multi-day fasts (such as the Nine Emperors fast) are laid out over twelve thirty-day months, and a day with several entries counts once. The ten and six fast days are of the same nature and form one group; they are periodic fasts not addressed to a deity, so they are not counted as sacred days and are listed separately (the “descent of the Northern Dipper”, though it falls on the six fast days, is coded as inspection in the workbook and stays a sacred day). The ring divides the 360-day year into four parts, each day counted once: sacred days only, sacred days that are also ten/six fast days, ten/six fast days only, and neither. The bars beside it show how much of the year each type of sacred day covers. In the tabs below, colours are the workbook’s coded day types; days of several types are drawn together as one hatched “several types” segment, with the combinations listed on hover. The sixty-day jiazi cycle, the eight nodal days and the like shift with the year or solar terms and are not counted.',
+      'Un calendrier de jeûne est dans son ensemble un programme de jeûne ; la recommandation de jeûner figure d’ordinaire dans la préface plutôt que sous chaque jour, si bien que tout jour sacré plaçable sur un jour du mois est compté. Les cycles mensuels (dix jours de jeûne, par ex.) et les jeûnes de plusieurs jours (Neuf Empereurs, par ex.) sont reportés sur douze mois de trente jours ; un jour portant plusieurs entrées ne compte qu’une fois. Les dix et six jours de jeûne sont de même nature et forment un seul groupe ; jeûnes périodiques qui ne s’adressent à aucune divinité, ils ne sont pas comptés comme jours sacrés et sont donnés à part (la « descente de la Grande Ourse », bien que tombant sur les six jours de jeûne, est codée inspection dans le classeur et reste un jour sacré). L’anneau divise l’année de 360 jours en quatre parts, chaque jour compté une fois : jours sacrés seulement, jours sacrés qui sont aussi des dix/six jours de jeûne, dix/six jours de jeûne seulement, ni l’un ni l’autre. Les barres à côté montrent la part de l’année couverte par chaque type de jour sacré. Dans les onglets ci-dessous, les couleurs sont les types de jour codés du classeur ; les jours de plusieurs types forment un segment hachuré « plusieurs types », les combinaisons s’affichant au survol. Le cycle sexagésimal, les huit nœuds, etc., varient selon l’année ou les termes solaires et ne sont pas comptés.') + '</p>' +
+    '<div class="zr-pie"><svg viewBox="0 0 240 240" role="img" aria-label="' + L('全年 360 天中神聖日與十齋日・六齋日的天數', 'Sacred days and ten/six fast days in the 360-day year', 'Jours sacrés et dix/six jours de jeûne sur 360 jours') + '"></svg><div class="zr-piekey"></div></div><div class="zr-cov"></div>' + key +
+    '<div class="zr-tabs" role="tablist">' + [['sm', L('小倍數：各版本的一年', 'Small multiples: each edition’s year', 'Petits multiples : l’année de chaque édition')], ['bars', L('全年天數：各版本', 'Days a year: all editions', 'Jours par an : toutes les éditions')], ['month', L('每月：本版本', 'Per month: this edition', 'Par mois : cette édition')], ['share', L('類型佔比：各版本', 'Type shares: all editions', 'Parts des types : toutes les éditions')], ['many', L('一神多日', 'One deity, many days', 'Une divinité, plusieurs jours')]].map(function (t) { return '<button type="button" role="tab" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="zr-tabp" data-p="sm"></div><div class="zr-tabp" data-p="bars"><p class="zr-muted-s" style="margin:0 0 6px">' + L('點一個版本換到它的環形曆。', 'Click an edition to switch to its ring calendar.', 'Cliquer une édition pour afficher son calendrier circulaire.') + '</p><div class="zr-edbars"></div></div>' +
     '<div class="zr-tabp" data-p="month">' + '<p class="zr-muted-s" style="margin:0 0 6px">' + L('橫線是各版本該月天數的中位數。', 'The short line marks the median across editions for that month.', 'Le trait marque la médiane des éditions pour ce mois.') + '</p>' +
-    '<div class="zr-chart"><svg viewBox="0 0 960 280" role="img" aria-label="' + L('本版本每月神聖日天數，按日期類型分段', 'Sacred days per month in this edition, by day type', 'Jours sacrés par mois dans cette édition, par type de jour') + '"></svg></div></div><div class="zr-tabp" data-p="many"></div>' +
+    '<div class="zr-chart"><svg viewBox="0 0 960 280" role="img" aria-label="' + L('本版本每月神聖日天數，按日期類型分段', 'Sacred days per month in this edition, by day type', 'Jours sacrés par mois dans cette édition, par type de jour') + '"></svg></div></div><div class="zr-tabp" data-p="share"></div><div class="zr-tabp" data-p="many"></div>' +
     '<div class="zr-rulelist"></div>';
   root.appendChild(sec);
-  // 餅圖（環形）：全年 360 天 = 各單一類型 + 兼類 + 沒有神聖日的日子；中間是全年神聖日天數。右側列出各段天數與比例，以及每月平均、最多的月份、不能排入月日的條數
+  // 環形圖：全年 360 天 = 只有神聖日 + 神聖日兼十齋日・六齋日 + 只有十齋日・六齋日 + 兩者皆無，每天只算一次；中間是全年有神聖日或十齋日・六齋日的天數
+  // 右側列出各段天數與比例；下方「各類型佔全年多少」每類單獨計算（可重疊），十齋日・六齋日單列一行
+  var SH = cur.share, TSL = L('十齋日・六齋日', 'Ten/six fast days', 'Dix/six jours de jeûne');
+  var TS_MIX = 'repeating-linear-gradient(135deg,var(--zr-gold) 0 1.5px,var(--zr-ink-2) 1.5px 4.5px)';
   (function () {
-    var P = sec.querySelector('.zr-pie svg'), a = rkAgg(cur.seg), segs = a.keys.map(function (k) { return [k, a.v[k]]; }), none = Math.max(0, 360 - cur.tot);
-    if (none) segs.push(['NONE', none]);
+    var P = sec.querySelector('.zr-pie svg');
+    var segs = [['S', SH.sac - SH.fs], ['SF', SH.fs], ['F', SH.f - SH.fs], ['NONE', Math.max(0, 360 - cur.tot)]].filter(function (x) { return x[1] > 0; });
     var pd = svgEl('defs', {}, P), pid = 'zr-phatch-' + (++FAST_UID), pp = svgEl('pattern', { id: pid, width: 4.5, height: 4.5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, pd);
-    svgEl('rect', { width: 4.5, height: 4.5, fill: 'var(--zr-cell)' }, pp); svgEl('rect', { width: 1.5, height: 4.5, fill: 'var(--zr-ink-2)' }, pp);
-    var fill = function (k) { return k === 'NONE' ? 'var(--zr-line)' : k === 'MIX' ? 'url(#' + pid + ')' : rkCss(k); };
-    var lab = function (k) { return k === 'NONE' ? L('沒有神聖日', 'No sacred day', 'Sans jour sacré') : rkLab(k); };
-    var tipOf = function (k, n) { return '<b>' + (k === 'NONE' ? lab(k) + L('：' + n + ' 天', ': ' + n + ' days', ' : ' + n + ' jours') : rkTip(a, k)) + '</b>' + L('（' + Math.round(n / 3.6) + '%）', ' (' + Math.round(n / 3.6) + '%)', ' (' + Math.round(n / 3.6) + ' %)'); };
+    svgEl('rect', { width: 4.5, height: 4.5, fill: 'var(--zr-ink-2)' }, pp); svgEl('rect', { width: 1.5, height: 4.5, fill: 'var(--zr-gold)' }, pp);
+    var fill = function (k) { return { S: 'var(--zr-ink-2)', SF: 'url(#' + pid + ')', F: 'var(--zr-gold)', NONE: 'var(--zr-line)' }[k]; };
+    var css = function (k) { return k === 'SF' ? TS_MIX : fill(k); };
+    var lab = function (k) {
+      return k === 'S' ? L('只有神聖日', 'Sacred days only', 'Jours sacrés seulement') : k === 'SF' ? L('神聖日，同時是十齋日・六齋日', 'Sacred days that are also ten/six fast days', 'Jours sacrés qui sont aussi des dix/six jours de jeûne') :
+        k === 'F' ? L('只有十齋日・六齋日', 'Ten/six fast days only', 'Dix/six jours de jeûne seulement') : L('兩者皆無', 'Neither', 'Ni l’un ni l’autre');
+    };
+    var tipOf = function (k, n) { return '<b>' + lab(k) + L('：' + n + ' 天', ': ' + n + ' days', ' : ' + n + ' jours') + '</b>' + L('（' + Math.round(n / 3.6) + '%）', ' (' + Math.round(n / 3.6) + '%)', ' (' + Math.round(n / 3.6) + ' %)'); };
     var cx = 120, cy = 120, R = 112, r0 = 70, ang = -Math.PI / 2;
     segs.forEach(function (sg) {
       var k = sg[0], n = sg[1], t = n / 360 * Math.PI * 2, a1 = ang, a2 = ang + t, big = t > Math.PI ? 1 : 0;
@@ -550,18 +557,60 @@ function fastRules(root, D, data) {
     svgEl('text', { x: cx, y: cy + 26, 'text-anchor': 'middle', 'font-size': 13, fill: 'var(--zr-muted)' }, P).textContent = L('天 · 全年 ' + Math.round(cur.tot / 3.6) + '%', 'days · ' + Math.round(cur.tot / 3.6) + '% of 360', 'jours · ' + Math.round(cur.tot / 3.6) + ' % de 360');
     var kb = sec.querySelector('.zr-piekey');
     kb.innerHTML = '<ul>' + segs.map(function (sg) {
-      return '<li data-k="' + sg[0] + '"><i class="zr-sw" style="background:' + (sg[0] === 'NONE' ? 'var(--zr-line)' : rkCss(sg[0])) + '"></i><span class="zr-pk">' + lab(sg[0]) + '</span><b>' + sg[1] + '</b><span class="zr-pp">' + Math.round(sg[1] / 3.6) + '%</span></li>';
-    }).join('') + '</ul><p class="zr-muted-s">' + L('平均每月 ' + (cur.tot / 12).toFixed(1) + ' 天；最多的是' + monthLabel(top) + '（' + mdays[top - 1] + ' 天）；另有 ' + nNone + ' 條不能排入月日，不計入。',
-      (cur.tot / 12).toFixed(1) + ' days a month on average; most in month ' + top + ' (' + mdays[top - 1] + ' days); ' + nNone + ' entries cannot be placed on a month-day and are not counted.',
-      (cur.tot / 12).toFixed(1) + ' jours par mois en moyenne ; le plus au mois ' + top + ' (' + mdays[top - 1] + ' jours) ; ' + nNone + ' entrées non plaçables sur un jour du mois, non comptées.') + '</p>';
+      return '<li data-k="' + sg[0] + '"><i class="zr-sw" style="background:' + css(sg[0]) + '"></i><span class="zr-pk">' + lab(sg[0]) + '</span><b>' + sg[1] + '</b><span class="zr-pp">' + Math.round(sg[1] / 3.6) + '%</span></li>';
+    }).join('') + '</ul><p class="zr-muted-s">' + L('神聖日共 ' + SH.sac + ' 天，十齋日・六齋日共 ' + SH.f + ' 天，其中 ' + SH.fs + ' 天重合，合計 ' + cur.tot + ' 天。平均每月 ' + (cur.tot / 12).toFixed(1) + ' 天；最多的是' + monthLabel(top) + '（' + mdays[top - 1] + ' 天）；另有 ' + nNone + ' 條不能排入月日，不計入。',
+      SH.sac + ' sacred days and ' + SH.f + ' ten/six fast days, ' + SH.fs + ' of them on the same day: ' + cur.tot + ' days in all. ' + (cur.tot / 12).toFixed(1) + ' days a month on average; most in month ' + top + ' (' + mdays[top - 1] + ' days); ' + nNone + ' entries cannot be placed on a month-day and are not counted.',
+      SH.sac + ' jours sacrés et ' + SH.f + ' dix/six jours de jeûne, dont ' + SH.fs + ' le même jour : ' + cur.tot + ' jours en tout. ' + (cur.tot / 12).toFixed(1) + ' jours par mois en moyenne ; le plus au mois ' + top + ' (' + mdays[top - 1] + ' jours) ; ' + nNone + ' entrées non plaçables sur un jour du mois, non comptées.') + '</p>';
     kb.querySelectorAll('li').forEach(function (li) {
       var k = li.getAttribute('data-k'), n = segs.filter(function (x) { return x[0] === k; })[0][1];
       li.addEventListener('pointermove', function (ev) { showTip(ev, tipOf(k, n)); });
       li.addEventListener('pointerleave', hideTip);
     });
   })();
+  // 各類型佔全年多少：每類單獨計算有此類神聖日的天數，橫條按 360 天；實心＝只有此類，淺色＝與其他類同日。十齋日・六齋日單列，淺色＝同時是神聖日
+  var pc = function (n, d) { return d ? Math.round(n * 100 / d) + '%' : '—'; };
+  (function () {
+    var box = sec.querySelector('.zr-cov'), ks = RK.filter(function (k) { return SH.cov[k]; });
+    var row = function (lab, sw, n, solo, tip, extra, cls) {
+      return '<div class="zr-covrow' + (cls ? ' ' + cls : '') + '" data-tip="' + esc(tip) + '"><span class="zr-covl"><i class="zr-sw" style="background:' + sw + '"></i>' + lab + '</span>' +
+        '<span class="zr-covt"><span class="zr-covb" style="width:' + (n / 360 * 100).toFixed(2) + '%"><i style="flex:' + solo + ';background:' + sw + '"></i><i class="sh" style="flex:' + (n - solo) + ';background:' + sw + '"></i></span></span>' +
+        '<span class="zr-covn"><b>' + n + '</b>' + L(' 天', ' d', ' j') + ' · ' + L('全年 ', '', '') + pc(n, 360) + extra + '</span></div>';
+    };
+    var h = ks.map(function (k) {
+      var n = SH.cov[k], o = SH.only[k] || 0, f = SH.tf[k] || 0;
+      return row(rkLab(k), rkCss(k), n, o, '<b>' + rkLab(k) + L('：' + n + ' 天', ': ' + n + ' days', ' : ' + n + ' jours') + '</b><br>' +
+        L('佔全年 ' + pc(n, 360) + '；佔神聖日 ' + pc(n, SH.sac), pc(n, 360) + ' of the year; ' + pc(n, SH.sac) + ' of the sacred days', pc(n, 360) + ' de l’année ; ' + pc(n, SH.sac) + ' des jours sacrés') + '<br>' +
+        L('只有此類 ' + o + ' 天；與其他類同日 ' + (n - o) + ' 天', 'this type only: ' + o + ' days; shared with other types: ' + (n - o) + ' days', 'ce type seul : ' + o + ' jours ; partagés avec d’autres types : ' + (n - o) + ' jours') + '<br>' +
+        L('其中 ' + f + ' 天同時是十齋日・六齋日', f + ' of them are also ten/six fast days', 'dont ' + f + ' sont aussi des dix/six jours de jeûne'),
+        ' · ' + L('神聖日的 ', '', '') + pc(n, SH.sac) + L('', ' of sacred', ' des jours sacrés'));
+    }).join('');
+    if (!ks.length) h = '<p class="zr-muted-s">' + L('本版本沒有十齋日・六齋日以外的神聖日。', 'This edition has no sacred days besides the ten/six fast days.', 'Cette édition n’a pas de jours sacrés en dehors des dix/six jours de jeûne.') + '</p>';
+    if (SH.f) h += row(TSL, 'var(--zr-gold)', SH.f, SH.f - SH.fs, '<b>' + TSL + L('：' + SH.f + ' 天', ': ' + SH.f + ' days', ' : ' + SH.f + ' jours') + '</b><br>' + L('佔全年 ' + pc(SH.f, 360) + '；不算神聖日', pc(SH.f, 360) + ' of the year; not counted as sacred days', pc(SH.f, 360) + ' de l’année ; non comptés comme jours sacrés') + '<br>' +
+      L('只有十齋日・六齋日 ' + (SH.f - SH.fs) + ' 天；同時是神聖日 ' + SH.fs + ' 天', 'ten/six fast days only: ' + (SH.f - SH.fs) + ' days; also sacred days: ' + SH.fs + ' days', 'dix/six jours seulement : ' + (SH.f - SH.fs) + ' jours ; aussi jours sacrés : ' + SH.fs + ' jours'),
+      ' · ' + L('其中 ' + SH.fs + ' 天同時是神聖日', SH.fs + ' also sacred', 'dont ' + SH.fs + ' aussi sacrés'), 'ts');
+    box.innerHTML = '<h3 class="zr-subh">' + L('各類型佔全年多少', 'How much of the year each type covers', 'Part de l’année couverte par chaque type') + '</h3>' +
+      '<p class="zr-muted-s" style="margin:0 0 6px">' + L('每類單獨計算有這類神聖日的天數，橫條長度按全年 360 天。一天兼有幾類時各類都算，所以各行相加會超過神聖日總數（' + SH.sac + ' 天）；總數本身每天只算一次。實心是只有這一類的日子，淺色是與其他類同一天的日子。十齋日・六齋日不算神聖日，列在最後一行，淺色是同時是神聖日的日子。',
+        'Each type is counted on its own: the days carrying a sacred day of that type, with bars scaled to the 360-day year. A day of several types counts for each, so the rows add up to more than the ' + SH.sac + ' sacred days; that total counts each day once. The solid part is days of this type only, the light part days shared with other types. The ten/six fast days are not sacred days and come last; their light part is days that are also sacred days.',
+        'Chaque type est compté à part : les jours portant un jour sacré de ce type, barres à l’échelle des 360 jours. Un jour de plusieurs types compte pour chacun, si bien que les lignes dépassent ensemble les ' + SH.sac + ' jours sacrés ; ce total compte chaque jour une fois. La partie pleine correspond aux jours de ce seul type, la partie claire aux jours partagés avec d’autres types. Les dix/six jours de jeûne ne sont pas des jours sacrés et viennent en dernier ; leur partie claire correspond aux jours qui sont aussi des jours sacrés.') + '</p>' + h;
+    box.addEventListener('pointermove', function (ev) { var i = ev.target.closest('[data-tip]'); if (i) showTip(ev, i.getAttribute('data-tip')); else hideTip(); });
+    box.addEventListener('pointerleave', hideTip);
+  })();
+  // 類型佔比：各版本。每格是有此類神聖日的天數與佔全年的比例（可重疊）；十齋日・六齋日單列
+  (function () {
+    var ks = RK.filter(function (k) { return all.some(function (x) { return x.share.cov[k]; }); }), prev = false;
+    var th = '<th class="l">' + L('版本', 'Edition', 'Édition') + '</th><th>' + L('神聖日', 'Sacred days', 'Jours sacrés') + '</th>' + ks.map(function (k) { return '<th><i class="zr-sw" style="background:' + rkCss(k) + '"></i>' + rkLab(k) + '</th>'; }).join('') + '<th><i class="zr-sw" style="background:var(--zr-gold)"></i>' + TSL + '</th>';
+    var cell = function (n) { return n ? n + '<small>' + pc(n, 360) + '</small>' : '<span class="zr-muted-s">–</span>'; };
+    var rows = all.map(function (x) {
+      var sep = x.solo && !prev ? '<tr class="sep"><td colspan="' + (ks.length + 3) + '">' + L('專門單獨齋期', 'Standalone fast calendars', 'Calendriers de jeûne autonomes') + '</td></tr>' : '';
+      prev = x.solo;
+      return sep + '<tr' + (x === cur ? ' class="on"' : '') + '><td class="l"><a href="#ring/' + esc(x.no) + '">' + (x.labelHtml || NH(x.label)) + '</a></td><td>' + cell(x.share.sac) + '</td>' + ks.map(function (k) { return '<td>' + cell(x.share.cov[k] || 0) + '</td>'; }).join('') + '<td>' + cell(x.share.f) + '</td></tr>';
+    }).join('');
+    sec.querySelector('[data-p="share"]').innerHTML = '<p class="zr-muted-s" style="margin:0 0 6px">' + L('每格是有這類神聖日的天數，小字是佔全年 360 天的比例。一天兼有幾類時各類都算，所以一行中各類相加會超過「神聖日」一欄；「神聖日」本身每天只算一次，不含十齋日・六齋日。點版本名換到它的環形曆。',
+      'Each cell gives the days carrying a sacred day of that type, with the share of the 360-day year in small type. A day of several types counts for each, so a row adds up to more than the “sacred days” column, which counts each day once and leaves out the ten/six fast days. Click an edition to switch to its ring calendar.',
+      'Chaque case donne les jours portant un jour sacré de ce type, avec en petit la part des 360 jours. Un jour de plusieurs types compte pour chacun, si bien qu’une ligne dépasse la colonne « jours sacrés », qui compte chaque jour une fois et exclut les dix/six jours de jeûne. Cliquer une édition pour afficher son calendrier circulaire.') + '</p><div class="zr-sharew"><table class="zr-sharet"><thead><tr>' + th + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  })();
   // 標籤：小倍數／類型組合（UpSet）／全年天數；選擇在切換版本後保留
-  function showTab(t) { if (['sm', 'bars', 'month', 'many'].indexOf(t) < 0) t = 'sm'; RTAB = t; sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === t)); }); sec.querySelectorAll('.zr-tabp').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== t; }); hideTip(); }
+  function showTab(t) { if (['sm', 'bars', 'month', 'share', 'many'].indexOf(t) < 0) t = 'sm'; RTAB = t; sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === t)); }); sec.querySelectorAll('.zr-tabp').forEach(function (p) { p.hidden = p.getAttribute('data-p') !== t; }); hideTip(); }
   sec.querySelectorAll('.zr-tabs button').forEach(function (b) { b.onclick = function () { showTab(b.getAttribute('data-tab')); }; });
   // 小倍數：每個版本一張 12 × 30 的小年格
   var smh = '', smSolo = false;

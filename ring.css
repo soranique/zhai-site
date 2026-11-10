@@ -208,3 +208,6 @@
 .zr .zr-sharet tr.on td { background: var(--zr-cell); font-weight: 600; }
 .zr .zr-sharet tr.sep td { text-align: left; color: var(--zr-muted); font-size: 12px; padding-top: 10px; }
 .zr .zr-sharet a { color: inherit; }
+/* 逐月統計：本版本每月日期條目數 */
+.zr .zr-monthc { max-width: 520px; }
+.zr .zr-monthc tr.med td { border-top: 2px solid var(--zr-ink-2); font-weight: 600; }

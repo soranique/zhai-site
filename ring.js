@@ -439,6 +439,24 @@ function treemap(root, D) {
     'The two main sources are made up almost identically: in the ' + NTX('玉匣記') + ', Daoist entries are ' + pct('玉匣記', 'T') + '% and Buddhist ' + pct('玉匣記', 'B') + '%; in the ' + NTX('古今類傳') + ', Daoist ' + pct('古今類傳', 'T') + '% and Buddhist ' + pct('古今類傳', 'B') + '%. No source is “the Buddhist source” or “the Daoist source”.', 'Les deux principales sources ont une composition presque identique : dans le ' + NTX('玉匣記') + ', les entrées taoïstes font ' + pct('玉匣記', 'T') + ' % et les bouddhiques ' + pct('玉匣記', 'B') + ' % ; dans le ' + NTX('古今類傳') + ', taoïstes ' + pct('古今類傳', 'T') + ' % et bouddhiques ' + pct('古今類傳', 'B') + ' %. Aucune source n’est « la source bouddhique » ou « la source taoïste ».');
 }
 
+// ---------- 逐月統計：本版本每個月有多少個日期條目 ----------
+// 「條目」指原書以農曆日期為單位列出的記載，一個日期可能包含多項宗教事件；同一日期幾條只算一個。只數有具體月日的條目，「每月」「六十甲子日」等不計
+function monthCount(root, D, data) {
+  var meta = (data && data.meta) || {}, seen = {}, cnt = []; for (var i = 0; i < 12; i++) cnt[i] = 0;
+  (D.all || []).forEach(function (e) { if (!(e.m >= 1 && e.m <= 12 && e.d >= 1)) return; var k = e.range || (e.m + '/' + e.d); if (seen[k]) return; seen[k] = 1; cnt[e.m - 1]++; });   // 多日齋期（如正月初八至十五）按一條計，記在起始月
+  var tot = cnt.reduce(function (a, b) { return a + b; }, 0);
+  if (!tot) return;
+  var sec = document.createElement('section'); sec.className = 'zr-sec'; sec.id = 'r-month';
+  sec.innerHTML = '<div class="zr-eyebrow">' + L('逐月統計', 'Month by month', 'Mois par mois') + '</div><h2 style="margin:0">' + L('每個月有多少個日期條目', 'How many dated entries in each month', 'Combien d’entrées datées par mois') + '</h2>' +
+    '<p class="zr-lede">' + L('本版本逐月核算，共有 ' + tot + ' 個日期條目。這裡的「條目」指原書以農曆日期為單位列出的記載，一個日期可能包含多項宗教事件；同一日期幾條只算一個，多日齋期按一條計。「每月」「六十甲子日」等沒有具體月日的不計' + (meta.undated ? '（本版本有 ' + meta.undated + ' 條）' : '') + '。',
+      'Counted month by month, this edition has ' + tot + ' dated entries. An “entry” is a record the original lists under a lunar date; one date may carry several religious events, and several records on the same date count once, and a multi-day fast counts as one. Entries without a specific month and day (“every month”, the sixty jiazi days) are not counted' + (meta.undated ? ' (' + meta.undated + ' in this edition)' : '') + '.',
+      'Comptée mois par mois, cette édition compte ' + tot + ' entrées datées. Une « entrée » est un article que l’original place sous une date lunaire ; une date peut porter plusieurs événements religieux, et plusieurs articles à la même date comptent une fois, et un jeûne de plusieurs jours compte pour un. Les entrées sans mois ni jour précis (« chaque mois », les soixante jours du cycle) ne sont pas comptées' + (meta.undated ? ' (' + meta.undated + ' dans cette édition)' : '') + '.') + '</p>' +
+    '<div class="zr-sharew"><table class="zr-sharet zr-monthc"><thead><tr><th class="l">' + L('月份', 'Month', 'Mois') + '</th><th>' + L('日期條目數', 'Dated entries', 'Entrées datées') + '</th></tr></thead><tbody>' +
+    cnt.map(function (n, i) { return '<tr><td class="l">' + monthLabel(i + 1) + '</td><td>' + n + '</td></tr>'; }).join('') +
+    '<tr class="med"><td class="l">' + L('合計', 'Total', 'Total') + '</td><td>' + tot + '</td></tr></tbody></table></div>' +
+    '<p class="zr-muted-s">' + L('資料來源：', 'Source: ', 'Source : ') + (meta.editionHtml || esc(meta.edition || '')) + (meta.sourceFile ? L('；源表 ', '; table ', ' ; table ') + esc(meta.sourceFile) : '') + '。</p>';
+  root.appendChild(sec);
+}
 // ---------- 每月各日 ----------
 // 默認不顯示十齋日、六齋日（六齋日都在十齋日之內），只比較其餘二十天；可切換爲含全部三十天。選擇在切換版本後保留
 var DOM_ALL = false;
@@ -776,8 +794,8 @@ window.ZhaiRing = {
       root.appendChild(head);
     }
     el.appendChild(root);
-    var fns = { disc: disc, treemap: treemap, dom: dom, rules: function (r) { fastRules(r, D, data); }, strips: strips, table: table, notes: function (r) { notes(r, data); } };
-    (opt.sections || ['disc', 'treemap', 'dom', 'rules', 'strips', 'table', 'notes']).forEach(function (s) { if (fns[s]) fns[s](root, D); });
+    var fns = { disc: disc, treemap: treemap, month: function (r) { monthCount(r, D, data); }, dom: dom, rules: function (r) { fastRules(r, D, data); }, strips: strips, table: table, notes: function (r) { notes(r, data); } };
+    (opt.sections || ['disc', 'treemap', 'month', 'dom', 'rules', 'strips', 'table', 'notes']).forEach(function (s) { if (fns[s]) fns[s](root, D); });
     return root;
   },
   hideTip: hideTip,

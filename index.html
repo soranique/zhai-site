@@ -237,7 +237,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .kin .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
 .kin .nd { cursor: pointer; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
-.kin .eg.dim { opacity: .12; }
+.kin .eg.dim { opacity: .12; } .kin .eg.dim .e.hl { opacity: 1 !important; }
 .kin .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; } @media (max-width: 900px) { .kin .kgrid { grid-template-columns: minmax(0, 1fr); } }
 .kin table.hm { border-collapse: collapse; font-size: 11.5px; width: auto; } .kin table.hm th { font-weight: 400; color: var(--ink-2); padding: 2px 4px; white-space: nowrap; background: none; position: static; } .kin table.hm th.r { text-align: right; }
 .kin table.hm td { width: 34px; height: 24px; text-align: center; border: 1px solid var(--page); padding: 0; } .kin table.hm th.c2 { font-size: 10.5px; line-height: 1.25; vertical-align: bottom; width: 34px; white-space: normal; word-break: break-all; padding: 2px 1px; }
@@ -1134,9 +1134,9 @@ function openCmp(a, b) {
 function closeCmp(keepHash) {
   var box = document.getElementById('cmppanel'); if (!box || box.hidden) return;
   box.hidden = true; document.body.classList.remove('cmpopen'); hideTip();
-  if (!keepHash && /^#kin\//.test(location.hash)) history.replaceState(null, '', location.pathname + location.search + '#kin');
+  if (!keepHash && /^#kin\//.test(location.hash)) { history.replaceState(null, '', location.pathname + location.search + '#kin'); LAST_HASH = 'kin'; }
 }
-var CMP_PAIRS = [];
+var CMP_PAIRS = [], KSEL = '';   // KSEL：版本親疏圖上選中的連線（甲-乙）
 function renderCmp(a, b) {
   var byNo = function (no) { return ED.versions.filter(function (v) { return +v.no === +no; })[0]; };
   var K = window.ZHAI_KIN, inc = K && K.incl ? K.incl : [];
@@ -1145,6 +1145,8 @@ function renderCmp(a, b) {
   CMP.a = +A.no; CMP.b = +B.no;
   var want = '#kin/' + A.no + '/' + B.no;
   if (location.hash !== want) history.replaceState(null, '', location.pathname + location.search + want);
+  LAST_HASH = want.slice(1);
+  if (window.kinSelect && window.kinPk) kinSelect(kinPk(+A.no, +B.no));
   var opt = function (sel) { return EVS.map(function (v) { return '<option value="' + esc(v.no) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v.when) + ' ' + esc(I.en() ? NT(v.short) : v.short) + '</option>'; }).join(''); };
   var take = function (v) { return ED.entries.filter(function (e) { return e.v === v.i && e.id && !KOMIT[e.id] && kName(e) && (!CMP.main || !e.p || e.p === '正文'); }); };
   var EA = take(A), EB = take(B);
@@ -2126,14 +2128,15 @@ function viewKinship() {
   var NB = {}; K.nodes.forEach(function (n) { NB[n.no] = n; });
   var vname = function (n) { return esc(n.name.split(' ')[0]) + ' ' + N(n.name.split(' ').slice(1).join(' ')); };
   var pk = function (a, b) { return a < b ? a + '-' + b : b + '-' + a; };
+  window.kinPk = pk;
   var PB = {}; K.pairs.forEach(function (p) { PB[pk(p.a, p.b)] = p; });
   var W = 1180, H = 560, X0 = I.en() ? 200 : 120, X1 = 1150, LH = (H - 40) / LANES.length;
   var ORD = K.nodes.slice().sort(function (a, b) { return (a.year || 9999) - (b.year || 9999) || a.no - b.no; });
   ORD.forEach(function (n, i) { n.x = X0 + (i + 0.5) * (X1 - X0) / ORD.length; n.y = 20 + LANES.indexOf(n.lane) * LH + LH / 2 - 6; });
   ORD.forEach(function (n, i) { var q = ORD[i - 1]; n.up = !!(q && q.lane === n.lane && !q.up); });
   ORD.forEach(function (n) { if (n.no === 8) n.up = true; if (n.no === 9) n.up = false; });   // 1882、1891 兩本相鄰，標註一上一下，免得互相壓住
-  var h = L('<h1>版本親疏</h1><p class="lede">按條目內容比較已獲完整文本的 ' + K.nodes.length + ' 個版本。每個版本取正文中有具體月日的條目，以「規範名＋編碼日期類型＋月日」爲單位（沒有規範名的無神名日，如天臘、月朔、九毒日，不參與比較）；兩本之間的<b>重合度</b>爲共有條目佔兩本條目總數（並集）的比例；兩本大小懸殊時，重合度會被大本拉低，可改看<b>包含度</b>，即較小一本的條目有幾成見於另一本。橫軸按年代先後等距排列，縱向按文本類型分道（據工作簿「文本類型」，空缺者暫歸，見懸停說明）。線越粗，兩本越相近；<b>重合度只說明相近，不說明誰據誰</b>。切換到「共有的少數日期」，紅線顯示兩本都作、而多數本子不作的日期（見工作簿「日期異文」頁），這類共同偏離更能提示兩本之間有直接關係。黑色箭頭是有文本依據的先後關係（實線確定，虛線候選）。</p>',
-      '<h1>Edition kinship</h1><p class="lede">A comparison by content of the ' + K.nodes.length + ' editions for which a complete text is available. For each edition the dated entries of the main table are taken, with “normalized name + coded date type + month/day” as the unit (days without a named deity, such as the la 臘 days, new moons or the nine poison days, are left out); the <b>overlap</b> of two editions is the share of shared units in the union of both; when the two differ greatly in size the larger one pulls the overlap down, so <b>containment</b> can be shown instead: the share of the smaller edition’s units found in the other. Editions are spaced evenly in chronological order and placed in lanes by text type (from the workbook; missing types assigned provisionally, see hover). Thicker lines mean closer editions; <b>overlap shows closeness, not who copied whom</b>. Switch to “shared minority dates” to see, in red, dates that both editions give but most others do not (see the workbook sheet 日期異文); such shared departures point more strongly to a direct relation. Black arrows mark sequences supported by textual evidence (solid: certain; dashed: candidate).</p>', '<h1>Parenté des éditions</h1><p class="lede">Comparaison par le contenu des ' + K.nodes.length + ' éditions dont on possède le texte complet. Pour chaque édition, on retient les entrées datées de la table principale, avec pour unité « nom normalisé + type de jour codé + mois/jour » ; le <b>recouvrement</b> de deux éditions est la part des unités communes dans leur réunion. Les éditions sont espacées régulièrement par ordre chronologique et placées en couloirs selon le type de texte (d’après le classeur ; types manquants attribués provisoirement, voir au survol). Plus le trait est épais, plus les éditions sont proches ; <b>le recouvrement mesure la proximité, non qui a copié qui</b>. Passer à « dates minoritaires communes » pour voir en rouge les dates que les deux éditions donnent mais que la plupart des autres ne donnent pas (voir la feuille 日期異文 du classeur) ; ces écarts partagés indiquent plus nettement une relation directe. Les flèches noires marquent les filiations appuyées par des preuves textuelles (trait plein : certaine ; tirets : candidate).</p>') +
+  var h = L('<h1>版本親疏</h1><p class="lede">按條目內容比較已獲完整文本的 ' + K.nodes.length + ' 個版本。每個版本取正文中有具體月日的條目，以「規範名＋編碼日期類型＋月日」爲單位（沒有規範名的無神名日，如天臘、月朔、九毒日，不參與比較）；兩本之間的<b>重合度</b>爲共有條目佔兩本條目總數（並集）的比例；兩本大小懸殊時，重合度會被大本拉低，可改看<b>包含度</b>，即較小一本的條目有幾成見於另一本。橫軸按年代先後等距排列，縱向按文本類型分道（據工作簿「文本類型」，空缺者暫歸，見懸停說明）。線越粗，兩本越相近；點一條連線打開這兩本的「兩本細看」，其餘連線變淡（再點該線或點空白處取消）；<b>重合度只說明相近，不說明誰據誰</b>。切換到「共有的少數日期」，紅線顯示兩本都作、而多數本子不作的日期（見工作簿「日期異文」頁），這類共同偏離更能提示兩本之間有直接關係。黑色箭頭是有文本依據的先後關係（實線確定，虛線候選）。</p>',
+      '<h1>Edition kinship</h1><p class="lede">A comparison by content of the ' + K.nodes.length + ' editions for which a complete text is available. For each edition the dated entries of the main table are taken, with “normalized name + coded date type + month/day” as the unit (days without a named deity, such as the la 臘 days, new moons or the nine poison days, are left out); the <b>overlap</b> of two editions is the share of shared units in the union of both; when the two differ greatly in size the larger one pulls the overlap down, so <b>containment</b> can be shown instead: the share of the smaller edition’s units found in the other. Editions are spaced evenly in chronological order and placed in lanes by text type (from the workbook; missing types assigned provisionally, see hover). Thicker lines mean closer editions; click a line to open the two editions side by side, with the other lines faded (click the line again or an empty spot to clear); <b>overlap shows closeness, not who copied whom</b>. Switch to “shared minority dates” to see, in red, dates that both editions give but most others do not (see the workbook sheet 日期異文); such shared departures point more strongly to a direct relation. Black arrows mark sequences supported by textual evidence (solid: certain; dashed: candidate).</p>', '<h1>Parenté des éditions</h1><p class="lede">Comparaison par le contenu des ' + K.nodes.length + ' éditions dont on possède le texte complet. Pour chaque édition, on retient les entrées datées de la table principale, avec pour unité « nom normalisé + type de jour codé + mois/jour » ; le <b>recouvrement</b> de deux éditions est la part des unités communes dans leur réunion. Les éditions sont espacées régulièrement par ordre chronologique et placées en couloirs selon le type de texte (d’après le classeur ; types manquants attribués provisoirement, voir au survol). Plus le trait est épais, plus les éditions sont proches ; <b>le recouvrement mesure la proximité, non qui a copié qui</b>. Passer à « dates minoritaires communes » pour voir en rouge les dates que les deux éditions donnent mais que la plupart des autres ne donnent pas (voir la feuille 日期異文 du classeur) ; ces écarts partagés indiquent plus nettement une relation directe. Les flèches noires marquent les filiations appuyées par des preuves textuelles (trait plein : certaine ; tirets : candidate).</p>') +
     '<div class="kin"><div class="controls card"><label>' + L('連線：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="c"' + (KIN.mode === 'c' ? ' selected' : '') + '>' + L('包含度', 'Containment', 'Inclusion') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少數日期', 'Shared minority dates') + '</option></select></label>' +
     '<label id="kthrw"><span id="kthrl"></span><input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + (KIN.mode === 'c' ? KIN.thrc : KIN.thr) + '"> <b id="kthrv"></b></label>' +
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('顯示有依據的先後關係', 'Show evidenced sequences') + '</label></div>' +
@@ -2161,6 +2164,13 @@ function viewKinship() {
       L('（' + A.yr + ' 本的條目有 ' + (p.ca * 100).toFixed(0) + '% 見於 ' + B.yr + ' 本；反之 ' + (p.cb * 100).toFixed(0) + '%）', ' (' + (p.ca * 100).toFixed(0) + '% of ' + A.yr + ' found in ' + B.yr + '; ' + (p.cb * 100).toFixed(0) + '% the other way)', ' (' + (p.ca * 100).toFixed(0) + ' % de ' + A.yr + ' se retrouvent dans ' + B.yr + ' ; ' + (p.cb * 100).toFixed(0) + ' % dans l’autre sens)') + '</div>' +
       '<div>' + L('共有的少數日期：', 'Shared minority dates: ') + '<b>' + p.sv + '</b>' + (p.ex.length ? '<div class="small muted">' + p.ex.map(esc).join('；') + (p.sv > p.ex.length ? '……' : '') + '</div>' : '') + '</div>';
   };
+  // 選中的連線（打開「兩本細看」的那一對）：它亮起，其餘連線變淡；關閉浮窗後仍保留，再點該連線或點空白處取消
+  function kinApplySel() {
+    var el = document.getElementById('knet'); if (!el) return;
+    var has = !!KSEL && !!el.querySelector('g.eg[data-k="' + KSEL + '"]');   // 選中的那對沒畫出來（低於門檻）時不變淡
+    el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'), on = has && k === KSEL; x.classList.toggle('dim', has && !on); x.querySelectorAll('.e').forEach(function (e) { e.classList.toggle('hl', on); }); });
+  }
+  window.kinSelect = function (k) { KSEL = k || ''; kinApplySel(); };
   function draw() {
     var thr = KIN.mode === 'c' ? KIN.thrc : KIN.thr, val = function (p) { return KIN.mode === 'c' ? kinC(p) : p.j; };
     document.getElementById('kthrw').style.display = KIN.mode === 'sv' ? 'none' : '';
@@ -2198,7 +2208,10 @@ function viewKinship() {
         else { var r = K.dir[+di]; showTip(e, '<b>' + vname(NB[r.a]) + ' → ' + vname(NB[r.b]) + '</b> <span class="muted">（' + esc(I.en() ? I.T(r.st === '確定' ? 'certain' : 'candidate') : r.st) + '）</span><div>' + FT(r.d) + '</div>'); }
       });
       g.addEventListener('mouseleave', hideTip);
+      g.addEventListener('click', function (ev) { ev.stopPropagation(); var k = g.getAttribute('data-k'); if (!k) return; var p = PB[k]; hideTip(); if (KSEL === k) { kinSelect(''); closeCmp(); return; } location.hash = 'kin/' + p.a + '/' + p.b; });
     });
+    el.querySelector('svg').addEventListener('click', function (ev) { if (!ev.target.closest('g.eg, g.nd')) kinSelect(''); });   // 點空白處取消選中
+    kinApplySel();
     el.querySelectorAll('g.nd').forEach(function (g) {
       var no = +g.getAttribute('data-n'), n = NB[no];
       g.addEventListener('mousemove', function (e) {
@@ -2207,7 +2220,7 @@ function viewKinship() {
         var ks = {}; K.pairs.forEach(function (p) { if (p.a === no || p.b === no) ks[pk(p.a, p.b)] = 1; });
         el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'); x.classList.toggle('dim', !!k && !ks[k]); });
       });
-      g.addEventListener('mouseleave', function () { hideTip(); el.querySelectorAll('g.eg').forEach(function (x) { x.classList.remove('dim'); }); });
+      g.addEventListener('mouseleave', function () { hideTip(); el.querySelectorAll('g.eg').forEach(function (x) { x.classList.remove('dim'); }); kinApplySel(); });
       g.addEventListener('click', function () { var v = ED.versions.filter(function (x) { return +x.no === no; })[0]; if (v) { hideTip(); location.hash = 'ev/' + v.i; } });
     });
   }
@@ -2626,7 +2639,7 @@ function viewEdGod(k) {
   var X = edIndex(), r = X && X.rows[k];
   if (!r) { app.innerHTML = '<p>' + L('找不到 ', 'Not found: ') + esc(k) + '</p>'; return; }
   var al = Object.keys(r.alias);
-  var h = '<p class="small"><a href="#editions">' + L('← 版本目錄和內容對照', '← Editions and contents') + '</a></p><div class="prof-head"><h1>' + N(k) + '</h1>' + focusBtn('k:' + k) + '<span class="muted">' + L('見於 ' + r.nv + ' / ' + ED.versions.length + ' 個版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions', 'dans ' + r.nv + ' éditions sur ' + ED.versions.length) + '</span></div>' +
+  var h = backLink('#editions', '版本目錄和內容對照', 'Editions and contents', ['editions', 'ed', 'ev']) + '<div class="prof-head"><h1>' + N(k) + '</h1>' + focusBtn('k:' + k) + '<span class="muted">' + L('見於 ' + r.nv + ' / ' + ED.versions.length + ' 個版本', 'in ' + r.nv + ' of ' + ED.versions.length + ' editions', 'dans ' + r.nv + ' éditions sur ' + ED.versions.length) + '</span></div>' +
     '<p class="small muted" style="margin:0 0 8px">' + (normGs(k).filter(function (g) { return G[g]; }).length ?
       L('這是工作簿規範名的頁面，只列齋曆條目。實踐記錄和史料見神明檔案：', 'This page is for a workbook normalized name and lists calendar entries only. For practice records and other sources, see the deity profile: ', 'Cette page porte sur un nom normalisé du classeur et ne liste que des entrées de calendrier. Pour les témoignages et les sources, voir la fiche : ') + normGs(k).filter(function (g) { return G[g]; }).map(godLink).join(L('、', ', ')) + L('。', '.', '.') :
       L('這是工作簿規範名的頁面，只列齋曆條目。此名尚未接到持齋數據庫，所以沒有神明檔案。', 'This page is for a workbook normalized name and lists calendar entries only. The name is not yet linked to the fasting database, so it has no deity profile.', 'Cette page porte sur un nom normalisé du classeur et ne liste que des entrées de calendrier. Ce nom n’est pas encore relié à la base : il n’a pas de fiche.')) + '</p>' +
@@ -2647,7 +2660,7 @@ function viewEdVersion(i, jump) {
   var v = ED && ED.versions[+i];
   if (!v) { app.innerHTML = '<p>' + L('找不到該版本。', 'Edition not found.') + '</p>'; return; }
   var es = ED.entries.filter(function (e) { return e.v === v.i; });
-  var h = '<p class="small"><a href="#editions">' + L('← 版本目錄和內容對照', '← Editions and contents') + '</a></p><h1>' + N(v.short) + '</h1>' +
+  var h = backLink('#editions', '版本目錄和內容對照', 'Editions and contents', ['editions', 'ed', 'ev']) + '<h1>' + N(v.short) + '</h1>' +
     '<dl class="kv"><dt>' + L('年代', 'Date') + '</dt><dd>' + edWhen(v) + (v.era ? ' · ' + FT(v.era, 1) : '') + (v.date ? '<div class="muted small">' + FT(v.date) + '</div>' : '') + '</dd>' +
     '<dt>' + L('書名', 'Title') + '</dt><dd>' + FT(v.title) + '</dd>' + (v.pub ? '<dt>' + L('刊者', 'Publisher') + '</dt><dd>' + FT(v.pub, 1) + '</dd>' : '') +
     '<dt>' + L('文本類型', 'Type') + '</dt><dd>' + esc(C(v.type)) + '</dd><dt>' + L('資料來源', 'Source') + '</dt><dd class="small">' + FT(v.src) + '</dd>' +
@@ -3105,6 +3118,7 @@ function route(ev) {
   if (v === 'matrix') { history.replaceState(null, '', location.pathname + location.search + '#editions'); hsh = v = 'editions'; EDF.rows = 'zs'; }   // 舊網址 #matrix：版本對照已併入版本目錄和內容對照
   if (v === 'cmp') { history.replaceState(null, '', location.pathname + location.search + '#kin' + hsh.slice(3)); hsh = 'kin' + hsh.slice(3); v = 'kin'; }   // 舊網址 #cmp/甲/乙
   var ab = v === 'kin' ? hsh.split('/').slice(1) : [], kinFast = !!(ev && ev.type === 'hashchange') && v === 'kin' && LAST_V === 'kin', keepY = false;
+  if (hsh !== LAST_HASH) { PREV_V = LAST_V; PREV_HASH = LAST_HASH; LAST_HASH = hsh; }   // 記住上一頁，詳情頁的「← 返回」回到來處
   LAST_V = v;
   if (v !== 'kin' || !ab[0]) closeCmp(true);
   M.scrolled = 0; EDF.scrolled = 0; TIME_HOOK = null; TIME_MIN = 0; timeStop(true);
@@ -3133,7 +3147,13 @@ function route(ev) {
   if (DEMO.on) demoRender();
   decorate();
 }
-var LAST_V = '';
+var LAST_V = '', LAST_HASH = '', PREV_V = '', PREV_HASH = '';
+// 詳情頁頂部的返回鏈接：從別的頁（如版本親疏、環形曆）點進來的，回到那一頁（含當時的狀態，如打開的兩本細看）；直接打開或來自同一欄的，回到默認頁
+function backLink(defHash, defZh, defEn, sameV) {
+  var pv = PREV_V, a = pv && document.querySelector('#nav a[data-v="' + (pv === 'g' ? 'gods' : (pv === 'ed' || pv === 'ev') ? 'editions' : pv) + '"]');
+  if (a && (sameV || []).indexOf(pv) < 0) return '<p class="small"><a href="#' + esc(PREV_HASH) + '">' + L('← ' + a.textContent.trim(), '← ' + (a.getAttribute('data-en') || a.textContent.trim())) + '</a></p>';
+  return '<p class="small"><a href="' + defHash + '">' + L('← ' + defZh, '← ' + defEn) + '</a></p>';
+}
 window.addEventListener('hashchange', route);
 var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { var v = location.hash; if (/^#g\/[^\/]+$/.test(v)) route(); }, 200); });
 function footer() {

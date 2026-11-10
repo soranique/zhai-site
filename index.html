@@ -163,13 +163,11 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fday { display: inline-block; margin-right: 10px; white-space: nowrap; }
 .rec.jump { background: var(--hl); transition: background 1.5s; }
 /* ---- 刊刻地與版本線索圖 ---- */
-.spread { --sea:#dfe8ee; --land:#f8f6f0; --coast:#aeab9f; --f1:var(--cat1); --f2:var(--cat4); --f5:var(--cat2); --f6:var(--cat6); --f0:var(--cat-o); --doc:var(--ink); }
+.spread { --sea:#dfe8ee; --land:#f8f6f0; --coast:#aeab9f; --f1:var(--cat1); --f2:var(--cat8); --f5:var(--cat2); --f6:var(--cat6); --f0:var(--cat-o); --doc:var(--ink); }   /* 版本關聯連線：藤黃讓給玉匣記系統的地點，朱說霖重校改用胭脂 */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; } }
 :root[data-theme="dark"] .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; }
 .spread .sgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
-.spread { --pfit: #2f7d5a; --pdev: #c08a1e; --pnone: #a59c8e; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --pfit: #4aa57c; --pdev: #d3a03a; --pnone: #8d877c; } }
-:root[data-theme="dark"] .spread { --pfit: #4aa57c; --pdev: #d3a03a; --pnone: #8d877c; }
+.spread { --pfit: var(--cat5); --pdev: var(--accent); --pnone: var(--cat-o); }   /* 實踐記錄：符合＝天青，偏離＝硃紅，無對應＝暖灰；避開地點的藤黃（玉匣記系統）與石綠（其他齋曆） */
 .spread .pr-fit { fill: var(--pfit); } .spread .pr-dev { fill: var(--pdev); } .spread .pr-none { fill: var(--pnone); }
 .spread .pr-ring { fill: none; stroke: var(--surface); stroke-width: 1.2; }
 .spread .sprp { cursor: pointer; opacity: .82; } .spread .sprp:hover, .spread .sprp.on { opacity: 1; } .spread .sprp.on .pr-ring { stroke: var(--ink); stroke-width: 2; }
@@ -210,7 +208,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread .hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; }
 .spread .spt { cursor: pointer; } .spread .spt text { font-size: 13px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .spread .spt .print { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; } .spread .spt .attr { fill: var(--surface); stroke: var(--accent); stroke-width: 2; } .spread .spt .acq { fill: var(--ink); stroke: var(--surface); stroke-width: 1.5; }
-.spread { --sp-y: var(--accent); --sp-o: var(--cat3); }   /* 其他齋曆用青綠，避開版本關聯連線已用的藍、金、紫、橄欖綠 */
+.spread { --sp-y: var(--cat4); --sp-o: var(--cat3); }   /* 與版本親疏頁同一套：玉匣記系統＝藤黃，其他齋曆＝石綠 */
 .spread .spt .print.sy, .spread .spt .acq.sy { fill: var(--sp-y); } .spread .spt .print.so, .spread .spt .acq.so { fill: var(--sp-o); }
 .spread .spt .attr.sy { stroke: var(--sp-y); } .spread .spt .attr.so { stroke: var(--sp-o); }
 .spread .spt path.attr.so { fill: none; }

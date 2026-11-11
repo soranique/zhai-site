@@ -175,6 +175,9 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread g[data-e].sel .sedge { stroke-width: 4.5; } .spread g.spt.sel circle, .spread g.spt.sel rect, .spread g.spt.sel path { stroke: var(--ink); stroke-width: 2.4; }
 .spread #sev li { cursor: pointer; border-radius: 4px; } .spread #sev li.on { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .fitplace { margin: 0 0 12px; padding: 6px 10px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+#gsort { display: inline-flex; border: 1px solid var(--grid); border-radius: 6px; overflow: hidden; } #gsort button { font: inherit; font-size: 13px; background: none; border: 0; padding: 4px 12px; cursor: pointer; color: var(--ink-2); } #gsort button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+.godidx { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 4px 0 12px; } .godidx .linkbtn { font-weight: 600; }
+.godseg { display: grid; grid-template-columns: 2em 1fr; gap: 10px; align-items: start; padding: 6px 0; border-top: 1px solid var(--grid); scroll-margin-top: 120px; } .godlet { font-weight: 700; color: var(--accent); font-size: 18px; line-height: 1.8; }
 .snavt { width: 100%; border-collapse: collapse; } .snavt th, .snavt td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--grid); }
 .snavt thead th { font-size: 13px; color: var(--ink-2); font-weight: 600; } .snavt tbody th { font-weight: 600; width: 34%; }
 .snavt th, .snavt td { white-space: normal; overflow-wrap: anywhere; } .snav .scroll table { min-width: 0; } .snavt td > div { margin-top: 4px; } .snav-btn { display: inline-block; font-weight: 600; }
@@ -2587,18 +2590,39 @@ function viewKinship() {
 }
 
 // ---------- 視圖：神明列表 ----------
+// 神明檔案的排列：py＝按拼音首字母；type＝按性質分組，組內按拼音（狀態存在瀏覽器，也寫進分享鏈接）
+var GODS = { sort: 'py' };
+try { if (localStorage.getItem('zhai-gods-sort') === 'type') GODS.sort = 'type'; } catch (e) {}
 function viewGods() {
-  var groups = {};
-  D.deities.forEach(function (g) { (groups[g.type || '未分類'] = groups[g.type || '未分類'] || []).push(g); });
+  var pyKey = function (g) { return (I.py(g.name) || '').toLowerCase().replace(/[^a-z]/g, ''); };
+  var bySort = function (a, b) { var x = pyKey(a), y = pyKey(b); return x < y ? -1 : x > y ? 1 : (a.name < b.name ? -1 : a.name > b.name ? 1 : 0); };
+  var initial = function (g) { var k = pyKey(g); return k ? k[0].toUpperCase() : '#'; };
+  var item = function (g) {
+    var b = byG[g.id] || bucket(g.id);
+    return '<a href="#g/' + g.id + '"' + (FOCUS && FOCUS.g === g.id ? ' class="fx"' : '') + '>' + N(g.name) + ' <span>' + b.nCal + ' / ' + b.prac.length + '</span></a>';
+  };
+  // 按首字母分段：每段一個字母小標題
+  var byLetter = function (list, idp) {
+    var seg = {}, ord = [];
+    list.slice().sort(bySort).forEach(function (g) { var c = initial(g); if (!seg[c]) { seg[c] = []; ord.push(c); } seg[c].push(g); });
+    return { ord: ord, html: ord.map(function (c) { return '<div class="godseg" id="' + idp + c + '"><span class="godlet">' + esc(c) + '</span><div class="godlist">' + seg[c].map(item).join('') + '</div></div>'; }).join('') };
+  };
+  var seg = function (v, zh, en, fr) { return '<button type="button" data-gs="' + v + '" aria-pressed="' + (GODS.sort === v) + '">' + L(zh, en, fr) + '</button>'; };
   var h = L('<h1>神明檔案</h1><p class="lede">點神名看該神在各版本中的記載、經典覈查和全部敘事記錄。名後數字：齋期表條目數 / 實踐記錄數。</p>',
-    '<h1>Deity profiles</h1><p class="lede">Click a name for the deity’s entries in each edition, scripture checks and all narrative records. Numbers after each name: calendar entries / practice records.</p>');
-  Object.keys(groups).forEach(function (t) {
-    h += '<h2>' + esc(C(t)) + '</h2><div class="godlist">' + groups[t].map(function (g) {
-      var b = byG[g.id] || bucket(g.id);
-      return '<a href="#g/' + g.id + '"' + (FOCUS && FOCUS.g === g.id ? ' class="fx"' : '') + '>' + N(g.name) + ' <span>' + b.nCal + ' / ' + b.prac.length + '</span></a>';
-    }).join('') + '</div>';
-  });
+    '<h1>Deity profiles</h1><p class="lede">Click a name for the deity’s entries in each edition, scripture checks and all narrative records. Numbers after each name: calendar entries / practice records.</p>') +
+    '<div class="controls"><span class="small">' + L('排列：', 'Arrange: ', 'Classer : ') + '</span><span class="seg" id="gsort" role="group">' + seg('py', '按拼音首字母', 'By pinyin initial', 'Par initiale pinyin') + seg('type', '按性質，再按拼音', 'By type, then pinyin', 'Par type, puis pinyin') + '</span></div>';
+  if (GODS.sort === 'type') {
+    var groups = {}, tord = [];
+    D.deities.forEach(function (g) { var t = g.type || '未分類'; if (!groups[t]) { groups[t] = []; tord.push(t); } groups[t].push(g); });
+    h += '<p class="small muted">' + L('性質據數據庫「神明」表的填寫，只作檢索之便，研究分析不按此分類。', 'Types follow the database’s deity table and are a finding aid only; the analysis does not classify deities this way.', 'Les types suivent la table des divinités et ne servent qu’à la recherche ; l’analyse ne classe pas les divinités ainsi.') + '</p>' +
+      tord.map(function (t, i) { return '<h2>' + esc(C(t)) + ' <span class="muted small">' + groups[t].length + '</span></h2>' + byLetter(groups[t], 'gl' + i + '-').html; }).join('');
+  } else {
+    var r = byLetter(D.deities, 'gl-');
+    h += '<p class="godidx">' + r.ord.map(function (c) { return '<button type="button" class="linkbtn" data-gl="gl-' + c + '">' + esc(c) + '</button>'; }).join('') + '</p>' + r.html;
+  }
   app.innerHTML = h;
+  app.querySelectorAll('#gsort button').forEach(function (b) { b.onclick = function () { GODS.sort = b.getAttribute('data-gs'); try { localStorage.setItem('zhai-gods-sort', GODS.sort); } catch (e) {} viewGods(); }; });
+  app.querySelectorAll('[data-gl]').forEach(function (b) { b.onclick = function () { var t = document.getElementById(b.getAttribute('data-gl')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; });
 }
 
 // ---------- 視圖：單個神明 ----------
@@ -3172,6 +3196,10 @@ var SHARE = {
   matrix: {
     get: function () { return { q: M.q, type: M.type, only: M.only !== 'any' ? M.only : '', sort: M.sort !== 'prac' ? M.sort : '' }; },
     set: function (o) { M.q = o.q || ''; M.type = o.type || ''; M.only = o.only || 'any'; M.sort = o.sort || 'prac'; }
+  },
+  gods: {
+    get: function () { return { sort: GODS.sort !== 'py' ? GODS.sort : '' }; },
+    set: function (o) { GODS.sort = o.sort === 'type' ? 'type' : 'py'; }
   },
   calendar: {
     get: function () { return { eds: CAL.vs ? (CAL.vs.length ? CAL.vs.map(function (i) { return ED.versions[i].no; }).join(',') : 'none') : '', weak: CAL.weak ? 1 : '' }; },

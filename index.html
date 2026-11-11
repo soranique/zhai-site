@@ -2543,7 +2543,9 @@ function viewKinship() {
         else if (k) showTip(e, pairTip(PB[k]) + (VIA[k] ? '<div class="muted">' + L('可由居中的 ' + vname(VIA[k]) + ' 解釋', 'Explained by the intermediate ' + vname(VIA[k]), 'Expliqué par l’édition intermédiaire ' + vname(VIA[k])) + '</div>' : ''));
         else { var r = K.dir[+di]; showTip(e, '<b>' + vname(NB[r.a]) + ' → ' + vname(NB[r.b]) + '</b> <span class="muted">（' + esc(I.en() ? I.T(r.st === '確定' ? 'certain' : 'candidate') : r.st) + '）</span><div>' + FT(r.d) + '</div>'); }
       });
-      g.addEventListener('mouseleave', hideTip);
+      // 懸停一條連線：它加深，其餘連線（含黑色箭頭）變淡；移開後恢復（若有選中的一對，回到選中狀態）
+      g.addEventListener('mouseenter', function () { el.querySelectorAll('g.eg').forEach(function (x) { var on = x === g; x.classList.toggle('dim', !on); x.querySelectorAll('.e').forEach(function (e) { e.classList.toggle('hl', on); }); }); });
+      g.addEventListener('mouseleave', function () { hideTip(); el.querySelectorAll('g.eg').forEach(function (x) { x.classList.remove('dim'); }); kinApplySel(); });
       g.addEventListener('click', function (ev) { ev.stopPropagation(); var k = g.getAttribute('data-k'); if (!k) return; var p = PB[k]; hideTip();
         if (KIN.mode === 'sv') { if (KSEL === k && svPopOpen()) { kinSelect(''); svPopClose(); return; } kinSelect(k); svPop(p, ev); return; }
         if (KSEL === k) { kinSelect(''); closeCmp(); return; } location.hash = 'kin/' + p.a + '/' + p.b; });

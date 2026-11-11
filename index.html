@@ -163,13 +163,11 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fday { display: inline-block; margin-right: 10px; white-space: nowrap; }
 .rec.jump { background: var(--hl); transition: background 1.5s; }
 /* ---- 刊刻地與版本線索圖 ---- */
-.spread { --sea:#dfe8ee; --land:#f8f6f0; --coast:#aeab9f; --f1:var(--cat1); --f2:var(--cat4); --f5:var(--cat2); --f6:var(--cat6); --f0:var(--cat-o); --doc:var(--ink); }
+.spread { --sea:#dfe8ee; --land:#f8f6f0; --coast:#aeab9f; --f1:var(--cat1); --f2:var(--cat8); --f5:var(--cat2); --f6:var(--cat6); --f0:var(--cat-o); --doc:var(--ink); }   /* 版本關聯連線：藤黃讓給玉匣記系統的地點，朱說霖重校改用胭脂 */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; } }
 :root[data-theme="dark"] .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; }
 .spread .sgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
-.spread { --pfit: #2f7d5a; --pdev: #c08a1e; --pnone: #a59c8e; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --pfit: #4aa57c; --pdev: #d3a03a; --pnone: #8d877c; } }
-:root[data-theme="dark"] .spread { --pfit: #4aa57c; --pdev: #d3a03a; --pnone: #8d877c; }
+.spread { --pfit: var(--cat5); --pdev: var(--accent); --pnone: var(--cat-o); }   /* 實踐記錄：符合＝天青，偏離＝硃紅，無對應＝暖灰；避開地點的藤黃（玉匣記系統）與石綠（其他齋曆） */
 .spread .pr-fit { fill: var(--pfit); } .spread .pr-dev { fill: var(--pdev); } .spread .pr-none { fill: var(--pnone); }
 .spread .pr-ring { fill: none; stroke: var(--surface); stroke-width: 1.2; }
 .spread .sprp { cursor: pointer; opacity: .82; } .spread .sprp:hover, .spread .sprp.on { opacity: 1; } .spread .sprp.on .pr-ring { stroke: var(--ink); stroke-width: 2; }
@@ -210,7 +208,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread .hit { fill: none; stroke: transparent; stroke-width: 14; cursor: pointer; }
 .spread .spt { cursor: pointer; } .spread .spt text { font-size: 13px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .spread .spt .print { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; } .spread .spt .attr { fill: var(--surface); stroke: var(--accent); stroke-width: 2; } .spread .spt .acq { fill: var(--ink); stroke: var(--surface); stroke-width: 1.5; }
-.spread { --sp-y: var(--accent); --sp-o: var(--cat3); }   /* 其他齋曆用青綠，避開版本關聯連線已用的藍、金、紫、橄欖綠 */
+.spread { --sp-y: var(--cat4); --sp-o: var(--cat3); }   /* 與版本親疏頁同一套：玉匣記系統＝藤黃，其他齋曆＝石綠 */
 .spread .spt .print.sy, .spread .spt .acq.sy { fill: var(--sp-y); } .spread .spt .print.so, .spread .spt .acq.so { fill: var(--sp-o); }
 .spread .spt .attr.sy { stroke: var(--sp-y); } .spread .spt .attr.so { stroke: var(--sp-o); }
 .spread .spt path.attr.so { fill: none; }
@@ -228,7 +226,17 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread ul.sev li:hover { background: var(--surface-2); }
 
 /* ---- 版本親疏 ---- */
-.kin { --l1:var(--cat1); --l2:var(--cat2); --l3:var(--cat3); --l4:var(--cat4); --l5:var(--cat5); --l6:var(--cat6); --l7:var(--cat-u); --edge:#52514e; --heat0:#f2f1ed; --heat1:var(--accent); }   /* 文本類型＝分類色；重合度矩陣＝數量，用硃紅 */
+.kin {
+  /* 文本類型按體系分色，一個體系一種顏色：道藏系統（道藏本）石青；玉匣記系統（單行本、通書）藤黃，與版本線索圖的玉匣記系統同色；
+     宮觀手冊胭脂；善書石綠；日用類書青蓮（自成文類體系）；未定鉛灰。同一體系內的類型由泳道位置區分，不再分深淺 */
+  --l1: var(--cat1);   /* 道藏本 */
+  --l4: var(--cat4);   /* 單行本 */
+  --l5: var(--cat4);   /* 通書 */
+  --l2: var(--cat8);   /* 宮觀手冊 */
+  --l6: var(--cat3);   /* 善書 */
+  --l3: var(--cat2);   /* 日用類書 */
+  --l7: var(--cat-u); --edge:#52514e; --heat0:#f2f1ed; --heat1:var(--accent); }   /* 文本類型＝兩族分類色；重合度矩陣＝數量，用硃紅 */
+.kin .klg { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12.5px; color: var(--ink-2); margin: 8px 2px 0; } .kin .klg b { font-weight: 600; color: var(--ink); margin-right: 6px; } .kin .klg span { margin-right: 10px; white-space: nowrap; } .kin .klg .ksw { margin: 0 4px 0 0; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .kin { --edge:#bdbbb3; --heat0:#262624; } }
 :root[data-theme="dark"] .kin { --edge:#bdbbb3; --heat0:#262624; }
 .kin svg.knet { display: block; width: 100%; height: auto; }
@@ -2140,7 +2148,10 @@ function viewKinship() {
     '<div class="kin"><div class="controls card"><label>' + L('連線：', 'Lines: ') + '<select id="kmode"><option value="j"' + (KIN.mode === 'j' ? ' selected' : '') + '>' + L('重合度', 'Overlap') + '</option><option value="c"' + (KIN.mode === 'c' ? ' selected' : '') + '>' + L('包含度', 'Containment', 'Inclusion') + '</option><option value="sv"' + (KIN.mode === 'sv' ? ' selected' : '') + '>' + L('共有的少數日期', 'Shared minority dates') + '</option></select></label>' +
     '<label id="kthrw"><span id="kthrl"></span><input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + (KIN.mode === 'c' ? KIN.thrc : KIN.thr) + '"> <b id="kthrv"></b></label>' +
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('顯示有依據的先後關係', 'Show evidenced sequences') + '</label></div>' +
-    '<div class="card" id="knet"></div>' +
+    '<div class="card" id="knet"></div>' + (function () {
+      var grp = function (zh, en, fr, ls) { return '<div><span><i class="ksw" style="background:' + LC[ls[0]] + '"></i><b>' + L(zh, en, fr) + '</b>' + (ls.length > 1 || ls[0] !== zh ? L('（' + ls.join('、') + '）', ' (' + ls.map(function (l) { return I.T(LEN[l]); }).join(', ') + ')', ' (' + ls.map(function (l) { return I.T(LEN[l]); }).join(', ') + ')') : '') + '</span></div>'; };
+      return '<div class="klg">' + grp('道藏系統', 'Daoist canon', 'Canon taoïste', ['道藏本']) + grp('玉匣記系統', 'Yuxiaji tradition', 'Tradition du Yuxiaji', ['單行本', '通書']) + grp('宮觀手冊', 'Temple manuals', 'Manuels de temple', ['宮觀手冊']) + grp('善書', 'Morality books', 'Livres de morale', ['善書']) + grp('日用類書', 'Encyclopaedias', 'Encyclopédies', ['日用類書']) + grp('未定', 'Undetermined', 'Indéterminé', ['未定']) + '</div>';
+    })() +
     '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目；要按月日逐條對齊，用圖下的按鈕，或點下方矩陣的格子。比較單位與逐條細看相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries; to align two editions day by day, use the button below the diagram or click a cell of the matrix further down. The unit is the same as in that view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées ; pour aligner deux éditions jour par jour, utilisez le bouton sous le diagramme ou une case de la matrice plus bas. L’unité est celle de cette vue ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
     '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><div class="controls"><label>' + L('格中數字：', 'Cells show: ', 'Cases : ') + '<select id="khmode"><option value="j"' + (KIN.hm === 'j' ? ' selected' : '') + '>' + L('重合度（對稱）', 'Overlap (symmetric)', 'Recouvrement (symétrique)') + '</option><option value="c"' + (KIN.hm === 'c' ? ' selected' : '') + '>' + L('包含度（行本見於列本的比例）', 'Containment (share of the row edition found in the column edition)', 'Inclusion (part de l’édition en ligne présente dans l’édition en colonne)') + '</option></select></label></div><p class="small muted" style="margin:0 0 6px" id="khmd"></p><div class="card scroll" id="khm"></div></div><div>' +
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
@@ -2177,7 +2188,7 @@ function viewKinship() {
     document.getElementById('kthrl').textContent = KIN.mode === 'c' ? L('只顯示包含度 ≥ ', 'Only containment ≥ ', 'Inclusion ≥ ') : L('只顯示重合度 ≥ ', 'Only overlap ≥ ');
     document.getElementById('kthr').value = thr; document.getElementById('kthrv').textContent = thr.toFixed(2);
     var s = '<svg class="knet" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + L('版本親疏圖', 'Edition kinship network') + '"><defs><marker id="karr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 z" fill="var(--ink)"/></marker></defs>';
-    LANES.forEach(function (l, i) { var y = 20 + i * LH; s += '<rect class="lane" x="0" y="' + (y + 2) + '" width="' + W + '" height="' + (LH - 4) + '" rx="4" opacity="' + (i % 2 ? 0.55 : 1) + '"/><text class="lanet" x="8" y="' + (y + LH / 2 + 4) + '">' + esc(lname(l)) + '</text>'; });
+    LANES.forEach(function (l, i) { var y = 20 + i * LH; s += '<rect class="lane" x="0" y="' + (y + 2) + '" width="' + W + '" height="' + (LH - 4) + '" rx="4" opacity="' + (i % 2 ? 0.55 : 1) + '"/><circle cx="13" cy="' + (y + LH / 2) + '" r="5" fill="' + LC[l] + '"/><text class="lanet" x="23" y="' + (y + LH / 2 + 4) + '">' + esc(lname(l)) + '</text>'; });
     ORD.forEach(function (n) { s += '<line class="tick" x1="' + n.x + '" x2="' + n.x + '" y1="20" y2="' + (H - 20) + '"/>'; });
     s += '<text class="tickt" x="' + X0 + '" y="' + (H - 6) + '">' + L('← 早', '← earlier') + '</text><text class="tickt" x="' + X1 + '" y="' + (H - 6) + '" text-anchor="end">' + L('晚 →（按年代先後等距排列，不按年數比例）', 'later → (evenly spaced in order, not to scale)') + '</text>';
     var ps = K.pairs.filter(function (p) { return KIN.mode === 'sv' ? p.sv > 0 : val(p) >= thr; });

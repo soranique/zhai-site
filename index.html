@@ -479,6 +479,10 @@ table.edm th.edc { vertical-align: bottom; padding: 6px 2px; text-align: center;
 table.edm th.edc a { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: var(--ink-2); }
 table.edm th.edc .yr { font-size: 11px; color: var(--muted); }
 table.edm th.edc .vt { writing-mode: vertical-rl; font-size: 12px; max-height: 10em; overflow: hidden; line-height: 1.2; }
+.tdc { display: inline-flex; gap: 1px; margin: 0 1px; }
+.tdk { display: inline-block; min-width: 1.4em; padding: 0 3px; border-radius: 3px; font-size: 12px; line-height: 1.5; text-align: center; color: var(--ink); background: color-mix(in srgb, var(--c) 28%, transparent); box-shadow: inset 0 0 0 1px var(--c); }
+.tdleg .tdc { vertical-align: middle; }
+td.nowrap { white-space: nowrap; }
 table.edm td.edc { text-align: center; padding: 5px 3px; min-width: 44px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 table.edm .ox { background: var(--surface-2); }
 table.edm td.dv { color: var(--accent); font-weight: 600; }
@@ -2287,7 +2291,7 @@ function viewVenn(el) {
   if (el.isConnected) decorate();
 }
 // mode：j 重合度（交集÷並集）、c 包含度（交集÷較小一本，即較小一本有幾成見於另一本）、sv 共有的少數日期；hm：矩陣格中數字用 j 或 c
-var KIN = { mode: 'j', thr: 0.4, thrc: 0.6, thrw: 0.25, dir: true, hm: 'j', red: true, small: true };   // red：隱藏可由中間本解釋的連線；small：包含度不計條目過少的本子
+var KIN = { mode: 'j', thr: 0.03, thrc: 0.6, thrw: 0.25, dir: true, hm: 'j', red: true, small: true };   // red：隱藏可由中間本解釋的連線；small：包含度不計條目過少的本子
 var KIN_SMALL = 50, KIN_TIE = 0.03, KIN_RANK = 0;   // KIN_TIE：與最高值相差不到此數的都算並列最高；KIN_RANK：包含度模式下點選、列出排名的本子   // 可比條目少於此數的本子視爲「樣本少」：包含度的分母太小，又多收通行日期，容易虛高
 function kinC(p) { return Math.max(p.ca, p.cb); }
 // 加權重合度：每個比較單位的分量 = ln(見證總數 ÷ 有它的見證數)，人人都有的單位分量爲 0；
@@ -2376,7 +2380,7 @@ function viewKinship() {
        ['w', L('加權重合度', 'Weighted overlap', 'Recouvrement pondéré'), L('共有條目按罕見程度計分：越多本有，分量越輕', 'Shared entries count by rarity: the more editions have one, the less it weighs', 'Les entrées communes comptent selon leur rareté : plus elles sont répandues, moins elles pèsent')],
        ['sv', L('共有的少數日期', 'Shared minority dates', 'Dates minoritaires communes'), L('多數本子不作、而這兩本都作的日期', 'Dates most editions lack but both of these have', 'Dates absentes de la plupart des éditions mais présentes dans les deux')]].map(function (o) { return '<button type="button" data-m="' + o[0] + '" aria-pressed="' + (KIN.mode === o[0]) + '">' + o[1] + '<small>' + o[2] + '</small></button>'; }).join('') + '</div>' +
     '<div class="controls card">' +
-    '<label id="kthrw"><span id="kthrl"></span><input type="range" id="kthr" min="0.1" max="0.9" step="0.05" value="' + (KIN.mode === 'c' ? KIN.thrc : KIN.thr) + '"> <b id="kthrv"></b></label>' +
+    '<label id="kthrw"><span id="kthrl"></span><input type="range" id="kthr" min="0.01" max="0.9" step="0.01" value="' + (KIN.mode === 'c' ? KIN.thrc : KIN.thr) + '"> <b id="kthrv"></b></label>' +
     '<label id="ksmallw"><input type="checkbox" id="ksmall"' + (KIN.small ? ' checked' : '') + '> ' + L('包含度不計條目少於 ' + KIN_SMALL + ' 條的本子', 'Containment: leave out editions with fewer than ' + KIN_SMALL + ' entries', 'Inclusion : exclure les éditions de moins de ' + KIN_SMALL + ' entrées') + '</label>' +
     '<label id="kredw"><input type="checkbox" id="kred"' + (KIN.red ? ' checked' : '') + '> ' + L('隱藏可由中間本解釋的連線', 'Hide lines explained by an intermediate edition', 'Masquer les liens expliqués par une édition intermédiaire') + '</label>' +
     '<label><input type="checkbox" id="kdir"' + (KIN.dir ? ' checked' : '') + '> ' + L('顯示有依據的先後關係', 'Show evidenced sequences') + '</label><p class="muted small" id="kredn" style="flex-basis:100%;margin:2px 0 0"></p></div>' +
@@ -2938,6 +2942,67 @@ function edDate(e) { return e.m && e.d ? (I.en() ? e.m + '/' + e.d : esc(e.mo + 
 function edV(v, long) { return (long ? N(v.short) : esc(v.short)) + (v.pub && v.pub !== '待填' ? ' <span class="muted small">' + FT(v.pub, 1) + '</span>' : ''); }
 function edWhen(v) { return esc(I.en() ? v.when.replace('暫定', L('', ' (prov.)', ' (prov.)')).replace('待覈', L('', ' (to verify)', ' (à vérifier)')).replace('前後', L('', ' approx.', ' env.')).replace('待填', L('', 'n.d.', 's. d.')).replace('彙集', L('', 'compilation', 'compilation')) : v.when); }
 var EDF = { rows: 'k', q: '', min: '2', fam: 'all', sort: 'nv', limit: 150 };
+// 同神同日、類型不同：參與「版本親疏」比較的版本中，同一規範名、同一具體月日，各本所標編碼日期類型不全相同（與 build_kinship.py 同一取材：正文、有規範名、不在 omit 裏）
+var TDF = { sort: 'date' };
+var TDK = { '誕辰': ['誕', '--cat1'], '成就': ['成', '--cat4'], '下降': ['降', '--cat5'], '巡察': ['巡', '--cat3'], '集會': ['會', '--cat7'], '節令': ['節', '--cat2'], '諱辰': ['諱', '--cat6'], '誓願': ['願', '--cat8'], '其他': ['他', '--cat-o'] };
+var TDK_EN = { '誕辰': 'Birth', '成就': 'Attainment', '下降': 'Descent', '巡察': 'Inspection', '集會': 'Assembly', '節令': 'Festival', '諱辰': 'Death ann.', '誓願': 'Vow', '其他': 'Other' };
+var TDK_FR = { '誕辰': 'Naissance', '成就': 'Accomplissement', '下降': 'Descente', '巡察': 'Inspection', '集會': 'Assemblée', '節令': 'Fête', '諱辰': 'Anniv. décès', '誓願': 'Vœu', '其他': 'Autre' };
+function tdName(t) { return L(t, TDK_EN[t] || t, TDK_FR[t] || t); }
+function tdChip(c) {
+  return '<span class="tdc">' + cTypes(c).map(function (t) { var k = TDK[t] || ['?', '--cat-u']; return '<span class="tdk" style="--c:var(' + k[1] + ')" title="' + esc(tdName(t)) + '">' + (I.en() ? esc((TDK_EN[t] || t).slice(0, 4)) : k[0]) + '</span>'; }).join('') + '</span>';
+}
+var TDX = null;
+function edTypeDiff() {
+  if (TDX) return TDX;
+  var K = window.ZHAI_KIN; if (!K || !K.incl) return (TDX = { rows: [], vs: [] });
+  var inc = {}; K.incl.forEach(function (no) { inc[no] = 1; });
+  var vs = ED.versions.filter(function (v) { return inc[+v.no] && !v.solo; }).sort(function (a, b) { return K.incl.indexOf(+a.no) - K.incl.indexOf(+b.no); });
+  var by = {};
+  ED.entries.forEach(function (e) {
+    var v = ED.versions[e.v];
+    if (!v || !inc[+v.no] || !e.k || !e.id || KOMIT[e.id] || e.r || (e.p && e.p !== '正文') || !(e.m && e.d) || /^每月/.test(e.mo || '')) return;
+    var key = e.k + '|' + e.m + '|' + e.d, r = by[key] || (by[key] = { k: e.k, m: e.m, d: e.d, v: {} });
+    (r.v[v.i] = r.v[v.i] || []).push(e);
+  });
+  var rows = Object.keys(by).map(function (k) { return by[k]; }).filter(function (r) {
+    var sig = {}; Object.keys(r.v).forEach(function (vi) { var ts = {}; r.v[vi].forEach(function (e) { ts[e.c || '其他'] = 1; }); sig[Object.keys(ts).sort().join('+')] = 1; });
+    r.nv = Object.keys(r.v).length;
+    return r.nv >= 2 && Object.keys(sig).length > 1;
+  });
+  rows.forEach(function (r) {
+    var cnt = {};
+    Object.keys(r.v).forEach(function (vi) { var ts = {}; r.v[vi].forEach(function (e) { cTypes(e.c).forEach(function (t) { ts[t] = 1; }); }); Object.keys(ts).forEach(function (t) { cnt[t] = (cnt[t] || 0) + 1; }); });
+    r.cnt = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; }).map(function (t) { return [t, cnt[t]]; });
+  });
+  return (TDX = { rows: rows, vs: vs });
+}
+function edTypeDiffHTML() {
+  var T = edTypeDiff();
+  if (!T.rows.length) return '';
+  return '<h2 id="tdiff">' + L('同神同日、類型不同', 'Same deity, same day, different type', 'Même divinité, même jour, type différent') + '</h2>' +
+    '<p class="lede small">' + L('參與「<a href="#kin">版本親疏</a>」比較的 ' + T.vs.length + ' 個版本中，同一規範名、同一具體月日（只計正文中的單一月日），各本所標「編碼日期類型」不全相同的，共 ' + T.rows.length + ' 處。格中是該本給這一天的類型，一本有兩條或兼標兩類時並列；· 表示該本這一天沒有這位神。「版本親疏」按「規範名＋類型＋月日」比較，所以類型不同的兩條不算共有。點一行看各版本的原文。',
+      'Among the ' + T.vs.length + ' editions compared on the <a href="#kin">Edition kinship</a> page, ' + T.rows.length + ' cases where the same normalized name on the same specific day (single dates in the main table only) is given different coded date types. Each cell gives the type(s) that edition assigns to the day; · means the deity does not appear on that day in that edition. Kinship compares “name + type + day”, so entries of different types are not counted as shared. Click a row for the original entries.',
+      'Parmi les ' + T.vs.length + ' éditions comparées dans <a href="#kin">Parenté des éditions</a>, ' + T.rows.length + ' cas où le même nom normalisé, au même jour précis (dates uniques de la table principale), reçoit des types de jour différents. Chaque case donne le ou les types attribués par l’édition ; · : la divinité n’y figure pas ce jour-là. La parenté compare « nom + type + jour » : des entrées de types différents ne comptent pas comme communes. Cliquer une ligne pour les textes.') + '</p>' +
+    '<p class="small tdleg">' + Object.keys(TDK).map(function (t) { return tdChip(t) + ' ' + esc(tdName(t)); }).join('　') + '</p>' +
+    '<div class="controls"><select id="tdsort">' + [['date', '按日期', 'by date', 'par date'], ['nv', '按出現版本數', 'by number of editions', 'par nombre d’éditions'], ['name', '按名稱', 'by name', 'par nom']].map(function (o) { return '<option value="' + o[0] + '"' + (TDF.sort === o[0] ? ' selected' : '') + '>' + L(o[1], o[2], o[3]) + '</option>'; }).join('') + '</select></div>' +
+    '<div class="scroll"><table class="edm" id="tdm"></table></div>';
+}
+function edTypeDiffFill() {
+  var T = edTypeDiff(), el = document.getElementById('tdm'); if (!el) return;
+  var rows = T.rows.slice().sort(TDF.sort === 'nv' ? function (a, b) { return b.nv - a.nv || a.m - b.m || a.d - b.d; } : TDF.sort === 'name' ? function (a, b) { return a.k < b.k ? -1 : a.k > b.k ? 1 : a.m - b.m || a.d - b.d; } : function (a, b) { return a.m - b.m || a.d - b.d || (a.k < b.k ? -1 : 1); });
+  var head = '<thead><tr><th>' + L('日期', 'Day', 'Jour') + '</th><th class="edn">' + L('神明', 'Deity', 'Divinité') + '</th><th>' + L('各類型本數', 'Editions per type', 'Éditions par type') + '</th>' + T.vs.map(function (v) {
+    return '<th class="edc' + (v.yuxia ? '' : ' ox') + '" title="' + esc(v.sheet) + '"><a href="#ev/' + v.i + '"><span class="yr">' + edWhen(v) + '</span><span class="vt">' + esc(I.en() ? (I.py(edSh(v)) || I.py(v.short) || v.short) : edSh(v)) + '</span></a></th>';
+  }).join('') + '</tr></thead>';
+  var body = rows.map(function (r) {
+    return '<tr class="row' + (fNorm(r.k) ? ' focus' : '') + '" data-k="' + esc(r.k) + '"><td class="num">' + esc(dayName(r.m, r.d)) + '</td><td class="edn"><b>' + N(r.k) + '</b></td><td class="small nowrap">' + r.cnt.map(function (x) { return esc(tdName(x[0])) + ' ' + x[1]; }).join(' · ') + '</td>' + T.vs.map(function (v) {
+      var es = r.v[v.i], cls = 'edc' + (v.yuxia ? '' : ' ox');
+      if (!es) return '<td class="' + cls + ' cell-empty">·</td>';
+      var ts = {}; es.forEach(function (e) { ts[e.c || '其他'] = 1; });
+      return '<td class="' + cls + '" title="' + esc(es.map(function (e) { return e.t + '（' + (e.c || '其他') + '）'; }).join('\n')) + '">' + Object.keys(ts).map(tdChip).join('') + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  el.innerHTML = head + '<tbody>' + body + '</tbody>';
+}
 function viewEditions() {
   var X = edIndex();
   if (!X) { app.innerHTML = '<p>' + L('缺少 editions-data.js。', 'editions-data.js is missing.') + '</p>'; return; }
@@ -2960,10 +3025,12 @@ function viewEditions() {
     '<select id="efam">' + [['all', '全部文本', 'all texts'], ['yx', '只看《玉匣記》系統', 'Yuxiaji line only']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.fam === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<select id="esort">' + [['nv', '按出現版本數', 'by number of editions'], ['date', '按日期', 'by date'], ['name', '按名稱', 'by name']].map(function (o) { return '<option value="' + o[0] + '"' + (EDF.sort === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') + '</select>' +
     '<span class="muted small" id="ecount"></span></div><div class="scroll"><table class="edm" id="edm"></table></div><p><button type="button" id="emore" class="morebtn"></button></p></div>';
+  h += edTypeDiffHTML();
   app.innerHTML = h;
   pageGuide(L('這一頁查內容：某位神、某本書記了什麼。', 'This page is for looking up content: what a given deity or book records.', 'Cette page sert à consulter le contenu : ce que note telle divinité ou tel ouvrage.'),
     [L('版本目錄列出全部版本，點進去看該本的所有條目。', 'The catalogue lists every edition; open one to see all its entries.', 'Le catalogue recense toutes les éditions ; ouvrez-en une pour voir toutes ses entrées.'),
       L('「神明 × 版本」大表對照每位神在各本的日期，少數日期標紅。', 'The deities × editions table compares each deity’s dates across editions, with minority dates in red.', 'Le tableau divinités × éditions compare les dates de chaque divinité d’une édition à l’autre ; les dates minoritaires sont en rouge.'),
+      L('「同神同日、類型不同」列出各本對同一位神的同一天定性不同之處（如一本作誕辰、一本作下降）。', '“Same deity, same day, different type” lists where editions classify the same deity’s day differently (e.g. birth in one, descent in another).', '« Même divinité, même jour, type différent » recense les cas où les éditions classent différemment le même jour d’une divinité (naissance dans l’une, descente dans l’autre).'),
       L('全部版本都在這裏，包括文本不全、體例不同的本子和專門單獨齋期。', 'All editions are here, including incomplete texts, works organized differently and standalone fast calendars.', 'Toutes les éditions y figurent, y compris les textes incomplets, les ouvrages de structure différente et les calendriers de jeûne spécifiques.')],
     L('比如：觀音成道日各本作哪天？', 'For example: on which day does each edition put Guanyin’s attainment of the Way?', 'Par exemple : à quel jour chaque édition place-t-elle l’accomplissement de la Voie de Guanyin ?'),
     '#kin', L('想看本子之間有多近，請看「版本親疏」', 'To see how close the editions are to one another, go to Edition kinship', 'Pour voir la proximité entre éditions, allez à Parenté des éditions'));
@@ -3008,6 +3075,9 @@ function viewEditions() {
   document.getElementById('efam').onchange = function (e) { EDF.fam = e.target.value; fill(); };
   document.getElementById('esort').onchange = function (e) { EDF.sort = e.target.value; fill(); };
   document.getElementById('emore').onclick = function () { EDF.limit += 150; fill(); };
+  edTypeDiffFill();
+  var tds = document.getElementById('tdsort'); if (tds) tds.onchange = function (e) { TDF.sort = e.target.value; edTypeDiffFill(); };
+  var tdm = document.getElementById('tdm'); if (tdm) tdm.onclick = function (e) { var tr = e.target.closest('tr[data-k]'); if (tr && !e.target.closest('a')) location.hash = 'ed/' + encodeURIComponent(tr.getAttribute('data-k')); };
   document.getElementById('edm').onclick = function (e) { var tr = e.target.closest('tr[data-k]'); if (tr && !e.target.closest('a')) location.hash = 'ed/' + encodeURIComponent(tr.getAttribute('data-k')); };
   if (EDF.rows === 'zs') { document.getElementById('ekn').hidden = true; var zb = document.getElementById('ezs'); zb.hidden = false; edDeityPanel(zb); }
 }
@@ -3218,8 +3288,8 @@ var SHARE = {
     set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; SP.printOnly = o.po === '1'; }
   },
   kin: {
-    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, rank: KIN.mode === 'c' && KIN_RANK ? KIN_RANK : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '', csv: cmpIsOpen() && CMP.sv ? 1 : '' }; },
-    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' || o.mode === 'w' ? o.mode : 'j'; KIN.thrw = o.thrw ? Math.max(0.1, Math.min(0.9, +o.thrw)) : 0.25; KIN.small = o.small !== '0'; KIN_RANK = +o.rank || 0; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' || o.hm === 'w' ? o.hm : 'j'; KIN.dir = o.dir !== '0'; KIN.red = o.red !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; CMP.sv = o.csv === '1'; }
+    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.03 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, rank: KIN.mode === 'c' && KIN_RANK ? KIN_RANK : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '', csv: cmpIsOpen() && CMP.sv ? 1 : '' }; },
+    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' || o.mode === 'w' ? o.mode : 'j'; KIN.thrw = o.thrw ? Math.max(0.1, Math.min(0.9, +o.thrw)) : 0.25; KIN.small = o.small !== '0'; KIN_RANK = +o.rank || 0; KIN.thr = o.thr ? Math.max(0.01, Math.min(0.9, +o.thr)) : 0.03; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' || o.hm === 'w' ? o.hm : 'j'; KIN.dir = o.dir !== '0'; KIN.red = o.red !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; CMP.sv = o.csv === '1'; }
   },
   ring: {
     get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; return o; },

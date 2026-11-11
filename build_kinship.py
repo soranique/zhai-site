@@ -4,6 +4,8 @@
 用法：python3 build_kinship.py 玉匣記版本对比.xlsx
 
 方法（与工作簿「日期异文」页相同）：
+- 计数单位两种（网页「版本親疏」可切换）：按条目（默认；跨几天的条目，如释迦正月初八至十五、北斗九皇九月初一至初九，整段算一项，
+  两本的时段须完全相同才算共有）与按神圣日（逐日拆开，每天一项）；pairs 的 j、ca、cb 与 nodes 的 n 是按条目的，jd、cad、cbd、nd 是按神圣日的
 - 没有建議規範名的条目（天臘、月朔、九毒日等无神名日）不参与比较（INCLUDE_OTHER = False）；
   设为 True 时一律当作「其他」，按「其他＋类型＋月日」比较重合度，判定少数日期、通行日期时仍不计
 - 只用 INCL 里的版本（已获完整文本）；每个版本取「位置」为正文、有具体月日的条目，
@@ -107,7 +109,8 @@ def strict_day(mo, dy):
 def main(path):
     wb = openpyxl.load_workbook(path, read_only=True)
     vers = {r[0]: r[1] for r in wb['版本目录'].iter_rows(min_row=2, values_only=True) if r[1]}
-    E = defaultdict(lambda: defaultdict(set))   # (规范名, 类型) → 版本 → {(月, 日)}
+    E = defaultdict(lambda: defaultdict(set))   # (规范名, 类型) → 版本 → {(月, 日)}：按神圣日计，跨几天的条目逐日拆开
+    EE = defaultdict(lambda: defaultdict(set))  # 同上，按条目计：跨几天的条目（释迦正月初八至十五等）整段算一项，键为 (月, '8,9,…,15')；单日条目与上相同
     J = defaultdict(lambda: defaultdict(set))   # 同上，但只含单一月日（判定通行、少数日期用，与「日期异文」同）
     EID = defaultdict(list)                     # (规范名, 类型, 版本, 月, 日) → [条目ID]
     OMIT = []                                   # 条目ID：不计入比较的条目（在 SKIP 里，或没有建議規範名而 INCLUDE_OTHER 为 False）
@@ -134,13 +137,18 @@ def main(path):
                 if md:
                     for d in md[1]:
                         E[(name, ty)][no].add((md[0], d))
+                    EE[(name, ty)][no].add((md[0], ','.join(str(d) for d in sorted(md[1]))))
                 if sd and r[15]:   # 少数日期、通行日期只看有规范名的条目，与「日期异文」相同
                     J[(r[15], ty)][no].add(sd)
                     EID[(r[15], ty, no) + sd].append(r[16])
-    S = {v: set() for v in INCL}
+    S = {v: set() for v in INCL}    # 按条目计（网页默认）
+    SD = {v: set() for v in INCL}   # 按神圣日计
     for (k, ty), byv in E.items():
         for v, ds in byv.items():
-            S[v] |= {(k, ty, m, d) for m, d in ds}
+            SD[v] |= {(k, ty, m, d) for m, d in ds}
+    for (k, ty), byv in EE.items():
+        for v, ds in byv.items():
+            S[v] |= {(k, ty, m, str(d)) for m, d in ds}
     wit = lambda v: WIT.get(v, v)
     MINOR = defaultdict(set)
     minor_e = {}      # 条目ID → [异文类型, 少数/独有, 持此日期的见证数, 该神见证数, 通行日期]
@@ -173,16 +181,19 @@ def main(path):
         i, u = len(S[a] & S[b]), len(S[a] | S[b])
         if not u:
             continue
+        di, du = len(SD[a] & SD[b]), len(SD[a] | SD[b])
         sh = sorted(MINOR[a] & MINOR[b])
         pairs.append(dict(a=a, b=b, j=round(i / u, 3), ca=round(i / len(S[a]), 3) if S[a] else 0,
-                          cb=round(i / len(S[b]), 3) if S[b] else 0, sv=len(sh),
+                          cb=round(i / len(S[b]), 3) if S[b] else 0,
+                          jd=round(di / du, 3) if du else 0, cad=round(di / len(SD[a]), 3) if SD[a] else 0, cbd=round(di / len(SD[b]), 3) if SD[b] else 0,
+                          sv=len(sh),
                           ex=['%s（%s）%s%s' % (k, t, MN[m], DN[d - 1]) for k, t, (m, d) in sh[:8]]))
     nodes = []
     for v in INCL:
         seg = vers[v].split('_')
         y = re.match(r'(\d{4})', seg[0])
         nodes.append(dict(no=v, name=seg[0] + ' ' + seg[2], yr=seg[0], year=int(y.group(1)) if y else None, sh=SHORT.get(v, seg[2]),
-                          lane=LANE.get(v, '未定'), tent=TENT.get(v, ''), note=NOTE.get(v, ''), n=len(S[v]), nmin=len(MINOR[v])))
+                          lane=LANE.get(v, '未定'), tent=TENT.get(v, ''), note=NOTE.get(v, ''), n=len(S[v]), nd=len(SD[v]), nmin=len(MINOR[v])))
     ret = {}
     for p in pairs:
         if BASE in (p['a'], p['b']):

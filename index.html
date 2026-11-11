@@ -615,7 +615,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="fr.js?v=69407dc3"></script>
 <script src="tx.js?v=d17ca429"></script>
 <script src="i18n.js?v=3c33e8de"></script>
-<script src="data.js?v=dba1d6e8"></script>
+<script src="data.js?v=aad71f4d"></script>
 <script src="editions-data.js?v=c3682202"></script>
 <script src="kinship-data.js?v=6aef551f"></script>
 <script src="spread-data.js?v=9d5df462"></script>
@@ -1375,7 +1375,7 @@ function edDeityPanel(box) {   // 版本目錄和內容對照「每行一個數�
     '<input type="search" id="mq" placeholder="' + L('搜神名或異名', 'Search name or alias (Chinese or pinyin)') + '" value="' + esc(M.q) + '">' +
     '<select id="mt"><option value="">' + L('全部類型', 'All types') + '</option>' + Object.keys(types).map(function (t) { return '<option value="' + esc(t) + '"' + (M.type === t ? ' selected' : '') + '>' + esc(C(t)) + '</option>'; }).join('') + '</select>' +
     '<select id="mo">' +
-    [['any', '全部神明', 'All deities'], ['prac', '有持齋實踐記錄', 'With fasting practice records'], ['gap', '有持齋實踐、但道藏本《玉匣記》（1607）未收', 'Fasting practice, but absent from the Daozang Yuxiaji (1607)'], ['nocal', '有持齋實踐、但所有齋曆版本都未收（或尚未對應）', 'Fasting practice, but in no calendar edition (or not yet matched)'], ['onlycal', '只見於齋曆、無任何敘事記錄', 'Only in calendars, no narrative record']]
+    [['any', '全部神明', 'All deities'], ['prac', '有持齋實踐記錄', 'With fasting practice records'], ['nocal', '有持齋實踐、但所有齋曆版本都未收（或尚未對應）', 'Fasting practice, but in no calendar edition (or not yet matched)'], ['onlycal', '只見於齋曆、無任何敘事記錄', 'Only in calendars, no narrative record']]
       .map(function (o) { return '<option value="' + o[0] + '"' + (M.only === o[0] ? ' selected' : '') + '>' + L(o[1], o[2]) + '</option>'; }).join('') +
     '</select><span class="muted small" id="mcount"></span></div>' +
     '<div class="scroll"><table class="edm" id="mtab"></table></div>';
@@ -1388,7 +1388,6 @@ function edDeityPanel(box) {   // 版本目錄和內容對照「每行一個數�
       if (q && (g.name + g.alias + ' ' + I.py(g.name)).toLowerCase().indexOf(q) < 0) return false;
       if (M.type && (g.type || '未分類') !== M.type) return false;
       if (M.only === 'prac' && !fp) return false;
-      if (M.only === 'gap' && !(fp && !b.ed[V0])) return false;
       if (M.only === 'nocal' && !(fp && !b.nCal)) return false;
       if (M.only === 'onlycal' && !(b.nCal && !b.prac.length && !b.sb.length && !b.fs.length)) return false;
       return true;

@@ -530,6 +530,8 @@ function fastRules(root, D, data) {
   if (!rules.length || !all.length) return;
   var cur = all.filter(function (x) { return x.no === meta.no; })[0];
   if (!cur) return;
+  all = all.filter(function (x) { return !x.excl || x === cur; });   // 暫不計入計算的版本（excl）不參與比較；只在看它自己時列出，並不計入中位數
+  var pool = all.filter(function (x) { return !x.excl; });
   var used = RK.filter(function (k) { return all.some(function (x) { return Object.keys(x.seg).some(function (c) { return c.split('/').indexOf(k) >= 0; }); }); });
   var sec = document.createElement('section'); sec.className = 'zr-sec'; sec.id = 'r-total';
   var mdays = cur.mon.map(function (o) { return Object.keys(o).reduce(function (s, k) { return s + o[k]; }, 0); });
@@ -660,7 +662,7 @@ function fastRules(root, D, data) {
   var S = sec.querySelector('.zr-chart svg'), HATCH = 'zr-hatch-' + (++FAST_UID), defs = svgEl('defs', {}, S), pat = svgEl('pattern', { id: HATCH, width: 4.5, height: 4.5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
   svgEl('rect', { width: 4.5, height: 4.5, fill: 'var(--zr-cell)' }, pat); svgEl('rect', { width: 1.5, height: 4.5, fill: 'var(--zr-ink-2)' }, pat);
   var W = 960, H = 280, ml = 36, mr = 8, mt = 22, mb = 34, bw = (W - ml - mr) / 12;
-  var med = []; for (var m = 0; m < 12; m++) { var vs = all.map(function (x) { return Object.keys(x.mon[m]).reduce(function (s, k) { return s + x.mon[m][k]; }, 0); }).sort(function (a, b) { return a - b; }); med.push(vs.length % 2 ? vs[(vs.length - 1) / 2] : (vs[vs.length / 2 - 1] + vs[vs.length / 2]) / 2); }
+  var med = []; for (var m = 0; m < 12; m++) { var vs = pool.map(function (x) { return Object.keys(x.mon[m]).reduce(function (s, k) { return s + x.mon[m][k]; }, 0); }).sort(function (a, b) { return a - b; }); med.push(vs.length % 2 ? vs[(vs.length - 1) / 2] : (vs[vs.length / 2 - 1] + vs[vs.length / 2]) / 2); }
   var vmax = Math.max(30, Math.max.apply(null, mdays.concat(med))), max = Math.ceil(vmax / 5) * 5;
   function y(v) { return mt + (H - mt - mb) * (1 - v / max); }
   for (var v = 0; v <= max; v += 10) { svgEl('line', { x1: ml, x2: W - mr, y1: y(v), y2: y(v), stroke: 'var(--zr-line)' }, S); svgEl('text', { x: ml - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--zr-muted)' }, S).textContent = v; }

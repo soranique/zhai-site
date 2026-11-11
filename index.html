@@ -1748,7 +1748,7 @@ function viewFit() {
 // ---------- 視圖：刊刻地與版本線索圖（數據見 spread-data.js，資料源 tools/spread/spread_sources.json） ----------
 var spFocus = null;
 var SP = { on: { doc: true, inf: true, f1: true, f2: true, f5: true, f6: true, f0: true }, modern: false,
-  prac: true, pall: false, pweak: false, pref: null, izoom: false, edge: null, place: null };   // edge、place：在地圖上點選的連線（序號）、地點（id），供「從地圖接到其他分析」用   // izoom：江南放大圖再放大   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
+  prac: true, pall: false, pweak: false, pref: null, izoom: false, edge: null, place: null, printOnly: false };   // printOnly：只看刊刻地（隱藏署名地、購藏地、相關連線與實踐記錄）   // edge、place：在地圖上點選的連線（序號）、地點（id），供「從地圖接到其他分析」用   // izoom：江南放大圖再放大   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
 // 實踐記錄的府：去掉括注；兩府交界的記在第一個府
 function pracPref(p) { return String(p.pref || '').replace(/（.*?）/g, '').split('、')[0].trim(); }
 // 與齋曆的對應關係歸成三類（待確認刪除的記錄不上圖）
@@ -1792,6 +1792,7 @@ function viewSpread() {
   }
   function renderPrac() {
     var el = document.getElementById('sprac'); if (!el) return;
+    if (SP.printOnly) { el.innerHTML = '<h2 style="margin-top:0">' + L('實踐記錄的分佈與史料類型', 'Practice records: distribution and source types', 'Pratiques : répartition et types de sources') + '</h2><p class="muted small" style="margin:0">' + L('「只看刊刻地」時不畫實踐記錄。', 'Practice records are hidden while “Places of printing only” is on.', 'Les pratiques sont masquées avec « Lieux d’impression seulement ».') + '</p>'; return; }
     if (!SP.prac) { el.innerHTML = '<h2 style="margin-top:0">' + L('實踐記錄的分佈與史料類型', 'Practice records: distribution and source types', 'Pratiques : répartition et types de sources') + '</h2><p class="muted small" style="margin:0">' + L('實踐記錄圖層已關閉。', 'The practice layer is off.', 'La couche des pratiques est masquée.') + '</p>'; return; }
     var A = PA, shown = A.tot - A.noPlace - A.offMap, tl = timeLabel() || L('全部年代', 'all periods', 'toutes périodes');
     var sel = SP.pref && A.list.filter(function (o) { return o.name === SP.pref; })[0];
@@ -1929,7 +1930,8 @@ function viewSpread() {
           }).join('') + (rk.length > 10 ? '<li class="muted">' + L('等 ' + rk.length + ' 項', 'and ' + (rk.length - 10) + ' more', 'et ' + (rk.length - 10) + ' autres') + '</li>' : '') + '</ul>' : '') + '</div>';
       }).join('') + '</div>';
   }
-  var edgeOn = function (e) { return (e.t === 'fam' ? SP.on[e.f] : SP.on[e.t]) && (!e.modern || SP.modern); };
+  var isPrint = function (id) { return PL[id] && PL[id].kind === 'print'; };
+  var edgeOn = function (e) { return (e.t === 'fam' ? SP.on[e.f] : SP.on[e.t]) && (!e.modern || SP.modern) && (!SP.printOnly || (isPrint(e.a) && isPrint(e.b))); };
   var arrow = function (e) { return e.t !== 'fam' || e.dir ? ' → ' : ' — '; };
   var line = function (st, dash, w, ar) { return '<svg viewBox="0 0 34 16"><line x1="2" y1="8" x2="' + (ar ? 26 : 32) + '" y2="8" stroke="' + st + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>' + (ar ? '<path d="M25,3 L33,8 L25,13 z" fill="' + st + '"/>' : '') + '</svg>'; };
   var h = L('<h1>刊刻地與版本線索圖</h1><p class="lede">《玉匣記》相關本子的地點與版本線索。據版本對比工作簿已錄的版本與三浦國雄〈通書『玉匣記』初探〉（2002）的著錄（工作簿「版本著錄_三浦2002」頁、數據庫文獻 W168–W181）整理。圖中標示<b>現存及著錄本子的刊刻、抄寫、購得與收藏地點</b>，以及<b>版本之間的文本關聯</b>（共用序文、校者署名或題名）。<b>連線不表示已確證的傳播路線</b>：目前的書籍流動線索都涉及中國境外，中國境內的連線都只表示版本關聯；連線也不等於齋期條目內容的承傳。少數非《玉匣記》系統的對照文本已在地點說明中標出。三浦著錄的本子均未目驗。底圖只畫海岸線，不畫政區界線。鼠標移到地點或連線上看依據。</p>',
@@ -1948,6 +1950,8 @@ function viewSpread() {
       line('var(--f1)', '7 5', 2.2, 0) + '<span>' + L('版本關聯（共用序文、校者署名或題名）：不表示方向', 'Edition link (shared preface, reviser or title): no direction implied') + '</span>' +
       line('var(--doc)', '2 4', 2, 1) + '<span>' + L('個本記錄，但一端或途徑不明', 'Copy-level record, one end or route uncertain') + '</span></div>' +
     '<h2>' + L('篩選', 'Filter') + '</h2><div class="sflt" id="sflt">' +
+      '<label><input type="checkbox" id="spo"' + (SP.printOnly ? ' checked' : '') + '> <b>' + L('只看刊刻地', 'Places of printing only', 'Lieux d’impression seulement') + '</b></label>' +
+      '<p class="muted small" style="margin:0 0 8px 26px">' + L('隱藏署名地、抄寫購藏地及其連線，也不畫實踐記錄', 'Hides places named in attributions, places of copying, purchase or holding, their lines, and the practice records', 'Masque les lieux de signature, de copie, d’achat ou de conservation, leurs liens et les pratiques') + '</p>' +
       '<label><input type="checkbox" data-k="doc"' + (SP.on.doc ? ' checked' : '') + '> ' + line('var(--doc)', '', 2.2, 1) + ' ' + L('個本記錄', 'Copy-level record') + '</label>' +
       Object.keys(M.fam).map(function (k) { return '<label><input type="checkbox" data-k="' + k + '"' + (SP.on[k] ? ' checked' : '') + '> <span class="ssw" style="border-color:' + M.fam[k][1] + '"></span> ' + famName(k) + '</label>'; }).join('') +
       '<label><input type="checkbox" data-k="inf"' + (SP.on.inf ? ' checked' : '') + '> ' + line('var(--doc)', '2 4', 2, 1) + ' ' + L('個本記錄（一端或途徑不明）', 'Copy-level record (one end or route uncertain)') + '</label>' +
@@ -2007,7 +2011,7 @@ function viewSpread() {
     };
     // 實踐記錄：按府畫圓，面積是條數，扇形是對應關係；在放大圖範圍內的府只畫在放大圖裏
     var prac = function (ins) {
-      if (!SP.prac) return;
+      if (!SP.prac || SP.printOnly) return;
       PA.list.forEach(function (g) {
         var P = g.p; if (!P || P.off) return;
         if (ins !== (P.ix != null)) return;
@@ -2026,6 +2030,7 @@ function viewSpread() {
     var pts = function (ins) {
       M.places.forEach(function (p) {
         if (p.modern && !SP.modern) return;
+        if (SP.printOnly && p.kind !== 'print') return;
         var out = !placeYear(p);   // 時段外的地點半透明顯示
         if (ins && !p.jn) return;
         var z = ins && SP.izoom ? IZS : 1, x = ins ? p.ix : p.x, y = ins ? p.iy : p.y, l0 = (ins ? M.ilbl[p.id] : M.lbl[p.id]) || [10, 4, 'start'], l = [l0[0] * z, l0[1] * z, l0[2]], r = ins ? z : (p.jn ? 0.7 : 1);
@@ -2116,7 +2121,7 @@ function viewSpread() {
   };
   TIME_HOOK = draw;
   TIME_MIN = Math.min.apply(null, M.places.filter(function (p) { return !p.modern; }).map(function (p) { return Math.min.apply(null, (M.info[p.id] || []).slice(1).filter(function (x) { return x.indexOf('［1949 後］') < 0; }).map(lineYear).filter(Boolean).concat([9999])); }));
-  timeBarWire(function () { var n = M.places.filter(function (p) { return (!p.modern || SP.modern) && placeYear(p); }).length; var q = SP.prac && PA ? PA.tot - PA.noPlace - PA.offMap : 0; return L('地圖上 ' + n + ' 處地點', n + ' places on the map', n + ' lieux sur la carte') + (SP.prac ? L('、' + q + ' 條實踐記錄', ', ' + q + ' practice records', ', ' + q + ' pratiques') : ''); });
+  timeBarWire(function () { var n = M.places.filter(function (p) { return (!p.modern || SP.modern) && (!SP.printOnly || p.kind === 'print') && placeYear(p); }).length; var q = SP.prac && PA ? PA.tot - PA.noPlace - PA.offMap : 0; return L('地圖上 ' + n + ' 處地點', n + ' places on the map', n + ' lieux sur la carte') + (SP.prac ? L('、' + q + ' 條實踐記錄', ', ' + q + ' practice records', ', ' + q + ' pratiques') : ''); });
   var segSync = function () { app.querySelectorAll('#spall button').forEach(function (b) { b.setAttribute('aria-pressed', String((b.getAttribute('data-v') === '1') === SP.pall)); }); };
   segSync();
   app.querySelectorAll('#spall button').forEach(function (b) { b.onclick = function () { SP.pall = b.getAttribute('data-v') === '1'; segSync(); draw(); timeBarSync(); }; });
@@ -2125,6 +2130,7 @@ function viewSpread() {
   renderByPlace();
   document.getElementById('sflt').addEventListener('change', function (e) {
     if (e.target.id === 'smod') SP.modern = e.target.checked;
+    else if (e.target.id === 'spo') { SP.printOnly = e.target.checked; if (SP.printOnly && SP.place && !isPrint(SP.place)) SP.place = null; }
     else { var k = e.target.getAttribute('data-k'); if (k) SP.on[k] = e.target.checked; }
     draw();
   });
@@ -3180,8 +3186,8 @@ var SHARE = {
     set: function (o) { EDF.rows = o.rows === 'zs' ? 'zs' : 'k'; if (o.rows === 'zs') { M.q = o.mq || ''; M.type = o.type || ''; M.only = o.only || 'any'; M.sort = o.msort || 'prac'; } EDF.q = o.q || ''; EDF.min = o.min || '2'; EDF.fam = o.fam || 'all'; EDF.sort = o.sort || 'nv'; EDF.limit = 150; }
   },
   spread: {
-    get: function () { return { off: Object.keys(SP.on).filter(function (k) { return !SP.on[k]; }).join(','), modern: SP.modern ? 1 : '', prac: SP.prac ? '' : 0, pall: SP.pall ? 1 : '', pweak: SP.pweak ? 1 : '', pref: SP.pref || '' }; },
-    set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; }
+    get: function () { return { off: Object.keys(SP.on).filter(function (k) { return !SP.on[k]; }).join(','), modern: SP.modern ? 1 : '', prac: SP.prac ? '' : 0, pall: SP.pall ? 1 : '', pweak: SP.pweak ? 1 : '', pref: SP.pref || '', po: SP.printOnly ? 1 : '' }; },
+    set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; SP.printOnly = o.po === '1'; }
   },
   kin: {
     get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, rank: KIN.mode === 'c' && KIN_RANK ? KIN_RANK : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '', csv: cmpIsOpen() && CMP.sv ? 1 : '' }; },

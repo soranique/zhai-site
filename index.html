@@ -446,6 +446,7 @@ body.demo-on { padding-bottom: 130px; }
 }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); margin: 6px 0 10px; }
 .legend .sw.e1 { background: var(--ev1); } .legend .sw.e2 { background: var(--ev2); } .legend .sw.e3 { background: var(--ev3); }
+.gap li.gap-h { list-style: none; font-weight: 600; margin: 14px 0 4px; padding: 0; } .gap li.gap-h:first-child { margin-top: 0; }
 .gap li { margin-bottom: 6px; }
 /* 齋期日曆：版本選擇 */
 .vpick { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
@@ -2580,37 +2581,65 @@ function drawStrip(el, b) {
 }
 
 // ---------- 視圖：缺口 ----------
+// 只列由數據自動統計、隨數據更新的缺口：資料還缺什麼、哪些對應或年代待覈。
+// 2026-11-11 刪去三項過時的：「性質」欄（研究者不按道、佛、民間給神明分類）；「1607 本條目沒有持齋要求」（持齋要求多寫在齋曆前言，不逐條標註，不能據條目判斷）；
+// 「有持齋實踐、但 1607 本未收」（不再以 1607 本爲基準，改看所有計入的版本）
 function viewGaps() {
   var linked = LINKED.length;
   var relCount = function (r) { return D.practice.filter(function (p) { return p.rel === r; }).length; };
   var fastG = Object.keys(byG).filter(function (id) { return G[id] && fastPrac(byG[id]).length; });
-  var notInV0 = fastG.filter(function (id) { return !byG[id].ed[V0]; });
   var notAny = fastG.filter(function (id) { return !byG[id].nCal; });
-  var v0only = Object.keys(byG).filter(function (id) { var b = byG[id]; return G[id] && b.ed[V0] && !fastPrac(b).length; });
-  var v0 = ED.entries.filter(function (e) { return e.v === V0; });
-  var v0NoReq = v0.filter(function (e) { return !e.q; }).length;
+  // 計入計算的全年齋曆版本（不含專門單獨齋期、暫不計入的版本）
+  // 與版本親疏同一組（build_kinship.py 的 INCL：已獲完整文本、有逐月神誕表、計入計算的全年齋曆）
+  var KI = {}; ((window.ZHAI_KIN || {}).incl || []).forEach(function (no) { KI[no] = 1; });
+  var calcV = ED.versions.filter(function (v) { return KI[+v.no] && inCalc(v); });
+  var calcI = {}; calcV.forEach(function (v) { calcI[v.i] = 1; });
+  var nEd = function (b) { return Object.keys(b.ed).filter(function (i) { return calcI[i]; }).length; };
+  var common = Object.keys(byG).filter(function (id) { var b = byG[id]; return G[id] && nEd(b) * 2 >= calcV.length && !fastPrac(b).length; })
+    .sort(function (x, y) { return nEd(byG[y]) - nEd(byG[x]); });
   var conf = 0, pend = 0;
   D.deities.forEach(function (g) { var b = byG[g.id]; if (b && b.nCal) { if (b.pending) pend++; else conf++; } });
-  var nn = {}; ED.entries.forEach(function (e) { if (e.k) nn[e.k] = 1; });
-  var natFilled = Object.keys(nn).filter(function (k) { return ED.norms[k] && ED.norms[k][2]; }).length;
   var unlinked = D.practice.filter(function (p) { return !pCal(p) && !p.rel && p.ev !== NOFAST; }).length;
+  // 年代或版本待覈的版本；暫不計入計算的版本
+  var tentV = EVS.filter(function (v) { return !v.solo && inCalc(v) && /待覈|待核|暫定|待填/.test(v.when || ''); });
+  var exclV = EVS.filter(function (v) { return !inCalc(v); });
+  // 專門單獨齋期：只據轉述、未見原書的；文中未列具體日期的
+  var second = (ED.solo || []).filter(function (x) { return x.second; });
+  var undatedSolo = ED.soloUndated || [];
+  // 數據庫「文獻」表登記爲未取得的：與工作簿已錄版本同年、書名相近的，另列待覈（數據庫狀態可能未更新）
+  var strip = function (t) { return String(t || '').replace(/[『』「」（）()　 ]/g, ''); };
+  var wbV = ED.versions.filter(function (v) { return !v.solo; }).map(function (v) { return { t: strip(v.title) + strip(v.short), y: +((v.when || '').match(/\d{4}/) || [0])[0], v: v }; })
+    .concat(second.map(function (x) { return { t: strip(x.short), y: +((x.when || '').match(/\d{4}/) || [0])[0], v: x, second: 1 }; }))
+    .concat(undatedSolo.map(function (t) { return { t: strip(t), y: -1, v: { short: t }, second: 1, undated: 1 }; }));
+  var matchOf = function (m) { var t = strip(m.title); return wbV.filter(function (w) { if (!(w.undated ? w.t === t : m.year && w.y === m.year)) return false; var k = 0; Array.from(t).forEach(function (c) { if (w.t.indexOf(c) >= 0) k++; }); return w.t.indexOf(t) >= 0 || k >= Math.min(4, t.length); }); };
+  var missSeen = [], missSecond = [], missRest = [];
+  // 已據轉述錄入或列於無日期齋期的，上面兩項已列出，這裏不重複
+  MISSING.forEach(function (m) { var hs = matchOf(m); if (hs.some(function (h) { return !h.second; })) missSeen.push([m, hs]); else if (hs.length) missSecond.push([m, hs]); else missRest.push(m); });
+  var mname = function (m) { return NF(m.title) + L('（', ' (') + esc(vYear(m)) + L('）', ')'); };
   var li = function (n, t, list) { return '<li><span class="cnt">' + n + '</span> ' + t + (list ? '<div class="small">' + list + '</div>' : '') + '</li>'; };
   var links = function (ids) { return ids.map(function (id) { return godLink(id) + '<span class="muted">(' + fastPrac(byG[id]).length + ')</span>'; }).join(L('、', ', ')); };
-  var YX = L('道藏本《玉匣記》（1607）', 'the Daozang <i>Yuxiaji</i> 玉匣記 (1607)');
-  var h = L('<h1>缺口</h1><p class="lede">以下各項由數據庫與版本對比工作簿自動統計，隨數據更新。它們是「神明內容版本研究」下一步最直接的工作對象。</p>',
-      '<h1>Gaps</h1><p class="lede">Counted automatically from the database and the comparison workbook, and updated with them. These are the most direct next tasks for the study of deities across editions.</p>') + '<div class="card"><ul class="gap">' +
+  var vlink = function (v) { return '<a href="#ev/' + v.i + '">' + edWhen(v) + ' ' + N(v.short) + '</a>'; };
+  var h3 = function (t) { return '<li class="gap-h">' + t + '</li>'; };
+  var h = L('<h1>缺口</h1><p class="lede">以下各項由數據庫與版本對比工作簿自動統計，隨數據更新：資料還缺什麼，哪些對應、年代待覈。</p>',
+      '<h1>Gaps</h1><p class="lede">Counted automatically from the database and the comparison workbook, and updated with them: what material is still missing, and which matches and dates await checking.</p>',
+      '<h1>Lacunes</h1><p class="lede">Comptées automatiquement à partir de la base et du classeur de comparaison, et mises à jour avec eux : ce qui manque encore, et quels rattachements et datations restent à vérifier.</p>') + '<div class="card"><ul class="gap">' +
+    h3(L('齋曆版本', 'Calendar editions', 'Éditions des calendriers')) +
+    (exclV.length ? li(exclV.length, L('個版本暫不計入任何計算（版本親疏、少數日期、各版本比較等），仍保留在工作簿和各頁中：', 'editions are left out of all calculations for now (kinship, minority dates, cross-edition comparisons), though kept in the workbook and on the pages:', 'éditions sont pour l’instant exclues de tous les calculs (parenté, dates minoritaires, comparaisons), tout en restant dans le classeur et les pages :'), exclV.map(function (v) { return vlink(v) + L('（', ' (') + esc(CALC_EXCL[String(v.no)]) + L('）', ')'); }).join(L('、', '; '))) : '') +
+    (tentV.length ? li(tentV.length, L('個版本的年代或版本待覈：', 'editions have a date or edition still to be confirmed:', 'éditions ont une date ou une édition à confirmer :'), tentV.map(vlink).join(L('、', '; '))) : '') +
+    (second.length ? li(second.length, L('種專門單獨齋期只據 Goossaert 2024 轉述錄入，未見原書（數據庫「文獻」表也登記爲未取得）：', 'standalone fast calendars are entered only from Goossaert 2024, the books themselves not seen:', 'calendriers de jeûne autonomes ne sont saisis que d’après Goossaert 2024, sans avoir vu les livres :'), second.map(function (x) { return NF(x.short) + L('（', ' (') + esc(x.when) + L('）', ')'); }).join(L('、', '; '))) : '') +
+    (undatedSolo.length ? li(undatedSolo.length, L('種專門單獨齋期，轉述中未列具體日期，不能排入日曆（原書未見）：', 'standalone fast calendars have no specific dates in the account, so cannot be placed on the calendar:', 'calendriers de jeûne autonomes n’ont pas de dates précises dans le compte rendu et ne peuvent être placés :'), undatedSolo.map(function (t) { return NF(t); }).join(L('、', '; '))) : '') +
+    li(missRest.length, L('種齋曆在數據庫「文獻」表登記爲未取得：', 'calendars are registered as not obtained in the database’s texts table:', 'calendriers sont enregistrés comme non obtenus dans la table des textes de la base :'), missRest.map(mname).join(L('、', '; '))) +
+    (missSeen.length ? li(missSeen.length, L('種在數據庫登記爲未取得，但工作簿已有同年、書名相近的版本頁，數據庫的狀態可能未更新（待覈對；覈對後改爲已取得，或在版本目錄補「文獻ID」）：', 'are registered as not obtained in the database, yet the workbook has an edition page of the same year and a similar title; the database status may be out of date (to be checked: mark as obtained, or add the text ID to the catalogue):', 'sont enregistrés comme non obtenus dans la base, mais le classeur a une page d’édition de même année et de titre proche ; le statut de la base est peut-être périmé (à vérifier) :'), missSeen.map(function (x) { return mname(x[0]) + ' → ' + x[1].filter(function (h) { return !h.second; }).map(function (h) { return vlink(h.v); }).join(L('、', ', ')); }).join(L('；', '; '))) : '') +
+    h3(L('神明對應', 'Deity matching', 'Rattachement des divinités')) +
     li(pend + ' / ' + (conf + pend), L('個已接到齋曆的神明是程序按名稱對應的，待覈（在工作簿「神明總表」填「齋庫神明ID（ZS）」欄即爲已核）；另有 ' + (D.deities.length - conf - pend) + ' 個神明尚未對應到任何齋曆條目。',
       'deities linked to calendar entries were matched by name and await verification (fill the database ID (ZS) column in the workbook’s deity table to confirm); ' + (D.deities.length - conf - pend) + ' more deities are not yet matched to any calendar entry.', 'divinités rattachées aux entrées des calendriers l’ont été par le nom et attendent vérification (remplir la colonne d’identifiant de base (ZS) de la table des divinités du classeur pour confirmer) ; ' + (D.deities.length - conf - pend) + ' autres divinités ne sont encore rattachées à aucune entrée.')) +
-    li(natFilled + ' / ' + Object.keys(nn).length, L('個規範名已在「神明總表」填了「性質」。性質填好後，環形曆可改按道、佛、地方、儒着色。', 'normalized names have a tradition (性質) filled in the deity table. Once filled, the ring calendar can be coloured by Daoist, Buddhist, local and Confucian.')) +
+    h3(L('實踐與齋曆', 'Practice and calendars', 'Pratique et calendriers')) +
     li(linked + ' / ' + D.practice.length, L('條實踐記錄已對上齋曆條目（' + relCount(REL_FIT) + ' 條貼合，' + relCount(REL_DEV) + ' 條存在偏差），見 <a href="#fit">實踐與齋曆</a>。另有 ' + relCount('不對應') + ' 條判爲「不對應」（齋曆未載的實踐），' + relCount('存在偏差（無對應條目）') + ' 條存在偏差但無對應條目，' + relCount('待查') + ' 條待查，' + relCount('待確認刪除') + ' 條待確認刪除。',
       'practice records are matched to a calendar entry (' + relCount(REL_FIT) + ' fit, ' + relCount(REL_DEV) + ' with deviations); see <a href="#fit">Practice × calendar</a>. A further ' + relCount('不對應') + ' are judged “no match” (practice not in any calendar), ' + relCount('存在偏差（無對應條目）') + ' deviate without a matching entry, ' + relCount('待查') + ' are to be checked and ' + relCount('待確認刪除') + ' await confirmation of deletion.', 'témoignages de pratique sont rattachés à une entrée des calendriers (' + relCount(REL_FIT) + ' conformes, ' + relCount(REL_DEV) + ' avec écart) ; voir <a href="#fit">Pratique × calendrier</a>. En outre, ' + relCount('不對應') + ' sont jugés « sans correspondance » (pratique absente de tout calendrier), ' + relCount('存在偏差（無對應條目）') + ' présentent un écart sans entrée correspondante, ' + relCount('待查') + ' sont à vérifier et ' + relCount('待確認刪除') + ' attendent la confirmation de leur suppression.')) +
-    li(v0NoReq + ' / ' + v0.length, L('條' + YX + '條目沒有持齋要求：1607 年本是神誕表，大多不說要齋。何時、在哪個版本里神誕日變成了齋日，是版本研究的核心問題。',
-      'entries in ' + YX + ' state no abstinence: the 1607 text is a table of birthdays and mostly does not ask for fasting. When, and in which edition, deity birthdays became fast days is the core question of the edition study.', 'entrées du ' + YX + ' ne prescrivent aucune abstinence : le texte de 1607 est une table d’anniversaires et ne demande le plus souvent pas de jeûner. Quand, et dans quelle édition, les anniversaires divins sont devenus des jours de jeûne : c’est la question centrale de l’étude des éditions.')) +
-    li(notInV0.length, L('個神明有持齋實踐記錄，但' + YX + '未收（括號內爲言及持齋的實踐條數）：', 'deities have fasting practice records but are absent from ' + YX + ' (in brackets: practice records mentioning fasting):', 'divinités ont des témoignages de pratique du jeûne mais sont absentes du ' + YX + ' (entre parenthèses : témoignages mentionnant le jeûne) :'), links(notInV0)) +
-    li(notAny.length, L('個神明有持齋實踐記錄，但目前所有齋曆版本都未收，或尚未對應：', 'deities have fasting practice records but appear in no calendar edition, or are not yet matched:'), links(notAny)) +
-    li(v0only.length, L('個神明見於' + YX + '，卻沒有任何言及持齋的實踐記錄（按「負面證據」處理）。', 'deities appear in ' + YX + ' but have no practice record mentioning fasting (treated as negative evidence).', 'divinités figurent dans le ' + YX + ' mais n’ont aucun témoignage de pratique mentionnant le jeûne (traité comme preuve négative).'), v0only.slice(0, 60).map(function (id) { return godLink(id); }).join(L('、', ', '))) +
-    li(MISSING.length, L('種齋曆在數據庫「文獻」表登記爲未取得（其中部分可能已錄入工作簿，待給版本目錄補「文獻ID」覈對）：', 'calendars are registered as not obtained in the database’s texts table (some may already be in the workbook; to be checked by adding text IDs to its catalogue):'), MISSING.map(function (v) { return NF(v.title) + L('（', ' (') + esc(vYear(v)) + L('）', ')'); }).join(L('、', '; '))) +
-    li(unlinked, L('條言及持齋的實踐記錄尚未覈對與齋曆的對應。', 'practice records that mention fasting have not yet been checked against the calendars.')) +
+    li(unlinked, L('條言及持齋的實踐記錄尚未覈對與齋曆的對應。', 'practice records that mention fasting have not yet been checked against the calendars.', 'témoignages mentionnant le jeûne n’ont pas encore été confrontés aux calendriers.')) +
+    li(notAny.length, L('個神明有持齋實踐記錄，但目前所有齋曆版本都未收，或尚未對應（括號內爲言及持齋的實踐條數）：', 'deities have fasting practice records but appear in no calendar edition, or are not yet matched (in brackets: practice records mentioning fasting):', 'divinités ont des témoignages de pratique du jeûne mais ne figurent dans aucune édition, ou ne sont pas encore rattachées (entre parenthèses : témoignages mentionnant le jeûne) :'), links(notAny)) +
+    li(common.length, L('個神明見於半數以上計入的齋曆版本（共 ' + calcV.length + ' 本），目前還沒有言及持齋的實踐記錄（括號內爲收錄它的版本數）：', 'deities appear in at least half of the counted editions (' + calcV.length + ' in all) but have no practice record mentioning fasting yet (in brackets: editions that include them):', 'divinités figurent dans au moins la moitié des éditions comptées (' + calcV.length + ' en tout) mais n’ont encore aucun témoignage mentionnant le jeûne (entre parenthèses : éditions qui les incluent) :'),
+      common.map(function (id) { return godLink(id) + '<span class="muted">(' + nEd(byG[id]) + ')</span>'; }).join(L('、', ', '))) +
     '</ul></div>';
   app.innerHTML = h;
 }

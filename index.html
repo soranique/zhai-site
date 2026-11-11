@@ -2507,12 +2507,12 @@ function viewKinship() {
     var small = p.ca >= p.cb ? A : B, big = small === A ? B : A, cs = Math.round(Math.max(p.ca, p.cb) * 100), cl = Math.round(Math.min(p.ca, p.cb) * 100);
     var sh = Math.round(p.ca * A.n), un = A.n + B.n - sh, jj = Math.round(p.j * 100);   // 共有單位數、兩本合計（並集）單位數
     return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b>' +
-      '<div>' + L('包含度 ', 'Containment ', 'Inclusion ') + '<b>' + cs + '%</b>' + L('：' + small.yr + ' 本的條目見於 ' + big.yr + ' 本的比例；反過來是 ' + cl + '%',
-        ': share of ' + small.yr + ' found in ' + big.yr + '; ' + cl + '% the other way',
-        ' : part de ' + small.yr + ' retrouvée dans ' + big.yr + ' ; ' + cl + ' % dans l’autre sens') + '</div>' +
       '<div>' + L('重合度 ', 'Overlap ', 'Recouvrement ') + '<b>' + jj + '%</b>' + L('：兩本共有 ' + sh + ' 項 ÷ 兩本合計 ' + un + ' 項',
         ': ' + sh + ' shared units ÷ ' + un + ' units in the two together',
         ' : ' + sh + ' unités communes ÷ ' + un + ' unités des deux réunies') + '</div>' +
+      '<div>' + L('包含度 ', 'Containment ', 'Inclusion ') + '<b>' + cs + '%</b>' + L('：' + small.yr + ' 本的條目見於 ' + big.yr + ' 本的比例；反過來是 ' + cl + '%',
+        ': share of ' + small.yr + ' found in ' + big.yr + '; ' + cl + '% the other way',
+        ' : part de ' + small.yr + ' retrouvée dans ' + big.yr + ' ; ' + cl + ' % dans l’autre sens') + '</div>' +
       '<div>' + L('加權重合度 ', 'Weighted overlap ', 'Recouvrement pondéré ') + '<b>' + Math.round(p.w * 100) + '%</b></div>' +
       '<div>' + L('共有的少數日期：', 'Shared minority dates: ') + '<b>' + p.sv + '</b>' + (p.ex.length ? '<div class="small muted">' + p.ex.map(esc).join('；') + (p.sv > p.ex.length ? '……' : '') + '</div>' : '') + '</div>';
   };

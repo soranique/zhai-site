@@ -2504,9 +2504,15 @@ function viewKinship() {
   viewVenn(document.getElementById('kvenn'));
   var pairTip = function (p) {
     var A = NB[p.a], B = NB[p.b];
-    var small = p.ca >= p.cb ? A : B, big = small === A ? B : A;
-    return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b><div>' + L('包含度 ', 'Containment ', 'Inclusion ') + '<b>' + (kinC(p) * 100).toFixed(0) + '</b>' + L('（' + small.yr + ' 本有 ' + (kinC(p) * 100).toFixed(0) + '% 見於 ' + big.yr + ' 本）', ' (' + (kinC(p) * 100).toFixed(0) + '% of ' + small.yr + ' found in ' + big.yr + ')', ' (' + (kinC(p) * 100).toFixed(0) + ' % de ' + small.yr + ' dans ' + big.yr + ')') + '</div><div>' + L('重合度 ', 'Overlap ') + '<b>' + (p.j * 100).toFixed(0) + '</b>' +
-      L('（' + A.yr + ' 本的條目有 ' + (p.ca * 100).toFixed(0) + '% 見於 ' + B.yr + ' 本；反之 ' + (p.cb * 100).toFixed(0) + '%）', ' (' + (p.ca * 100).toFixed(0) + '% of ' + A.yr + ' found in ' + B.yr + '; ' + (p.cb * 100).toFixed(0) + '% the other way)', ' (' + (p.ca * 100).toFixed(0) + ' % de ' + A.yr + ' se retrouvent dans ' + B.yr + ' ; ' + (p.cb * 100).toFixed(0) + ' % dans l’autre sens)') + '</div>' +
+    var small = p.ca >= p.cb ? A : B, big = small === A ? B : A, cs = Math.round(Math.max(p.ca, p.cb) * 100), cl = Math.round(Math.min(p.ca, p.cb) * 100);
+    var sh = Math.round(p.ca * A.n), un = A.n + B.n - sh;   // 共有單位數、兩本合計（並集）單位數
+    return '<b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b>' +
+      '<div>' + L('包含度 ', 'Containment ', 'Inclusion ') + '<b>' + cs + '</b>' + L('（' + small.yr + ' 本有 ' + cs + '% 見於 ' + big.yr + ' 本；' + big.yr + ' 本有 ' + cl + '% 見於 ' + small.yr + ' 本）',
+        ' (' + cs + '% of ' + small.yr + ' found in ' + big.yr + '; ' + cl + '% of ' + big.yr + ' found in ' + small.yr + ')',
+        ' (' + cs + ' % de ' + small.yr + ' se retrouvent dans ' + big.yr + ' ; ' + cl + ' % de ' + big.yr + ' dans ' + small.yr + ')') + '</div>' +
+      '<div>' + L('重合度 ', 'Overlap ', 'Recouvrement ') + '<b>' + (p.j * 100).toFixed(0) + '</b>' + L('（兩本共有 ' + sh + ' 項，佔兩本合計 ' + un + ' 項的 ' + (p.j * 100).toFixed(0) + '%）',
+        ' (' + sh + ' units shared, ' + (p.j * 100).toFixed(0) + '% of the ' + un + ' units in the two together)',
+        ' (' + sh + ' unités communes, soit ' + (p.j * 100).toFixed(0) + ' % des ' + un + ' unités des deux éditions réunies)') + '</div>' +
       '<div>' + L('加權重合度 ', 'Weighted overlap ', 'Recouvrement pondéré ') + '<b>' + (p.w * 100).toFixed(0) + '</b></div>' +
       '<div>' + L('共有的少數日期：', 'Shared minority dates: ') + '<b>' + p.sv + '</b>' + (p.ex.length ? '<div class="small muted">' + p.ex.map(esc).join('；') + (p.sv > p.ex.length ? '……' : '') + '</div>' : '') + '</div>';
   };

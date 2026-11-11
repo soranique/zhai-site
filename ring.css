@@ -187,17 +187,6 @@
 .zr .zr-smc { fill: var(--zr-six-ink); }
 .zr .zr-manytab .zr-lede { font-size: 13px; color: var(--zr-muted); margin: 0 0 8px; }
 /* 各類型佔全年多少：每類單獨計算（可重疊），橫條按 360 天；實心＝只有此類，淺色＝與其他類同日 */
-.zr .zr-cov { margin: 14px 0 10px; max-width: 820px; }
-.zr .zr-covrow { display: grid; grid-template-columns: minmax(90px, 160px) minmax(0, 1fr) minmax(0, auto); gap: 10px; align-items: center; padding: 4px 0; font-size: 13.5px; border-bottom: 1px solid var(--zr-line); cursor: default; }
-.zr .zr-covrow.ts { border-top: 1px dashed var(--zr-muted); margin-top: 4px; }
-.zr .zr-covl .zr-sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin: 0 6px 0 0; vertical-align: -1px; }
-.zr .zr-covt { display: block; height: 12px; background: var(--zr-cell); border-radius: 2px; overflow: hidden; }
-.zr .zr-covb { display: flex; height: 100%; }
-.zr .zr-covb i { display: block; height: 100%; }
-.zr .zr-covb i.sh { opacity: .35; }
-.zr .zr-covn { color: var(--zr-muted); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.zr .zr-covn b { color: var(--zr-ink); font-weight: 600; }
-@media (max-width: 600px) { .zr .zr-covrow { grid-template-columns: 1fr auto; } .zr .zr-covt { grid-column: 1 / -1; grid-row: 2; } }
 .zr .zr-sharew { overflow-x: auto; }
 .zr .zr-sharet { border-collapse: collapse; font-size: 13px; width: 100%; }
 .zr .zr-sharet th, .zr .zr-sharet td { padding: 3px 8px; border-bottom: 1px solid var(--zr-line); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }

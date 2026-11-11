@@ -18,7 +18,7 @@
 - 重合度把「初一至初九」拆成逐日；判定少数日期、通行日期时与工作簿「日期异文」完全一致，只算写成单一月日的条目
   （strict_day；区间、连写日期及夏至、冬至不计），两者口径不同，所以 E 与 J 分开存
 """
-import json
+import json, os
 import re
 import sys
 from collections import defaultdict
@@ -201,9 +201,21 @@ def main(path):
     for p in pairs:
         if BASE in (p['a'], p['b']):
             ret[p['b'] if p['a'] == BASE else p['a']] = p['ca'] if p['a'] == BASE else p['cb']
+    # 只有书目的本子（tools/kin/biblio.json）：网页「版本親疏」可勾选显示，不参与任何计算
+    bj = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tools', 'kin', 'biblio.json'), encoding='utf-8'))
+    bids = {b['id'] for b in bj['bib']}
+    for l in bj['links']:
+        for e in (l['a'], l['b']):
+            assert (e in bids) if isinstance(e, str) else (e in INCL), ('biblio.json 连线端点不存在', e)
+        assert l['k'] in bj['kinds'], l['k']
     excl = ['%s（编号%d）：%s' % (' '.join((vers[k].split('_') + [''])[i] for i in (0, 2)).strip(), k, why) for k, why in EXCL.items() if k in vers]
     out = dict(source=SOURCE_NAME, omit=OMIT, other=OTHER, otherName=OTHER_NAME, includeOther=INCLUDE_OTHER, nodes=nodes, pairs=pairs, dir=DIR, ret=ret, base=BASE, excl=excl,
                incl=INCL, minor=minor_e, common=common)
+    # 书目图层另写 kinship-bib.js：文字已是定稿的繁体，不经 apply_traditional.py（它会把「系統」误改「係統」、改动三浦所引的新字体书名）
+    with open('kinship-bib.js', 'w', encoding='utf-8') as f:
+        f.write('// 由 build_kinship.py 据 tools/kin/biblio.json 自动生成，请勿手改\nwindow.ZHAI_KIN_BIB = ')
+        json.dump(dict(bib=bj['bib'], links=bj['links'], kinds=bj['kinds'], undated=bj['undated']), f, ensure_ascii=False, separators=(',', ':'))
+        f.write(';\n')
     with open('kinship-data.js', 'w', encoding='utf-8') as f:
         f.write('// 由 build_kinship.py 自动生成，请勿手改\nwindow.ZHAI_KIN = ')
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))

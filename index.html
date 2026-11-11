@@ -246,7 +246,11 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
 .kin .nd { cursor: pointer; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .kin .eg.dim { opacity: .12; } .kin .e.via { stroke-dasharray: 5 4; } .kin .kmodes { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1100px; } @media (max-width: 640px) { .kin .kmodes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kin .kmodes button:nth-child(3) { border-left: 0; } .kin .kmodes button:nth-child(n+3) { border-top: 1px solid var(--axis); } }
-.kin .e.ec { stroke: var(--edge); } .kin .nd.on circle:not(.ksm) { stroke: var(--accent); stroke-width: 3; }
+.kin .e.ec { stroke: var(--edge); }
+.ksvpop { position: fixed; z-index: 60; max-height: min(70vh, 560px); overflow: auto; padding: 12px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+.ksvpop .sv-top { display: flex; gap: 6px; align-items: baseline; } .ksvpop .sv-x { margin-left: auto; font: inherit; border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 15px; }
+.ksvpop .sv-list { margin: 0; padding: 0 0 0 1.4em; } .ksvpop .sv-list li { padding: 6px 0; border-top: 1px solid var(--grid); } .ksvpop .sv-list li:first-child { border-top: 0; }
+.ksvpop .sv-h { margin-bottom: 2px; } .ksvpop .sv-l { display: inline-block; min-width: 5.5em; color: var(--muted); margin-right: 4px; } .kin .nd.on circle:not(.ksm) { stroke: var(--accent); stroke-width: 3; }
 .kin .kcrank { margin-top: 12px; } .kin .kr-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .kin .kr-x { margin-left: auto; font: inherit; border: 0; background: none; cursor: pointer; color: var(--muted); }
 .kin .kr-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; } @media (max-width: 760px) { .kin .kr-cols { grid-template-columns: 1fr; } } .kin .kr-cols h3 { font-size: 13.5px; margin: 4px 0 6px; }
 .kin .kr { display: grid; grid-template-columns: minmax(0, 15em) 1fr 7.5em; gap: 8px; align-items: center; padding: 2px 4px; font-size: 13px; cursor: pointer; border-radius: 4px; } .kin .kr:hover { background: var(--surface-2); }
@@ -2210,6 +2214,7 @@ function viewKinship() {
   ORD.forEach(function (n, i) { n.pos = i; var q = ORD[i - 1]; n.up = !!(q && q.lane === n.lane && !q.up); });
   // 每本的少數日期集合（「規範名|日期類型|月|日」），由條目的少數日期標記重建；兩兩相交的大小即 pairs[].sv
   var MINS = {}; ED.entries.forEach(function (e) { if (!K.minor[e.id]) return; var no = ED.versions[e.v].no; (MINS[no] = MINS[no] || {})[e.k + '|' + e.c + '|' + e.m + '|' + e.d] = 1; });
+  var MINE = {}; ED.entries.forEach(function (e) { if (!K.minor[e.id]) return; var no = +ED.versions[e.v].no, key = e.k + '|' + e.c + '|' + e.m + '|' + e.d; ((MINE[key] = MINE[key] || {})[no] = MINE[key][no] || []).push(e); });   // 少數日期 → 各本的條目
   var shMin = function (a, b) { var A = MINS[a] || {}, B = MINS[b] || {}; return Object.keys(A).filter(function (x) { return B[x]; }); };
   kinWeighted(K);
   var kinVal = function (p) { return KIN.mode === 'c' ? kinC(p) : KIN.mode === 'w' ? p.w : p.j; };
@@ -2285,6 +2290,36 @@ function viewKinship() {
     el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'), on = has && k === KSEL; x.classList.toggle('dim', has && !on); x.querySelectorAll('.e').forEach(function (e) { e.classList.toggle('hl', on); }); });
   }
   window.kinSelect = function (k) { KSEL = k || ''; kinApplySel(); };
+  // 「共有的少數日期」：點連線彈出浮窗，只列這兩本共有的少數日期（日期、神名、類型、兩本原文、通行日期）
+  function svPopOpen() { var b = document.getElementById('ksvpop'); return !!b && !b.hidden; }
+  function svPopClose() { var b = document.getElementById('ksvpop'); if (b) b.hidden = true; }
+  window.kinSvPopClose = svPopClose;
+  function svPop(p, ev) {
+    var box = document.getElementById('ksvpop');
+    if (!box) { box = document.createElement('div'); box.id = 'ksvpop'; box.className = 'card ksvpop'; box.setAttribute('role', 'dialog'); document.body.appendChild(box);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !box.hidden) { box.hidden = true; kinSelect(''); } });
+      document.addEventListener('click', function (e) { if (!box.hidden && !box.contains(e.target) && !e.target.closest('#knet')) { box.hidden = true; kinSelect(''); } }); }
+    var A = NB[p.a], B = NB[p.b];
+    var keys = shMin(p.a, p.b).sort(function (x, y) { var u = x.split('|'), v = y.split('|'); return u[2] - v[2] || u[3] - v[3] || (u[0] < v[0] ? -1 : 1); });
+    var txt = function (no, key) { return ((MINE[key] || {})[no] || []).map(function (e) { return e.t ? yt(e.t) : esc(e.g || e.k); }).join(L('；', '; ')); };
+    var rows = keys.map(function (key) {
+      var q = key.split('|'), e0 = ((MINE[key] || {})[p.a] || [])[0], info = e0 && K.minor[e0.id];
+      return '<li><div class="sv-h"><span class="dlink" data-day="' + q[2] + '/' + q[3] + '">' + esc(dayName(+q[2], +q[3])) + '</span> <b>' + N(q[0]) + '</b> <span class="muted small">' + esc(C(q[1]) || q[1]) + '</span></div>' +
+        '<div class="small"><span class="sv-l">' + esc(A.yr) + '</span>' + txt(p.a, key) + '</div><div class="small"><span class="sv-l">' + esc(B.yr) + '</span>' + txt(p.b, key) + '</div>' +
+        (info ? '<div class="small muted">' + L('見於 ' + info[2] + ' 個見證（此神共 ' + info[3] + ' 個）' + (info[4] ? '；通行作 ' + esc(info[4]) : ''), 'In ' + info[2] + ' of ' + info[3] + ' witnesses for this deity' + (info[4] ? '; usual date ' + esc(info[4]) : ''), 'Dans ' + info[2] + ' témoins sur ' + info[3] + (info[4] ? ' ; date usuelle ' + esc(info[4]) : '')) + '</div>' : '') + '</li>';
+    }).join('');
+    box.innerHTML = '<div class="sv-top"><b>' + vname(A) + '</b> ～ <b>' + vname(B) + '</b><button type="button" class="sv-x" aria-label="' + L('關閉', 'Close', 'Fermer') + '">✕</button></div>' +
+      '<p class="muted small" style="margin:2px 0 8px">' + L('兩本共有的少數日期 ' + keys.length + ' 處：多數本子不作、而這兩本都作的日期。', keys.length + ' shared minority dates: dates most editions lack but both of these have.', keys.length + ' dates minoritaires communes : absentes de la plupart des éditions, présentes dans les deux.') + '</p>' +
+      '<ol class="sv-list">' + rows + '</ol>' +
+      '<p class="small" style="margin:8px 0 0"><a href="#kin/' + p.a + '/' + p.b + '" class="sv-all">' + L('並排細看兩本全部條目 →', 'Compare all entries side by side →', 'Comparer toutes les entrées →') + '</a></p>';
+    box.hidden = false;
+    var vw = innerWidth, vh = innerHeight, w = Math.min(460, vw - 16);
+    box.style.width = w + 'px';
+    if (vw < 640) { box.style.left = '8px'; box.style.top = ''; box.style.bottom = '8px'; }
+    else { var x = Math.min(Math.max(8, ev.clientX + 14), vw - w - 8), h = box.offsetHeight, y = Math.min(Math.max(8, ev.clientY - 20), Math.max(8, vh - h - 8)); box.style.left = x + 'px'; box.style.top = y + 'px'; box.style.bottom = ''; }
+    box.querySelector('.sv-x').onclick = function () { svPopClose(); kinSelect(''); };
+    box.querySelector('.sv-all').onclick = function () { svPopClose(); };
+  }
   // 包含度模式：點圖上的一本，列出它的完整排名（它見於各本／各本見於它），並把它的箭頭以外的線變淡
   function rankPanel() {
     var box = document.getElementById('kcrank'), el = document.getElementById('knet'); if (!box) return;
@@ -2335,7 +2370,7 @@ function viewKinship() {
     if (KIN.mode === 'c') document.getElementById('kredn').innerHTML = L('每本的箭頭指向收有它最多內容的一本；與最高值相差不到 ' + KIN_TIE + ' 的算並列最高，都畫出。箭頭越粗比例越高；低於門檻的不畫。箭頭只表示「見於」，不表示「抄自」。點圖上的一本，下方列出它的完整排名。', 'Each edition’s arrows point to the edition that contains most of its content; editions within ' + KIN_TIE + ' of the highest count as tied and are all drawn. Thicker means a higher share; below the threshold none is drawn. An arrow means “found in”, not “copied from”. Click an edition to see its full ranking below.', 'Les flèches de chaque édition vont vers celle qui contient le plus de son contenu ; celles à moins de ' + KIN_TIE + ' de la plus élevée sont ex aequo et toutes tracées. Plus épaisse, plus la part est élevée ; sous le seuil, aucune. Une flèche signifie « se retrouve dans », non « copié de ». Cliquer une édition pour voir son classement complet ci-dessous.') +
       (KIN.small ? L('條目少於 ' + KIN_SMALL + ' 條的本子（虛線圈）不畫箭頭。', ' Editions with fewer than ' + KIN_SMALL + ' entries (dashed ring) get no arrow.', ' Les éditions de moins de ' + KIN_SMALL + ' entrées (cercle pointillé) n’ont pas de flèche.') : '') + L('兩本互爲最高時畫成雙頭箭頭。', ' When two editions are each other’s highest, the arrow has two heads.', ' Quand deux éditions sont réciproquement la plus élevée, la flèche a deux pointes.') + ' <b>' + (function () { var src = {}, na = 0; Object.keys(CB).forEach(function (k) { src[CB[k].from.no] = 1; na++; if (CB[k].mutual) src[CB[k].mutual.from.no] = 1; }); var ns = Object.keys(src).length, nn = ORD.length - nSmall - ns; return L(ns + ' 本畫出箭頭（共 ' + na + ' 支）；' + nn + ' 本見於任何一本的比例都低於門檻，沒有箭頭。', ns + ' editions have arrows (' + na + ' in all); ' + nn + ' reach the threshold in no edition.', ns + ' éditions ont des flèches (' + na + ' en tout) ; ' + nn + ' n’atteignent le seuil dans aucune.'); })() + '</b>';
     else document.getElementById('kredn').innerHTML = (KIN.mode === 'sv'
-      ? L('「可由中間本解釋」：兩本共有的少數日期，全都也見於一本年代居中的本子。', '“Explained by an intermediate”: every minority date the two share is also found in an edition dated between them.', '« Expliqué par une édition intermédiaire » : toutes les dates minoritaires communes aux deux se retrouvent dans une édition datée entre elles.')
+      ? L('點一條連線，彈出這兩本共有的少數日期。「可由中間本解釋」：兩本共有的少數日期，全都也見於一本年代居中的本子。', 'Click a line to list the minority dates the two share. “Explained by an intermediate”: every minority date the two share is also found in an edition dated between them.', '« Expliqué par une édition intermédiaire » : toutes les dates minoritaires communes aux deux se retrouvent dans une édition datée entre elles.')
       : L('「可由中間本解釋」：有一本年代居中的本子，與兩端都比兩端彼此更接近。', '“Explained by an intermediate”: an edition dated between them is closer to each end than the two ends are to each other.', '« Expliqué par une édition intermédiaire » : une édition datée entre les deux est plus proche de chacune que celles-ci ne le sont entre elles.')) + ' ' +
       L('先後按圖上的年代順序，年代未定的不參與；隱藏只為減少重複，不表示兩端無關。', 'Order follows the dates on the chart; undated editions are left out. Hiding only removes repetition and does not mean the two ends are unrelated.', 'L’ordre suit les dates du graphique ; les éditions non datées sont exclues. Masquer ne fait qu’éviter les répétitions et ne signifie pas que les deux extrémités sont sans lien.') + ' <b>' +
       (KIN.red ? L('共 ' + nAll + ' 條，已隱藏 ' + nVia + ' 條，顯示 ' + (nAll - nVia) + ' 條。', nAll + ' lines, ' + nVia + ' hidden, ' + (nAll - nVia) + ' shown.', nAll + ' liens, ' + nVia + ' masqués, ' + (nAll - nVia) + ' affichés.')
@@ -2380,9 +2415,11 @@ function viewKinship() {
         else { var r = K.dir[+di]; showTip(e, '<b>' + vname(NB[r.a]) + ' → ' + vname(NB[r.b]) + '</b> <span class="muted">（' + esc(I.en() ? I.T(r.st === '確定' ? 'certain' : 'candidate') : r.st) + '）</span><div>' + FT(r.d) + '</div>'); }
       });
       g.addEventListener('mouseleave', hideTip);
-      g.addEventListener('click', function (ev) { ev.stopPropagation(); var k = g.getAttribute('data-k'); if (!k) return; var p = PB[k]; hideTip(); if (KSEL === k) { kinSelect(''); closeCmp(); return; } location.hash = 'kin/' + p.a + '/' + p.b; });
+      g.addEventListener('click', function (ev) { ev.stopPropagation(); var k = g.getAttribute('data-k'); if (!k) return; var p = PB[k]; hideTip();
+        if (KIN.mode === 'sv') { if (KSEL === k && svPopOpen()) { kinSelect(''); svPopClose(); return; } kinSelect(k); svPop(p, ev); return; }
+        if (KSEL === k) { kinSelect(''); closeCmp(); return; } location.hash = 'kin/' + p.a + '/' + p.b; });
     });
-    el.querySelector('svg').addEventListener('click', function (ev) { if (!ev.target.closest('g.eg, g.nd')) { kinSelect(''); if (KIN_RANK) { KIN_RANK = 0; rankPanel(); } } });   // 點空白處取消選中
+    el.querySelector('svg').addEventListener('click', function (ev) { if (!ev.target.closest('g.eg, g.nd')) { kinSelect(''); svPopClose(); if (KIN_RANK) { KIN_RANK = 0; rankPanel(); } } });   // 點空白處取消選中
     kinApplySel();
     rankPanel();
     el.querySelectorAll('g.nd').forEach(function (g) {
@@ -2418,7 +2455,7 @@ function viewKinship() {
     var v = K.ret[n.no];
     return '<div style="display:grid;grid-template-columns:150px 1fr 34px;gap:6px;align-items:center;font-size:12.5px;margin:2px 0"><span>' + esc(n.yr) + ' ' + N(n.sh) + '</span><span style="background:var(--surface-2);height:10px;border-radius:3px;position:relative"><span style="position:absolute;left:0;top:0;bottom:0;width:' + (v * 100).toFixed(0) + '%;background:' + LC[n.lane] + ';border-radius:3px"></span></span><span class="muted">' + (v * 100).toFixed(0) + '%</span></div>';
   }).join('');
-  document.querySelectorAll('#kmode button').forEach(function (b) { b.onclick = function () { KIN.mode = b.getAttribute('data-m'); document.querySelectorAll('#kmode button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); hideTip(); draw(); }; });
+  document.querySelectorAll('#kmode button').forEach(function (b) { b.onclick = function () { KIN.mode = b.getAttribute('data-m'); svPopClose(); kinSelect(''); document.querySelectorAll('#kmode button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); hideTip(); draw(); }; });
   document.getElementById('kred').onchange = function (e) { KIN.red = e.target.checked; draw(); };
   document.getElementById('kthr').oninput = function (e) { if (KIN.mode === 'c') KIN.thrc = +e.target.value; else if (KIN.mode === 'w') KIN.thrw = +e.target.value; else KIN.thr = +e.target.value; draw(); };
   document.getElementById('ksmall').onchange = function (e) { KIN.small = e.target.checked; draw(); };
@@ -3297,6 +3334,7 @@ function route(ev) {
   if (hsh !== LAST_HASH) { PREV_V = LAST_V; PREV_HASH = LAST_HASH; LAST_HASH = hsh; }   // 記住上一頁，詳情頁的「← 返回」回到來處
   LAST_V = v;
   if (v !== 'kin' || !ab[0]) closeCmp(true);
+  if (v !== 'kin' && window.kinSvPopClose) kinSvPopClose();
   M.scrolled = 0; EDF.scrolled = 0; TIME_HOOK = null; TIME_MIN = 0; timeStop(true);
   var navV = v === 'g' ? 'gods' : (v === 'ed' || v === 'ev') ? 'editions' : v;
   document.querySelectorAll('#nav a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === navV); });

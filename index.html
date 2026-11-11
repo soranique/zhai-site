@@ -246,7 +246,12 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
 .kin .nd { cursor: pointer; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .kin .eg.dim { opacity: .12; } .kin .e.via { stroke-dasharray: 5 4; } .kin .kmodes { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1100px; } @media (max-width: 640px) { .kin .kmodes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kin .kmodes button:nth-child(3) { border-left: 0; } .kin .kmodes button:nth-child(n+3) { border-top: 1px solid var(--axis); } }
-.kin .e.ec { stroke: var(--edge); } .kin .ksm { fill: none; stroke: var(--ink-2); stroke-width: 1.2; stroke-dasharray: 3 2.5; } .kin .eg.dim .e.hl { opacity: 1 !important; }
+.kin .e.ec { stroke: var(--edge); } .kin .nd.on circle:not(.ksm) { stroke: var(--accent); stroke-width: 3; }
+.kin .kcrank { margin-top: 12px; } .kin .kr-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .kin .kr-x { margin-left: auto; font: inherit; border: 0; background: none; cursor: pointer; color: var(--muted); }
+.kin .kr-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; } @media (max-width: 760px) { .kin .kr-cols { grid-template-columns: 1fr; } } .kin .kr-cols h3 { font-size: 13.5px; margin: 4px 0 6px; }
+.kin .kr { display: grid; grid-template-columns: minmax(0, 15em) 1fr 7.5em; gap: 8px; align-items: center; padding: 2px 4px; font-size: 13px; cursor: pointer; border-radius: 4px; } .kin .kr:hover { background: var(--surface-2); }
+.kin .kr-n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .kin .kr-n .ksw { margin: 0 6px 0 0; } .kin .kr-b { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; } .kin .kr-b i { display: block; height: 100%; background: var(--edge); }
+.kin .kr-v { font-variant-numeric: tabular-nums; } .kin .kr.lo { color: var(--muted); } .kin .kr.lo .kr-b i { background: var(--axis); } .kin .kr.tie .kr-b i { background: var(--ink); } .kin .kr-t { margin-left: 6px; font-size: 11px; padding: 0 5px; border-radius: 3px; background: var(--ink); color: var(--page); } .kin .ksm { fill: none; stroke: var(--ink-2); stroke-width: 1.2; stroke-dasharray: 3 2.5; } .kin .eg.dim .e.hl { opacity: 1 !important; }
 .kin .kgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; } @media (max-width: 900px) { .kin .kgrid { grid-template-columns: minmax(0, 1fr); } }
 .kin table.hm { border-collapse: collapse; font-size: 11.5px; width: auto; } .kin table.hm th { font-weight: 400; color: var(--ink-2); padding: 2px 4px; white-space: nowrap; background: none; position: static; } .kin table.hm th.r { text-align: right; }
 .kin table.hm td { width: 34px; height: 24px; text-align: center; border: 1px solid var(--page); padding: 0; } .kin table.hm th.c2 { font-size: 10.5px; line-height: 1.25; vertical-align: bottom; width: 34px; white-space: normal; word-break: break-all; padding: 2px 1px; }
@@ -2154,7 +2159,7 @@ function viewVenn(el) {
 }
 // mode：j 重合度（交集÷並集）、c 包含度（交集÷較小一本，即較小一本有幾成見於另一本）、sv 共有的少數日期；hm：矩陣格中數字用 j 或 c
 var KIN = { mode: 'j', thr: 0.4, thrc: 0.6, thrw: 0.25, dir: true, hm: 'j', red: true, small: true };   // red：隱藏可由中間本解釋的連線；small：包含度不計條目過少的本子
-var KIN_SMALL = 50;   // 可比條目少於此數的本子視爲「樣本少」：包含度的分母太小，又多收通行日期，容易虛高
+var KIN_SMALL = 50, KIN_TIE = 0.03, KIN_RANK = 0;   // KIN_TIE：與最高值相差不到此數的都算並列最高；KIN_RANK：包含度模式下點選、列出排名的本子   // 可比條目少於此數的本子視爲「樣本少」：包含度的分母太小，又多收通行日期，容易虛高
 function kinC(p) { return Math.max(p.ca, p.cb); }
 // 加權重合度：每個比較單位的分量 = ln(見證總數 ÷ 有它的見證數)，人人都有的單位分量爲 0；
 // 加權重合度 = 兩本共有單位的分量和 ÷ 兩本合計單位的分量和。比較單位與 build_kinship.py 完全相同
@@ -2208,6 +2213,12 @@ function viewKinship() {
   var shMin = function (a, b) { var A = MINS[a] || {}, B = MINS[b] || {}; return Object.keys(A).filter(function (x) { return B[x]; }); };
   kinWeighted(K);
   var kinVal = function (p) { return KIN.mode === 'c' ? kinC(p) : KIN.mode === 'w' ? p.w : p.j; };
+  // 某本的包含度排名：out＝它見於各本的比例，in＝各本見於它的比例；都由高到低
+  var kinRank = function (no) { var out = [], inn = [];
+    K.pairs.forEach(function (p) { if (p.a !== no && p.b !== no) return; var o = NB[p.a === no ? p.b : p.a];
+      out.push({ o: o, v: p.a === no ? p.ca : p.cb, p: p }); inn.push({ o: o, v: p.a === no ? p.cb : p.ca, p: p }); });
+    var by = function (a, b) { return b.v - a.v || Math.abs(a.o.pos - NB[no].pos) - Math.abs(b.o.pos - NB[no].pos); };
+    return { out: out.sort(by), inn: inn.sort(by) }; };
   // 這條線能否由一本年代居中的本子解釋（按圖上的先後順序；年代未定的不參與）：
   //   重合度／包含度：居中本與兩端各自都比兩端彼此更接近；
   //   共有的少數日期：兩端共有的少數日期全都也見於居中本。
@@ -2242,7 +2253,7 @@ function viewKinship() {
     '<div class="card" id="knet"></div>' + (function () {
       var grp = function (zh, en, fr, ls) { return '<div><span><i class="ksw" style="background:' + LC[ls[0]] + '"></i><b>' + L(zh, en, fr) + '</b>' + (ls.length > 1 || ls[0] !== zh ? L('（' + ls.join('、') + '）', ' (' + ls.map(function (l) { return I.T(LEN[l]); }).join(', ') + ')', ' (' + ls.map(function (l) { return I.T(LEN[l]); }).join(', ') + ')') : '') + '</span></div>'; };
       return '<div class="klg">' + grp('道藏系統', 'Daoist canon', 'Canon taoïste', ['道藏本']) + grp('玉匣記系統', 'Yuxiaji tradition', 'Tradition du Yuxiaji', ['單行本', '通書']) + grp('宮觀手冊', 'Temple manuals', 'Manuels de temple', ['宮觀手冊']) + grp('善書', 'Morality books', 'Livres de morale', ['善書']) + grp('日用類書', 'Encyclopaedias', 'Encyclopédies', ['日用類書']) + grp('未定', 'Undetermined', 'Indéterminé', ['未定']) + '</div>';
-    })() +
+    })() + '<div class="card kcrank" id="kcrank" hidden></div>' +
     '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目；要按月日逐條對齊，用圖下的按鈕，或點下方矩陣的格子。比較單位與逐條細看相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries; to align two editions day by day, use the button below the diagram or click a cell of the matrix further down. The unit is the same as in that view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées ; pour aligner deux éditions jour par jour, utilisez le bouton sous le diagramme ou une case de la matrice plus bas. L’unité est celle de cette vue ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
     '<div class="kgrid"><div><h2>' + L('重合度矩陣', 'Overlap matrix') + '</h2><div class="controls"><label>' + L('格中數字：', 'Cells show: ', 'Cases : ') + '<select id="khmode"><option value="j"' + (KIN.hm === 'j' ? ' selected' : '') + '>' + L('重合度（對稱）', 'Overlap (symmetric)', 'Recouvrement (symétrique)') + '</option><option value="c"' + (KIN.hm === 'c' ? ' selected' : '') + '>' + L('包含度（行本見於列本的比例）', 'Containment (share of the row edition found in the column edition)', 'Inclusion (part de l’édition en ligne présente dans l’édition en colonne)') + '</option><option value="w"' + (KIN.hm === 'w' ? ' selected' : '') + '>' + L('加權重合度（對稱，按罕見程度計分）', 'Weighted overlap (symmetric, by rarity)', 'Recouvrement pondéré (symétrique, selon la rareté)') + '</option></select></label></div><p class="small muted" style="margin:0 0 6px" id="khmd"></p><div class="card scroll" id="khm"></div></div><div>' +
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
@@ -2274,6 +2285,26 @@ function viewKinship() {
     el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'), on = has && k === KSEL; x.classList.toggle('dim', has && !on); x.querySelectorAll('.e').forEach(function (e) { e.classList.toggle('hl', on); }); });
   }
   window.kinSelect = function (k) { KSEL = k || ''; kinApplySel(); };
+  // 包含度模式：點圖上的一本，列出它的完整排名（它見於各本／各本見於它），並把它的箭頭以外的線變淡
+  function rankPanel() {
+    var box = document.getElementById('kcrank'), el = document.getElementById('knet'); if (!box) return;
+    var n = KIN.mode === 'c' && KIN_RANK ? NB[KIN_RANK] : null;
+    el.querySelectorAll('g.nd').forEach(function (g) { g.classList.toggle('on', !!n && +g.getAttribute('data-n') === KIN_RANK); });
+    if (KIN.mode !== 'c') { box.hidden = true; return; }
+    box.hidden = false;
+    if (!n) { box.innerHTML = '<p class="muted small" style="margin:0">' + L('點圖上的一本，這裏列出它見於各本、以及各本見於它的完整比例。', 'Click an edition on the chart to list its full shares here: how much of it is found in each edition, and how much of each is found in it.', 'Cliquer une édition du graphique pour afficher ici ses parts complètes : combien d’elle se retrouve dans chaque édition, et combien de chacune en elle.') + '</p>'; return; }
+    var R = kinRank(n.no), thr = KIN.thrc;
+    var col = function (ls, out) { var top = ls.length ? ls[0].v : 0;
+      return ls.map(function (x) { var tie = out && x.v >= top - KIN_TIE - 1e-9 && x.v >= thr, lo = x.v < thr;
+        return '<div class="kr' + (lo ? ' lo' : '') + (tie ? ' tie' : '') + '" data-ab="' + n.no + '/' + x.o.no + '"><span class="kr-n"><i class="ksw" style="background:' + LC[x.o.lane] + '"></i>' + esc(x.o.yr) + ' ' + N(x.o.sh) + (x.o.n < KIN_SMALL ? '<span class="muted small">' + L('（樣本少）', ' (small)', ' (petit)') + '</span>' : '') + '</span><span class="kr-b"><i style="width:' + Math.round(x.v * 100) + '%"></i></span><span class="kr-v">' + Math.round(x.v * 100) + '%' + (tie ? '<span class="kr-t">' + L('並列最高', 'tied top', 'ex aequo') + '</span>' : '') + '</span></div>'; }).join(''); };
+    box.innerHTML = '<div class="kr-h"><b>' + vname(n) + '</b> <span class="muted small">' + L('可比條目 ' + n.n + ' 條', n.n + ' comparable entries', n.n + ' entrées comparables') + '</span> <a href="#ev/' + (ED.versions.filter(function (x) { return +x.no === n.no; })[0] || {}).i + '" class="small">' + L('打開版本詳情 →', 'Open edition →', 'Ouvrir l’édition →') + '</a> <button type="button" class="kr-x" aria-label="' + L('關閉', 'Close', 'Fermer') + '">✕</button></div>' +
+      '<p class="muted small" style="margin:2px 0 10px">' + L('灰色是低於門檻（' + thr.toFixed(2) + '）的；「並列最高」與最高值相差不到 ' + KIN_TIE + '，圖上都畫箭頭。點一行並排細看兩本。', 'Grey rows are below the threshold (' + thr.toFixed(2) + '); “tied top” rows are within ' + KIN_TIE + ' of the highest and all get arrows. Click a row to compare the two.', 'Les lignes grises sont sous le seuil (' + thr.toFixed(2) + ') ; « ex aequo » : à moins de ' + KIN_TIE + ' de la plus élevée, toutes fléchées. Cliquer une ligne pour comparer.') + '</p>' +
+      '<div class="kr-cols"><div><h3>' + L(n.yr + ' 本見於各本的比例', 'Share of ' + n.yr + ' found in each', 'Part de ' + n.yr + ' dans chacune') + '</h3>' + col(R.out, true) + '</div><div><h3>' + L('各本見於 ' + n.yr + ' 本的比例', 'Share of each found in ' + n.yr, 'Part de chacune dans ' + n.yr) + '</h3>' + col(R.inn, false) + '</div></div>';
+    box.querySelector('.kr-x').onclick = function () { KIN_RANK = 0; rankPanel(); };
+    box.querySelectorAll('.kr[data-ab]').forEach(function (r) { r.onclick = function () { location.hash = 'kin/' + r.getAttribute('data-ab'); }; });
+    // 選中本子：與它無關的箭頭變淡
+    el.querySelectorAll('g.eg[data-k]').forEach(function (x) { var k = x.getAttribute('data-k').split('-').map(Number); x.classList.toggle('dim', k.indexOf(n.no) < 0); });
+  }
   function draw() {
     var thr = KIN.mode === 'c' ? KIN.thrc : KIN.mode === 'w' ? KIN.thrw : KIN.thr, val = kinVal;
     document.getElementById('ksmallw').style.display = KIN.mode === 'c' ? '' : 'none';
@@ -2287,22 +2318,22 @@ function viewKinship() {
     var ps = K.pairs.filter(function (p) { return KIN.mode === 'sv' ? p.sv > 0 : val(p) >= thr; });
     var nSmall = 0, CB = {}; CBN = CB;
     if (KIN.mode === 'c') {
-      // 包含度：每本只畫一支箭頭，指向收有它最多內容的一本（該本見於對方的比例最高；並列時取年代較近者）；低於門檻的不畫
+      // 包含度：每本只畫指向「收有它最多內容」的箭頭；與最高值相差不到 KIN_TIE 的都算並列最高，一併畫出；低於門檻的不畫
       ps = [];
       ORD.forEach(function (n) {
         if (KIN.small && n.n < KIN_SMALL) { nSmall++; return; }
-        var best = null, bv = -1;
-        K.pairs.forEach(function (p) { if (p.a !== n.no && p.b !== n.no) return; var o = NB[p.a === n.no ? p.b : p.a], v = p.a === n.no ? p.ca : p.cb;
-          if (v > bv + 1e-9 || (Math.abs(v - bv) < 1e-9 && best && Math.abs(o.pos - n.pos) < Math.abs(best.o.pos - n.pos))) { bv = v; best = { p: p, o: o }; } });
-        if (best && bv >= thr) { var bk = pk(best.p.a, best.p.b); if (CB[bk]) { CB[bk].mutual = { from: n, to: best.o, v: bv }; return; } ps.push(best.p); CB[bk] = { from: n, to: best.o, v: bv }; }   // 兩本互爲最高時畫成雙頭箭頭
+        var ls = kinRank(n.no).out, top = ls.length ? ls[0].v : 0;
+        ls.forEach(function (x) { if (x.v < thr || x.v < top - KIN_TIE - 1e-9) return;
+          var bk = pk(n.no, x.o.no); if (CB[bk]) { CB[bk].mutual = { from: n, to: x.o, v: x.v }; return; }   // 兩本互在對方的並列最高之列：雙頭箭頭
+          ps.push(x.p); CB[bk] = { from: n, to: x.o, v: x.v, tie: ls.filter(function (y) { return y.v >= top - KIN_TIE - 1e-9; }).length }; });
       });
     }
     VIA = {}; if (KIN.mode !== 'c') ps.forEach(function (p) { var b = kinVia(p); if (b) VIA[pk(p.a, p.b)] = b; });
     document.getElementById('kredw').style.display = KIN.mode === 'c' ? 'none' : '';
     var nVia = Object.keys(VIA).length, nAll = ps.length;
     if (KIN.red) ps = ps.filter(function (p) { return !VIA[pk(p.a, p.b)]; });
-    if (KIN.mode === 'c') document.getElementById('kredn').innerHTML = L('每本只畫一支箭頭，指向收有它最多內容的一本，箭頭越粗比例越高；低於門檻的不畫。箭頭只表示「見於」，不表示「抄自」。', 'Each edition has one arrow, pointing to the edition that contains most of its content; thicker means a higher share; below the threshold none is drawn. An arrow means “found in”, not “copied from”.', 'Chaque édition a une seule flèche, vers l’édition qui contient le plus de son contenu ; plus épaisse, plus la part est élevée ; sous le seuil, aucune. Une flèche signifie « se retrouve dans », non « copié de ».') +
-      (KIN.small ? L('條目少於 ' + KIN_SMALL + ' 條的本子（虛線圈）不畫箭頭。', ' Editions with fewer than ' + KIN_SMALL + ' entries (dashed ring) get no arrow.', ' Les éditions de moins de ' + KIN_SMALL + ' entrées (cercle pointillé) n’ont pas de flèche.') : '') + L('兩本互爲最高時畫成雙頭箭頭。', ' When two editions are each other’s highest, the arrow has two heads.', ' Quand deux éditions sont réciproquement la plus élevée, la flèche a deux pointes.') + ' <b>' + (function () { var na = Object.keys(CB).reduce(function (t, k) { return t + (CB[k].mutual ? 2 : 1); }, 0), nn = ORD.length - nSmall - na; return L(na + ' 本畫出箭頭；' + nn + ' 本見於任何一本的比例都低於門檻，沒有箭頭。', na + ' editions have an arrow; ' + nn + ' have no share above the threshold in any edition.', na + ' éditions ont une flèche ; ' + nn + ' n’atteignent le seuil dans aucune.'); })() + '</b>';
+    if (KIN.mode === 'c') document.getElementById('kredn').innerHTML = L('每本的箭頭指向收有它最多內容的一本；與最高值相差不到 ' + KIN_TIE + ' 的算並列最高，都畫出。箭頭越粗比例越高；低於門檻的不畫。箭頭只表示「見於」，不表示「抄自」。點圖上的一本，下方列出它的完整排名。', 'Each edition’s arrows point to the edition that contains most of its content; editions within ' + KIN_TIE + ' of the highest count as tied and are all drawn. Thicker means a higher share; below the threshold none is drawn. An arrow means “found in”, not “copied from”. Click an edition to see its full ranking below.', 'Les flèches de chaque édition vont vers celle qui contient le plus de son contenu ; celles à moins de ' + KIN_TIE + ' de la plus élevée sont ex aequo et toutes tracées. Plus épaisse, plus la part est élevée ; sous le seuil, aucune. Une flèche signifie « se retrouve dans », non « copié de ». Cliquer une édition pour voir son classement complet ci-dessous.') +
+      (KIN.small ? L('條目少於 ' + KIN_SMALL + ' 條的本子（虛線圈）不畫箭頭。', ' Editions with fewer than ' + KIN_SMALL + ' entries (dashed ring) get no arrow.', ' Les éditions de moins de ' + KIN_SMALL + ' entrées (cercle pointillé) n’ont pas de flèche.') : '') + L('兩本互爲最高時畫成雙頭箭頭。', ' When two editions are each other’s highest, the arrow has two heads.', ' Quand deux éditions sont réciproquement la plus élevée, la flèche a deux pointes.') + ' <b>' + (function () { var src = {}, na = 0; Object.keys(CB).forEach(function (k) { src[CB[k].from.no] = 1; na++; if (CB[k].mutual) src[CB[k].mutual.from.no] = 1; }); var ns = Object.keys(src).length, nn = ORD.length - nSmall - ns; return L(ns + ' 本畫出箭頭（共 ' + na + ' 支）；' + nn + ' 本見於任何一本的比例都低於門檻，沒有箭頭。', ns + ' editions have arrows (' + na + ' in all); ' + nn + ' reach the threshold in no edition.', ns + ' éditions ont des flèches (' + na + ' en tout) ; ' + nn + ' n’atteignent le seuil dans aucune.'); })() + '</b>';
     else document.getElementById('kredn').innerHTML = (KIN.mode === 'sv'
       ? L('「可由中間本解釋」：兩本共有的少數日期，全都也見於一本年代居中的本子。', '“Explained by an intermediate”: every minority date the two share is also found in an edition dated between them.', '« Expliqué par une édition intermédiaire » : toutes les dates minoritaires communes aux deux se retrouvent dans une édition datée entre elles.')
       : L('「可由中間本解釋」：有一本年代居中的本子，與兩端都比兩端彼此更接近。', '“Explained by an intermediate”: an edition dated between them is closer to each end than the two ends are to each other.', '« Expliqué par une édition intermédiaire » : une édition datée entre les deux est plus proche de chacune que celles-ci ne le sont entre elles.')) + ' ' +
@@ -2344,25 +2375,27 @@ function viewKinship() {
     el.querySelectorAll('g.eg').forEach(function (g) {
       g.addEventListener('mousemove', function (e) {
         var k = g.getAttribute('data-k'), di = g.getAttribute('data-d');
-        if (k && CBN[k]) { var cb = CBN[k]; showTip(e, '<b>' + vname(cb.from) + '</b> → <b>' + vname(cb.to) + '</b><div>' + L(cb.from.yr + ' 本的條目有 <b>' + Math.round(cb.v * 100) + '%</b> 見於 ' + cb.to.yr + ' 本，是它見於其他各本中比例最高的。', '<b>' + Math.round(cb.v * 100) + '%</b> of ' + cb.from.yr + ' is found in ' + cb.to.yr + ', its highest share in any edition.', '<b>' + Math.round(cb.v * 100) + ' %</b> de ' + cb.from.yr + ' se retrouve dans ' + cb.to.yr + ', sa part la plus élevée.') + '</div>' + (cb.mutual ? '<div>' + L('反之，' + cb.to.yr + ' 本有 <b>' + Math.round(cb.mutual.v * 100) + '%</b> 見於 ' + cb.from.yr + ' 本，也是它的最高比例（雙頭箭頭）。', 'Conversely, <b>' + Math.round(cb.mutual.v * 100) + '%</b> of ' + cb.to.yr + ' is found in ' + cb.from.yr + ', also its highest (double arrow).', 'Inversement, <b>' + Math.round(cb.mutual.v * 100) + ' %</b> de ' + cb.to.yr + ' se retrouve dans ' + cb.from.yr + ', aussi sa part la plus élevée (double flèche).') + '</div>' : '') + '<div class="small muted">' + L('點擊並排細看兩本', 'Click to compare side by side', 'Cliquer pour comparer') + '</div>'); }
+        if (k && CBN[k]) { var cb = CBN[k]; showTip(e, '<b>' + vname(cb.from) + '</b> → <b>' + vname(cb.to) + '</b><div>' + L(cb.from.yr + ' 本的條目有 <b>' + Math.round(cb.v * 100) + '%</b> 見於 ' + cb.to.yr + ' 本' + (cb.tie > 1 ? '，與另外 ' + (cb.tie - 1) + ' 本並列最高（相差不到 ' + KIN_TIE + '）。' : '，是它見於其他各本中比例最高的。'), '<b>' + Math.round(cb.v * 100) + '%</b> of ' + cb.from.yr + ' is found in ' + cb.to.yr + (cb.tie > 1 ? ', tied highest with ' + (cb.tie - 1) + ' other edition(s) (within ' + KIN_TIE + ').' : ', its highest share in any edition.'), '<b>' + Math.round(cb.v * 100) + ' %</b> de ' + cb.from.yr + ' se retrouve dans ' + cb.to.yr + (cb.tie > 1 ? ', ex aequo avec ' + (cb.tie - 1) + ' autre(s) (à moins de ' + KIN_TIE + ').' : ', sa part la plus élevée.')) + '</div>' + (cb.mutual ? '<div>' + L('反之，' + cb.to.yr + ' 本有 <b>' + Math.round(cb.mutual.v * 100) + '%</b> 見於 ' + cb.from.yr + ' 本，也在它的並列最高之列（雙頭箭頭）。', 'Conversely, <b>' + Math.round(cb.mutual.v * 100) + '%</b> of ' + cb.to.yr + ' is found in ' + cb.from.yr + ', also its highest (double arrow).', 'Inversement, <b>' + Math.round(cb.mutual.v * 100) + ' %</b> de ' + cb.to.yr + ' se retrouve dans ' + cb.from.yr + ', aussi sa part la plus élevée (double flèche).') + '</div>' : '') + '<div class="small muted">' + L('點擊並排細看兩本', 'Click to compare side by side', 'Cliquer pour comparer') + '</div>'); }
         else if (k) showTip(e, pairTip(PB[k]) + (VIA[k] ? '<div class="muted">' + L('可由居中的 ' + vname(VIA[k]) + ' 解釋', 'Explained by the intermediate ' + vname(VIA[k]), 'Expliqué par l’édition intermédiaire ' + vname(VIA[k])) + '</div>' : ''));
         else { var r = K.dir[+di]; showTip(e, '<b>' + vname(NB[r.a]) + ' → ' + vname(NB[r.b]) + '</b> <span class="muted">（' + esc(I.en() ? I.T(r.st === '確定' ? 'certain' : 'candidate') : r.st) + '）</span><div>' + FT(r.d) + '</div>'); }
       });
       g.addEventListener('mouseleave', hideTip);
       g.addEventListener('click', function (ev) { ev.stopPropagation(); var k = g.getAttribute('data-k'); if (!k) return; var p = PB[k]; hideTip(); if (KSEL === k) { kinSelect(''); closeCmp(); return; } location.hash = 'kin/' + p.a + '/' + p.b; });
     });
-    el.querySelector('svg').addEventListener('click', function (ev) { if (!ev.target.closest('g.eg, g.nd')) kinSelect(''); });   // 點空白處取消選中
+    el.querySelector('svg').addEventListener('click', function (ev) { if (!ev.target.closest('g.eg, g.nd')) { kinSelect(''); if (KIN_RANK) { KIN_RANK = 0; rankPanel(); } } });   // 點空白處取消選中
     kinApplySel();
+    rankPanel();
     el.querySelectorAll('g.nd').forEach(function (g) {
       var no = +g.getAttribute('data-n'), n = NB[no];
       g.addEventListener('mousemove', function (e) {
         var near = K.pairs.filter(function (p) { return p.a === no || p.b === no; }).sort(function (a, b) { return KIN.mode === 'c' ? (b.a === no ? b.ca : b.cb) - (a.a === no ? a.ca : a.cb) : KIN.mode === 'w' ? b.w - a.w : b.j - a.j; }).slice(0, 4);
-        showTip(e, '<b>' + vname(n) + '</b>' + L('（編號' + no + '）', ' (no. ' + no + ')', ' (n° ' + no + ')') + '<div class="small muted">' + esc(lname(n.lane)) + (n.tent ? L('（暫定：', ' (provisional: ') + FT(n.tent, 1) + L('）', ')') : '') + (n.note ? L('；', '; ') + FT(n.note, 1) : '') + '</div>' + (n.n < KIN_SMALL ? '<div class="small" style="color:var(--accent)">' + L('樣本少：可比條目不足 ' + KIN_SMALL + ' 條，包含度容易虛高', 'Small sample: fewer than ' + KIN_SMALL + ' comparable entries, so containment is easily inflated', 'Petit échantillon : moins de ' + KIN_SMALL + ' entrées comparables, l’inclusion est facilement surévaluée') + '</div>' : '') + '<div>' + L('可比條目 ' + n.n + ' 條；少數日期 ' + n.nmin + ' 處', n.n + ' comparable entries; ' + n.nmin + ' minority dates', n.n + ' entrées comparables ; ' + n.nmin + ' dates minoritaires') + '</div><div class="small">' + L('最相近：', 'Closest: ') + near.map(function (p) { var o = NB[p.a === no ? p.b : p.a]; return esc(o.yr) + ' ' + esc(o.sh) + ' ' + (p.j * 100).toFixed(0); }).join('；') + '</div>');
+        showTip(e, '<b>' + vname(n) + '</b>' + L('（編號' + no + '）', ' (no. ' + no + ')', ' (n° ' + no + ')') + '<div class="small muted">' + esc(lname(n.lane)) + (n.tent ? L('（暫定：', ' (provisional: ') + FT(n.tent, 1) + L('）', ')') : '') + (n.note ? L('；', '; ') + FT(n.note, 1) : '') + '</div>' + (KIN.mode === 'c' ? '<div class="small muted">' + L('點擊看它的完整排名', 'Click for its full ranking', 'Cliquer pour son classement complet') + '</div>' : '') + (n.n < KIN_SMALL ? '<div class="small" style="color:var(--accent)">' + L('樣本少：可比條目不足 ' + KIN_SMALL + ' 條，包含度容易虛高', 'Small sample: fewer than ' + KIN_SMALL + ' comparable entries, so containment is easily inflated', 'Petit échantillon : moins de ' + KIN_SMALL + ' entrées comparables, l’inclusion est facilement surévaluée') + '</div>' : '') + '<div>' + L('可比條目 ' + n.n + ' 條；少數日期 ' + n.nmin + ' 處', n.n + ' comparable entries; ' + n.nmin + ' minority dates', n.n + ' entrées comparables ; ' + n.nmin + ' dates minoritaires') + '</div><div class="small">' + L('最相近：', 'Closest: ') + near.map(function (p) { var o = NB[p.a === no ? p.b : p.a]; return esc(o.yr) + ' ' + esc(o.sh) + ' ' + (p.j * 100).toFixed(0); }).join('；') + '</div>');
         var ks = {}; K.pairs.forEach(function (p) { if (p.a === no || p.b === no) ks[pk(p.a, p.b)] = 1; });
         el.querySelectorAll('g.eg').forEach(function (x) { var k = x.getAttribute('data-k'); x.classList.toggle('dim', !!k && !ks[k]); });
       });
-      g.addEventListener('mouseleave', function () { hideTip(); el.querySelectorAll('g.eg').forEach(function (x) { x.classList.remove('dim'); }); kinApplySel(); });
-      g.addEventListener('click', function () { var v = ED.versions.filter(function (x) { return +x.no === no; })[0]; if (v) { hideTip(); location.hash = 'ev/' + v.i; } });
+      g.addEventListener('mouseleave', function () { hideTip(); el.querySelectorAll('g.eg').forEach(function (x) { x.classList.remove('dim'); }); kinApplySel(); rankPanel(); });
+      g.addEventListener('click', function (ev) { if (KIN.mode === 'c') { ev.stopPropagation(); hideTip(); KIN_RANK = KIN_RANK === no ? 0 : no; rankPanel(); return; }
+        var v = ED.versions.filter(function (x) { return +x.no === no; })[0]; if (v) { hideTip(); location.hash = 'ev/' + v.i; } });
     });
   }
   function heat() {
@@ -2969,8 +3002,8 @@ var SHARE = {
     set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; }
   },
   kin: {
-    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
-    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' || o.mode === 'w' ? o.mode : 'j'; KIN.thrw = o.thrw ? Math.max(0.1, Math.min(0.9, +o.thrw)) : 0.25; KIN.small = o.small !== '0'; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' || o.hm === 'w' ? o.hm : 'j'; KIN.dir = o.dir !== '0'; KIN.red = o.red !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
+    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, rank: KIN.mode === 'c' && KIN_RANK ? KIN_RANK : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
+    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' || o.mode === 'w' ? o.mode : 'j'; KIN.thrw = o.thrw ? Math.max(0.1, Math.min(0.9, +o.thrw)) : 0.25; KIN.small = o.small !== '0'; KIN_RANK = +o.rank || 0; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' || o.hm === 'w' ? o.hm : 'j'; KIN.dir = o.dir !== '0'; KIN.red = o.red !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
   },
   ring: {
     get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; return o; },

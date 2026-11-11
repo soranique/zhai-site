@@ -275,7 +275,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cmp-pick label { display: inline-flex; gap: 6px; align-items: center; }
 .cmp-pick select { max-width: 260px; }
 #cswap { font: inherit; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
-.cmp-head, .cmp-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 28px; }
+.cmp-head, .cmp-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 28px; } .cmp-head.cmp-2, .cmp-cols.cmp-2 { grid-template-columns: 1fr 1fr; gap: 0 36px; }
 .cmp-head { position: sticky; top: 0; z-index: 2; background: var(--page); font-weight: 600; font-size: 14px; padding: 8px 0; border-bottom: 2px solid var(--axis); margin-top: 18px; }
 .cmp-m { border-bottom: 1px solid var(--grid); padding: 10px 0 12px; }
 .cmp-mn { font-weight: 600; margin-bottom: 6px; }
@@ -285,6 +285,10 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .ci.fx { outline: 2px solid var(--accent); }
 .ci-d { display: inline-block; min-width: 1.6em; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ci-o { color: var(--accent); }
+/* 兩本細看：共有（綠底）／只見於本本（白底，日期與神名紅字）／共有但措辭不同（不同的字紅字） */
+.ci.ci-s { background: color-mix(in srgb, var(--cat3) 16%, var(--surface)); border-color: color-mix(in srgb, var(--cat3) 40%, var(--grid)); }
+.ci.ci-x .ci-d, .ci.ci-x > a { color: var(--accent); }
+.ci-diff { color: var(--accent); }
 .cmp-ln { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; z-index: 0; }
 .cmp-ln path { fill: none; stroke: var(--accent); stroke-width: 1.4; opacity: .75; }
 .cmp-ln circle { fill: var(--accent); }
@@ -1165,7 +1169,9 @@ function renderCmp(a, b) {
   var UA = units(EA), UB = units(EB);
   var shared = Object.keys(UA).filter(function (u) { return UB[u]; });
   var onlyA = Object.keys(UA).filter(function (u) { return !UB[u]; }), onlyB = Object.keys(UB).filter(function (u) { return !UA[u]; });
-  var union = Object.keys(UA).length + onlyB.length, j = union ? shared.length / union : 0;
+  var nA = Object.keys(UA).length, nB = Object.keys(UB).length, union = nA + onlyB.length, j = union ? shared.length / union : 0;
+  var ca = nA ? shared.length / nA : 0, cb = nB ? shared.length / nB : 0;   // 包含度：甲本的單位有幾成見於乙本；乙本的有幾成見於甲本
+  var pc = function (x) { return Math.round(x * 100) + '%'; };
   // 只見於一本的單位：同一神（同日期類型）在另一本作別的日子 → 同月異日（連線）或異月（註明）
   // 無神名日都當作「其他」，彼此不是同一位神，不配「同月異日／異月」
   var isOther = function (x) { return uid(x).indexOf(KOTHER_NAME + '|') === 0; };
@@ -1184,44 +1190,51 @@ function renderCmp(a, b) {
   var kp = K && K.pairs ? K.pairs.filter(function (p) { return (p.a === +A.no && p.b === +B.no) || (p.a === +B.no && p.b === +A.no); })[0] : null;
   var vlab = function (v) { return edWhen(v) + ' ' + N(v.short); };
   var h = '<div class="cp-head"><div><div class="cp-title">' + L('兩本細看', 'Two editions in detail') + '</div><div class="small muted">' + vlab(A) + ' ～ ' + vlab(B) + '</div></div><button type="button" class="dp-close" aria-label="' + L('關閉', 'Close') + '">✕</button></div>' +
-    '<p class="small muted cp-lede">' + L('按月日對齊，分三欄：兩本共有、只見於甲本、只見於乙本。比較單位與本頁的矩陣相同（規範名＋編碼日期類型＋月日；跨幾天的條目按日拆開）。同一位神同月異日的兩條用連線連起；異月的在條目下注明另一本的日期。點日期打開「這一天」。',
-      'Aligned by month and day in three columns: shared, only in A, only in B. Same unit as the matrix on this page (normalized name + coded date type + day; entries spanning several days are split by day). The same deity in the same month on different days is joined by a line; for a different month the other edition’s date is noted. Click a date to open “this day”.') + '</p>' +
+    '<p class="small muted cp-lede">' + L('左欄甲本、右欄乙本，各自按月日列出全部條目。比較單位與本頁的矩陣相同（規範名＋編碼日期類型＋月日；跨幾天的條目按日拆開）。綠底是兩本共有的條目，兩本措辭不同時不同的字標紅；白底紅字是只見於這一本的條目。同一位神同月異日的兩條用連線連起；異月的在條目下注明另一本的日期。點日期打開「這一天」。',
+      'Edition A on the left, edition B on the right, each listing all its entries by month and day. Same unit as the matrix on this page (normalized name + coded date type + day; entries spanning several days are split by day). Green cards are entries shared by both, with any characters that differ in wording in red; white cards with red text are entries found in this edition only. The same deity in the same month on different days is joined by a line; for a different month the other edition’s date is noted. Click a date to open “this day”.') + '</p>' +
     (FOCUS ? focusNote(L('它的條目加框', 'its entries are outlined')) : '') +
     '<div class="controls cmp-pick"><label>' + L('甲本', 'A') + ' <select id="ca">' + opt(A) + '</select></label><button type="button" id="cswap" title="' + L('甲乙互換', 'Swap') + '">⇄</button><label>' + L('乙本', 'B') + ' <select id="cb">' + opt(B) + '</select></label>' +
     '<label class="small"><input type="checkbox" id="cmain"' + (CMP.main ? ' checked' : '') + '> ' + L('只計正文', 'Main table only') + '</label><label class="small"><input type="checkbox" id="cund"' + (CMP.undated ? ' checked' : '') + '> ' + L('列出無具體月日的條目', 'List entries without a specific day') + '</label></div>' +
-    '<div class="tiles">' + tile(shared.length, L('兩本共有', 'Shared'), L('重合度 ', 'Overlap ') + Math.round(j * 100) + '%' + (!CMP.main && kp ? L('（矩陣只計正文：', ' (matrix, main table only: ') + Math.round(kp.j * 100) + '%）' : '')) +
-    tile(onlyA.length, L('只見於甲本', 'Only in A'), vlab(A)) + tile(onlyB.length, L('只見於乙本', 'Only in B'), vlab(B)) +
+    '<div class="tiles">' + tile(shared.length, L('兩本共有', 'Shared'), L('重合度 ', 'Overlap ') + pc(j) + (!CMP.main && kp ? L('（矩陣只計正文：', ' (matrix, main table only: ') + Math.round(kp.j * 100) + '%）' : '') +
+      '<br>' + L('包含度：甲本 ' + pc(ca) + ' 見於乙本，乙本 ' + pc(cb) + ' 見於甲本', 'Containment: ' + pc(ca) + ' of A found in B, ' + pc(cb) + ' of B found in A', 'Inclusion : ' + pc(ca) + ' de A dans B, ' + pc(cb) + ' de B dans A')) +
+    tile(onlyA.length, L('只見於甲本', 'Only in A'), vlab(A) + '<br>' + L('佔甲本 ' + pc(nA ? onlyA.length / nA : 0) + '（' + nA + ' 單位）', pc(nA ? onlyA.length / nA : 0) + ' of A (' + nA + ' units)', pc(nA ? onlyA.length / nA : 0) + ' de A (' + nA + ' unités)')) +
+    tile(onlyB.length, L('只見於乙本', 'Only in B'), vlab(B) + '<br>' + L('佔乙本 ' + pc(nB ? onlyB.length / nB : 0) + '（' + nB + ' 單位）', pc(nB ? onlyB.length / nB : 0) + ' of B (' + nB + ' units)', pc(nB ? onlyB.length / nB : 0) + ' de B (' + nB + ' unités)')) +
     tile(pairs.length, L('同月異日', 'Same month, other day'), L('連線標出；另有異月 ' + nDM + ' 條', 'joined by lines; ' + nDM + ' more in another month', 'reliées par un trait ; ' + nDM + ' de plus dans un autre mois')) + '</div>' +
     ((inc.indexOf(+A.no) < 0 || inc.indexOf(+B.no) < 0) ? '<p class="small muted">' + L('注意：所選版本中有未納入矩陣的版本（文本不全或體例不同），這裏照樣列出，但重合度只作參考。', 'Note: at least one chosen edition is outside the matrix (incomplete text or a different format); it is listed here, but treat the overlap as indicative.') + '</p>' : '');
   var span = function (e) { var md = kDays(e); return md && md[1].length > 1 ? '<span class="muted small">（' + esc(e.dy) + '）</span>' : ''; };
+  // 一欄裏的一條：共有的（綠底；另一本措辭不同時不同的字標紅）或只見於本本的（紅字；注明另一本的同神日期，同月的畫連線）
   var item = function (x, side) {
     var e = x.e, o = (other[side + x.u] || []).map(function (y) { return y.m + '/' + y.d; });
     var nm = e.t || e.g || e.k;
-    return '<div class="ci' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + x.u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> ' + kLink(e) +
+    return '<div class="ci ci-x' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + x.u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> ' + kLink(e) +
       '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + span(e) + (nm && nm !== e.k ? '<div class="small">' + esc(nm) + '</div>' : '') +
       (o.length ? '<div class="small ci-o">' + (side === 'a' ? L('乙本作 ', 'B: ') : L('甲本作 ', 'A: ')) + o.join(L('、', ', ')) + '</div>' : '') + '</div>';
   };
-  var itemS = function (u) {
-    var x = UA[u].e, y = UB[u].e;
-    return '<div class="ci' + (fNorm(x.k) ? ' fx' : '') + '"><span class="ci-d dlink" data-day="' + UA[u].m + '/' + UA[u].d + '">' + UA[u].d + '</span> ' + kLink(x) + '<span class="muted small"> ' + esc(C(x.c) || '') + '</span>' + span(x) +
-      ((x.t || '') !== (y.t || '') ? '<div class="small">' + L('甲：', 'A: ') + (x.t ? yt(x.t) : esc(x.g || '—')) + '</div><div class="small">' + L('乙：', 'B: ') + (y.t ? yt(y.t) : esc(y.g || '—')) + '</div>' : (x.t && x.t !== x.k ? '<div class="small">' + yt(x.t) + '</div>' : '')) + '</div>';
+  var itemS = function (u, side) {
+    var x = side === 'a' ? UA[u] : UB[u], y = side === 'a' ? UB[u] : UA[u], e = x.e, f = y.e;
+    return '<div class="ci ci-s' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> ' + kLink(e) + '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + span(e) +
+      ((e.t || '') !== (f.t || '') ? '<div class="small">' + (e.t ? ytDiff(e.t, f.t) : '<span class="ci-diff">' + esc(e.g || '—') + '</span>') + '</div>' : (e.t && e.t !== e.k ? '<div class="small">' + yt(e.t) + '</div>' : '')) + '</div>';
+  };
+  var colOf = function (U, side, m) {   // 該本該月全部單位，按日排序；共有的用 itemS，獨有的用 item
+    return Object.keys(U).filter(function (u) { return U[u].m === m; }).sort(function (u1, u2) { return U[u1].d - U[u2].d || (!!UA[u1] && !!UB[u1] ? 0 : 1) - (!!UA[u2] && !!UB[u2] ? 0 : 1); })
+      .map(function (u) { return UA[u] && UB[u] ? itemS(u, side) : item(U[u], side); }).join('');
   };
   var ccl = function (xs, t) { return xs.length ? '<div class="cc-l">' + t + '</div>' : ''; };   // 窄屏三欄上下排列時每段的小標題
   var inM = function (U, m) { return function (u) { return U[u].m === m; }; };
   var byDay = function (U) { return function (u1, u2) { return U[u1].d - U[u2].d; }; };
-  h += '<div class="cmp-head"><div>' + L('兩本共有', 'Shared') + '</div><div>' + L('只見於甲本', 'Only in A') + '<span class="muted small"> ' + vlab(A) + '</span></div><div>' + L('只見於乙本', 'Only in B') + '<span class="muted small"> ' + vlab(B) + '</span></div></div>';
+  h += '<div class="cmp-head cmp-2"><div>' + L('甲本', 'A') + '<span class="muted small"> ' + vlab(A) + '</span></div><div>' + L('乙本', 'B') + '<span class="muted small"> ' + vlab(B) + '</span></div></div>';
   for (var m = 1; m <= 12; m++) {
     var sm = shared.filter(inM(UA, m)).sort(byDay(UA)), am = onlyA.filter(inM(UA, m)).sort(byDay(UA)), bm = onlyB.filter(inM(UB, m)).sort(byDay(UB));
     if (!sm.length && !am.length && !bm.length) continue;
-    h += '<div class="cmp-m" data-m="' + m + '"><div class="cmp-mn">' + monthName(m) + ' <span class="muted small">' + L('共有 ' + sm.length + ' · 甲 ' + am.length + ' · 乙 ' + bm.length, 'shared ' + sm.length + ' · A ' + am.length + ' · B ' + bm.length, 'communes ' + sm.length + ' · A ' + am.length + ' · B ' + bm.length) + '</span></div><div class="cmp-cols">' +
-      '<div class="cc">' + ccl(sm, L('兩本共有', 'Shared')) + sm.map(itemS).join('') + '</div><div class="cc">' + ccl(am, L('只見於甲本', 'Only in A')) + am.map(function (u) { return item(UA[u], 'a'); }).join('') + '</div><div class="cc">' + ccl(bm, L('只見於乙本', 'Only in B')) + bm.map(function (u) { return item(UB[u], 'b'); }).join('') + '</div>' +
+    h += '<div class="cmp-m" data-m="' + m + '"><div class="cmp-mn">' + monthName(m) + ' <span class="muted small">' + L('甲 ' + (sm.length + am.length) + ' · 乙 ' + (sm.length + bm.length) + ' · 共有 ' + sm.length, 'A ' + (sm.length + am.length) + ' · B ' + (sm.length + bm.length) + ' · shared ' + sm.length, 'A ' + (sm.length + am.length) + ' · B ' + (sm.length + bm.length) + ' · communes ' + sm.length) + '</span></div><div class="cmp-cols cmp-2">' +
+      '<div class="cc">' + ccl(sm.concat(am), L('甲本', 'A') + ' ' + vlab(A)) + colOf(UA, 'a', m) + '</div><div class="cc">' + ccl(sm.concat(bm), L('乙本', 'B') + ' ' + vlab(B)) + colOf(UB, 'b', m) + '</div>' +
       '<svg class="cmp-ln" aria-hidden="true"></svg></div></div>';
   }
   if (CMP.undated) {
     var nk = function (es) { var o = {}; es.filter(function (e) { return !kDays(e); }).forEach(function (e) { (o[ident(e)] = o[ident(e)] || []).push(e); }); return o; };
     var NA = nk(EA), NB = nk(EB), keys = Object.keys(NA).concat(Object.keys(NB).filter(function (x) { return !NA[x]; }));
-    var col = function (f) { return keys.filter(f).map(function (x) { var e = (NA[x] || NB[x])[0]; return '<div class="ci">' + kLink(e) + ' <span class="muted small">' + esc((e.mo || '') + (e.dy || '')) + '</span></div>'; }).join(''); };
-    h += '<div class="cmp-m"><div class="cmp-mn">' + L('無具體月日（每月、六十甲子日等）', 'No specific day (monthly, sixty jiazi days, etc.)') + '</div><div class="cmp-cols"><div class="cc">' + col(function (x) { return NA[x] && NB[x]; }) + '</div><div class="cc">' + col(function (x) { return NA[x] && !NB[x]; }) + '</div><div class="cc">' + col(function (x) { return !NA[x] && NB[x]; }) + '</div></div></div>';
+    var colU = function (M, O) { return keys.filter(function (x) { return M[x]; }).map(function (x) { var e = M[x][0]; return '<div class="ci ' + (O[x] ? 'ci-s' : 'ci-x') + '">' + kLink(e) + ' <span class="muted small">' + esc((e.mo || '') + (e.dy || '')) + '</span></div>'; }).join(''); };
+    h += '<div class="cmp-m"><div class="cmp-mn">' + L('無具體月日（每月、六十甲子日等）', 'No specific day (monthly, sixty jiazi days, etc.)') + '</div><div class="cmp-cols cmp-2"><div class="cc">' + colU(NA, NB) + '</div><div class="cc">' + colU(NB, NA) + '</div></div></div>';
   }
   var body = document.querySelector('#cmppanel .cp-body');
   body.innerHTML = h;
@@ -1243,7 +1256,7 @@ function cmpLines() {
     var r0 = box.getBoundingClientRect(), s = '';
     svg.setAttribute('width', r0.width); svg.setAttribute('height', r0.height);
     var cols = box.querySelectorAll('.cc');
-    if (cols.length < 3 || cols[2].getBoundingClientRect().top > cols[1].getBoundingClientRect().bottom - 4) { svg.innerHTML = ''; return; }  // 窄屏三欄上下排列時不畫線
+    if (cols.length < 2 || cols[1].getBoundingClientRect().top > cols[0].getBoundingClientRect().bottom - 4) { svg.innerHTML = ''; return; }  // 窄屏兩欄上下排列時不畫線
     CMP_PAIRS.forEach(function (pr) {
       var x = box.querySelector('[data-u="' + CSS.escape('a' + pr[0]) + '"]'), y = box.querySelector('[data-u="' + CSS.escape('b' + pr[1]) + '"]');
       if (!x || !y) return;
@@ -1313,6 +1326,21 @@ function showTip(e, html) {
 }
 function hideTip(force) { if (TOUCH && !force && tip.classList.contains('card')) return; tip.style.display = 'none'; tip.classList.remove('card'); TIPK = null; }
 
+// 兩段原文逐字比對：不在最長公共子序列裏的字標紅（兩本細看裏共有條目的措辭差異）；西文界面有譯文時不逐字標，整句標紅
+function ytDiff(s, t) {
+  if (!s) return s === t ? '' : '<span class="ci-diff">—</span>';
+  if (I.anno(s)) return '<span class="ci-diff">' + yt(s) + '</span>';
+  var a = Array.from(s), b = Array.from(t || ''), n = a.length, m = b.length, i, j;
+  var D = []; for (i = 0; i <= n; i++) { D.push(new Array(m + 1).fill(0)); }
+  for (i = n - 1; i >= 0; i--) for (j = m - 1; j >= 0; j--) D[i][j] = a[i] === b[j] ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
+  var keep = []; i = 0; j = 0;
+  while (i < n && j < m) { if (a[i] === b[j]) { keep[i] = 1; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else j++; }
+  var h = '', run = '', on = null;
+  var flush = function () { if (run) h += on ? '<span class="ci-diff">' + esc(run) + '</span>' : esc(run); run = ''; };
+  for (i = 0; i < n; i++) { var d = !keep[i]; if (on !== null && d !== on) flush(); on = d; run += a[i]; }
+  flush();
+  return '<span class="yt">' + h + '</span>';
+}
 function yt(s) { if (!s) return ''; var a = I.anno(s); return a ? '<span class="muted">' + esc(a) + '</span>' : '<span class="yt">' + esc(s) + '</span>'; }   // 史料原文（楷體）
 // 頁首的導讀：這一頁回答什麼問題、與另一頁的分工
 function pageGuide(lead, items, eg, href, more) {

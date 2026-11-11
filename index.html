@@ -647,7 +647,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="kinship-data.js?v=8e402063"></script>
 <script src="spread-data.js?v=b8f99e87"></script>
 <script src="search-data.js?v=bae77b1a"></script>
-<script src="ring.js?v=5db72fb9"></script>
+<script src="ring.js?v=997a6758"></script>
 <script>
 (function () {
 'use strict';
@@ -3254,9 +3254,9 @@ function ringAll() {
       x.cells.forEach(function (c) { x.kinds.forEach(function (k) { (day[c] = day[c] || {})[k] = 1; if (!f) (typ[c] = typ[c] || {})[k] = 1; }); if (f) fd[c] = 1; });
     });
     // 各類型佔多少：只看神聖日（十齋日・六齋日之外的條目）；cov 有此類的天數，only 只有此類的天數，tf 其中同時是十齋日・六齋日的天數
-    var cov = {}, only = {}, tf = {}, fs = 0;
-    Object.keys(typ).forEach(function (c) { var ks = Object.keys(typ[c]); ks.forEach(function (k) { cov[k] = (cov[k] || 0) + 1; if (ks.length === 1) only[k] = (only[k] || 0) + 1; if (fd[c]) tf[k] = (tf[k] || 0) + 1; }); if (fd[c]) fs++; });
-    var share = { sac: Object.keys(typ).length, cov: cov, only: only, tf: tf, f: Object.keys(fd).length, fs: fs };
+    var cov = {}, only = {}, tf = {}, fs = 0, mix = {};   // mix：兼類的組合（如 T/D）→ 天數
+    Object.keys(typ).forEach(function (c) { var ks = Object.keys(typ[c]); if (ks.length > 1) { var mk = RK_ORDER.filter(function (x) { return typ[c][x]; }).join('/'); mix[mk] = (mix[mk] || 0) + 1; } ks.forEach(function (k) { cov[k] = (cov[k] || 0) + 1; if (ks.length === 1) only[k] = (only[k] || 0) + 1; if (fd[c]) tf[k] = (tf[k] || 0) + 1; }); if (fd[c]) fs++; });
+    var share = { sac: Object.keys(typ).length, cov: cov, only: only, tf: tf, mix: mix, f: Object.keys(fd).length, fs: fs };
     var seg = {}, mon = []; for (var m = 0; m < 12; m++) mon.push({});
     Object.keys(day).forEach(function (c) { var k = RK_ORDER.filter(function (x) { return day[c][x]; }).join('/'), mi = Math.floor(c / 100) - 1; seg[k] = (seg[k] || 0) + 1; mon[mi][k] = (mon[mi][k] || 0) + 1; });
     var nc = !inCalc(v) ? L('（暫不計入）', ' (not counted)', ' (non compté)') : '';

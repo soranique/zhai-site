@@ -171,6 +171,17 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .spread .pr-fit { fill: var(--pfit); } .spread .pr-dev { fill: var(--pdev); } .spread .pr-none { fill: var(--pnone); }
 .spread .pr-ring { fill: none; stroke: var(--surface); stroke-width: 1.2; }
 .spread .sprp { cursor: pointer; opacity: .82; } .spread .sprp:hover, .spread .sprp.on { opacity: 1; } .spread .sprp.on .pr-ring { stroke: var(--ink); stroke-width: 2; }
+.spread g[data-e] { cursor: pointer; } .spread g.spt { cursor: pointer; }
+.spread g[data-e].sel .sedge { stroke-width: 4.5; } .spread g.spt.sel circle, .spread g.spt.sel rect, .spread g.spt.sel path { stroke: var(--ink); stroke-width: 2.4; }
+.spread #sev li { cursor: pointer; border-radius: 4px; } .spread #sev li.on { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.fitplace { margin: 0 0 12px; padding: 6px 10px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.snavt { width: 100%; border-collapse: collapse; } .snavt th, .snavt td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--grid); }
+.snavt thead th { font-size: 13px; color: var(--ink-2); font-weight: 600; } .snavt tbody th { font-weight: 600; width: 34%; }
+.snavt th, .snavt td { white-space: normal; overflow-wrap: anywhere; } .snav .scroll table { min-width: 0; } .snavt td > div { margin-top: 4px; } .snav-btn { display: inline-block; font-weight: 600; }
+.jumpback { position: fixed; left: 14px; bottom: 14px; z-index: 64; display: flex; align-items: center; gap: 4px; background: var(--ink); color: var(--page); border-radius: 999px; padding: 6px 8px 6px 14px; box-shadow: 0 6px 20px rgba(0,0,0,.22); font-size: 13.5px; }
+.jumpback[hidden] { display: none; } .jumpback a { color: var(--page); text-decoration: none; font-weight: 600; } .jumpback button { background: none; border: 0; color: var(--page); cursor: pointer; font: inherit; opacity: .7; padding: 2px 6px; }
+body.demo-on .jumpback { bottom: 92px; }
+@media (max-width: 700px) { .snavt, .snavt tbody, .snavt tr, .snavt th, .snavt td { display: block; width: auto !important; } .snavt thead { display: none; } .snavt tbody th { border-bottom: 0; padding-bottom: 2px; } }
 .spread .seg { display: inline-flex; border: 1px solid var(--grid); border-radius: 6px; overflow: hidden; }
 .spread .seg button { font: inherit; font-size: 12.5px; background: none; border: 0; padding: 3px 10px; cursor: pointer; color: var(--ink-2); }
 .spread .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
@@ -297,6 +308,8 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .ci-o { color: var(--accent); }
 /* 兩本細看：共有（綠底）／只見於本本（白底，日期與神名紅字）／共有但措辭不同（不同的字紅字） */
 .ci.ci-s { background: color-mix(in srgb, var(--cat3) 16%, var(--surface)); border-color: color-mix(in srgb, var(--cat3) 40%, var(--grid)); }
+.ci.ci-sv { box-shadow: inset 3px 0 0 var(--accent); }
+.svtag { display: inline-block; font-size: 11px; line-height: 1; padding: 2px 4px; border-radius: 3px; background: var(--accent); color: #fff; vertical-align: 1px; }
 .ci.ci-x .ci-d, .ci.ci-x > a { color: var(--accent); }
 .ci-diff { color: var(--accent); }
 .cmp-ln { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; z-index: 0; }
@@ -618,7 +631,7 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="data.js?v=aad71f4d"></script>
 <script src="editions-data.js?v=c3682202"></script>
 <script src="kinship-data.js?v=6aef551f"></script>
-<script src="spread-data.js?v=9d5df462"></script>
+<script src="spread-data.js?v=19c286c1"></script>
 <script src="search-data.js?v=bae77b1a"></script>
 <script src="ring.js?v=5db72fb9"></script>
 <script>
@@ -1098,7 +1111,7 @@ function timeBarSync() {
 // ---------- 視圖：兩本對照（比較單位與「版本親疏」相同：建議規範名＋編碼日期類型＋月＋日） ----------
 // ---------- 兩本細看：「版本親疏」頁上的浮窗（網址 #kin/甲/乙） ----------
 // 比較單位與 build_kinship.py 相同：建議規範名＋編碼日期類型＋月＋日；「初一至初九」等拆成逐日；位置空白者算正文
-var CMP = { main: true, undated: false, a: 1, b: 9 };
+var CMP = { main: true, undated: false, a: 1, b: 9, sv: false };   // sv：只列兩本共有的少數日期
 var KOMIT = {}; ((window.ZHAI_KIN && window.ZHAI_KIN.omit) || []).forEach(function (id) { KOMIT[id] = 1; });   // 不計入「版本親疏」比較的條目，由 build_kinship.py 給出
 // 沒有建議規範名的條目（天臘、月朔、九毒日等無神名日）：build_kinship.py 的 INCLUDE_OTHER 爲 False 時不參與比較（目前），爲 True 時一律當作「其他」
 var KOTHER = {}; ((window.ZHAI_KIN && window.ZHAI_KIN.other) || []).forEach(function (id) { KOTHER[id] = 1; });
@@ -1184,6 +1197,11 @@ function renderCmp(a, b) {
   var units = function (es) { var U = {}; es.forEach(function (e) { var md = kDays(e); if (!md) return; cTypes(e.c).forEach(function (ty) { md[1].forEach(function (d) { var u = kName(e) + '|' + ty + '|' + md[0] + '|' + d; if (!U[u]) U[u] = { u: u, e: e, m: md[0], d: d }; }); }); }); return U; };
   var UA = units(EA), UB = units(EB);
   var shared = Object.keys(UA).filter(function (u) { return UB[u]; });
+  // 共有的少數日期（共有異文）：兩本都作、而多數見證不作的日期；條目的少數日期標記由 build_kinship.py 給出，與「版本親疏」的「共有的少數日期」相同
+  var KMIN = (K && K.minor) || {};
+  var isSv = function (u) { return !!(KMIN[UA[u].e.id] && KMIN[UB[u].e.id]); };
+  var svKeys = {}; shared.forEach(function (u) { if (isSv(u)) { var e = UA[u].e; svKeys[e.k + '|' + e.c + '|' + UA[u].m + '|' + UA[u].d] = 1; } });
+  var nSv = Object.keys(svKeys).length;
   var onlyA = Object.keys(UA).filter(function (u) { return !UB[u]; }), onlyB = Object.keys(UB).filter(function (u) { return !UA[u]; });
   var nA = Object.keys(UA).length, nB = Object.keys(UB).length, union = nA + onlyB.length, j = union ? shared.length / union : 0;
   var ca = nA ? shared.length / nA : 0, cb = nB ? shared.length / nB : 0;   // 包含度：甲本的單位有幾成見於乙本；乙本的有幾成見於甲本
@@ -1202,7 +1220,7 @@ function renderCmp(a, b) {
     });
     IB[id].forEach(function (y) { other['b' + y.u] = IA[id]; });
   });
-  CMP_PAIRS = pairs;
+  CMP_PAIRS = CMP.sv ? [] : pairs;
   var kp = K && K.pairs ? K.pairs.filter(function (p) { return (p.a === +A.no && p.b === +B.no) || (p.a === +B.no && p.b === +A.no); })[0] : null;
   var vlab = function (v) { return edWhen(v) + ' ' + N(v.short); };
   var h = '<div class="cp-head"><div><div class="cp-title">' + L('兩本細看', 'Two editions in detail') + '</div><div class="small muted">' + vlab(A) + ' ～ ' + vlab(B) + '</div></div><button type="button" class="dp-close" aria-label="' + L('關閉', 'Close') + '">✕</button></div>' +
@@ -1210,12 +1228,14 @@ function renderCmp(a, b) {
       'Edition A on the left, edition B on the right, each listing all its entries by month and day. Same unit as the matrix on this page (normalized name + coded date type + day; entries spanning several days are split by day). Green cards are entries shared by both, with any characters that differ in wording in red; white cards with red text are entries found in this edition only. The same deity in the same month on different days is joined by a line; for a different month the other edition’s date is noted. Click a date to open “this day”.') + '</p>' +
     (FOCUS ? focusNote(L('它的條目加框', 'its entries are outlined')) : '') +
     '<div class="controls cmp-pick"><label>' + L('甲本', 'A') + ' <select id="ca">' + opt(A) + '</select></label><button type="button" id="cswap" title="' + L('甲乙互換', 'Swap') + '">⇄</button><label>' + L('乙本', 'B') + ' <select id="cb">' + opt(B) + '</select></label>' +
-    '<label class="small"><input type="checkbox" id="cmain"' + (CMP.main ? ' checked' : '') + '> ' + L('只計正文', 'Main table only') + '</label><label class="small"><input type="checkbox" id="cund"' + (CMP.undated ? ' checked' : '') + '> ' + L('列出無具體月日的條目', 'List entries without a specific day') + '</label></div>' +
+    '<label class="small"><input type="checkbox" id="cmain"' + (CMP.main ? ' checked' : '') + '> ' + L('只計正文', 'Main table only') + '</label><label class="small"><input type="checkbox" id="cund"' + (CMP.undated ? ' checked' : '') + '> ' + L('列出無具體月日的條目', 'List entries without a specific day') + '</label>' +
+    '<label class="small"><input type="checkbox" id="csv"' + (CMP.sv ? ' checked' : '') + '> ' + L('只列共有的少數日期', 'Only shared minority dates', 'Seulement les dates minoritaires communes') + '</label></div>' +
     '<div class="tiles">' + tile(shared.length, L('兩本共有', 'Shared'), L('重合度 ', 'Overlap ') + pc(j) + (!CMP.main && kp ? L('（矩陣只計正文：', ' (matrix, main table only: ') + Math.round(kp.j * 100) + '%）' : '') +
       '<br>' + L('包含度：甲本 ' + pc(ca) + ' 見於乙本，乙本 ' + pc(cb) + ' 見於甲本', 'Containment: ' + pc(ca) + ' of A found in B, ' + pc(cb) + ' of B found in A', 'Inclusion : ' + pc(ca) + ' de A dans B, ' + pc(cb) + ' de B dans A')) +
     tile(onlyA.length, L('只見於甲本', 'Only in A'), vlab(A) + '<br>' + L('佔甲本 ' + pc(nA ? onlyA.length / nA : 0) + '（' + nA + ' 單位）', pc(nA ? onlyA.length / nA : 0) + ' of A (' + nA + ' units)', pc(nA ? onlyA.length / nA : 0) + ' de A (' + nA + ' unités)')) +
     tile(onlyB.length, L('只見於乙本', 'Only in B'), vlab(B) + '<br>' + L('佔乙本 ' + pc(nB ? onlyB.length / nB : 0) + '（' + nB + ' 單位）', pc(nB ? onlyB.length / nB : 0) + ' of B (' + nB + ' units)', pc(nB ? onlyB.length / nB : 0) + ' de B (' + nB + ' unités)')) +
-    tile(pairs.length, L('同月異日', 'Same month, other day'), L('連線標出；另有異月 ' + nDM + ' 條', 'joined by lines; ' + nDM + ' more in another month', 'reliées par un trait ; ' + nDM + ' de plus dans un autre mois')) + '</div>' +
+    tile(pairs.length, L('同月異日', 'Same month, other day'), L('連線標出；另有異月 ' + nDM + ' 條', 'joined by lines; ' + nDM + ' more in another month', 'reliées par un trait ; ' + nDM + ' de plus dans un autre mois')) +
+    tile(nSv, L('共有的少數日期', 'Shared minority dates', 'Dates minoritaires communes'), L('多數本子不作、這兩本都作（共有異文）；下方標「少」', 'dates most editions lack but both have (shared variants); marked “min.” below', 'dates absentes de la plupart des éditions mais présentes dans les deux ; marquées « min. » ci-dessous')) + '</div>' +
     ((inc.indexOf(+A.no) < 0 || inc.indexOf(+B.no) < 0) ? '<p class="small muted">' + L('注意：所選版本中有未納入矩陣的版本（文本不全或體例不同），這裏照樣列出，但重合度只作參考。', 'Note: at least one chosen edition is outside the matrix (incomplete text or a different format); it is listed here, but treat the overlap as indicative.') + '</p>' : '');
   var span = function (e) { var md = kDays(e); return md && md[1].length > 1 ? '<span class="muted small">（' + esc(e.dy) + '）</span>' : ''; };
   // 一欄裏的一條：共有的（綠底；另一本措辭不同時不同的字標紅）或只見於本本的（紅字；注明另一本的同神日期，同月的畫連線）
@@ -1228,19 +1248,22 @@ function renderCmp(a, b) {
   };
   var itemS = function (u, side) {
     var x = side === 'a' ? UA[u] : UB[u], y = side === 'a' ? UB[u] : UA[u], e = x.e, f = y.e;
-    return '<div class="ci ci-s' + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> ' + kLink(e) + '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + span(e) +
+    var sv = isSv(u);
+    return '<div class="ci ci-s' + (sv ? ' ci-sv' : '') + (fNorm(e.k) ? ' fx' : '') + '" data-u="' + esc(side + u) + '"><span class="ci-d dlink" data-day="' + x.m + '/' + x.d + '">' + x.d + '</span> ' + kLink(e) + '<span class="muted small"> ' + esc(C(e.c) || '') + '</span>' + span(e) + (sv ? ' <span class="svtag" title="' + L('共有的少數日期', 'Shared minority date', 'Date minoritaire commune') + '">' + L('少', 'min.', 'min.') + '</span>' : '') +
       ((e.t || '') !== (f.t || '') ? '<div class="small">' + (e.t ? ytDiff(e.t, f.t) : '<span class="ci-diff">' + esc(e.g || '—') + '</span>') + '</div>' : (e.t && e.t !== e.k ? '<div class="small">' + yt(e.t) + '</div>' : '')) + '</div>';
   };
   var colOf = function (U, side, m) {   // 該本該月全部單位，按日排序；共有的用 itemS，獨有的用 item
-    return Object.keys(U).filter(function (u) { return U[u].m === m; }).sort(function (u1, u2) { return U[u1].d - U[u2].d || (!!UA[u1] && !!UB[u1] ? 0 : 1) - (!!UA[u2] && !!UB[u2] ? 0 : 1); })
+    return Object.keys(U).filter(function (u) { return U[u].m === m && (!CMP.sv || (UA[u] && UB[u] && isSv(u))); }).sort(function (u1, u2) { return U[u1].d - U[u2].d || (!!UA[u1] && !!UB[u1] ? 0 : 1) - (!!UA[u2] && !!UB[u2] ? 0 : 1); })
       .map(function (u) { return UA[u] && UB[u] ? itemS(u, side) : item(U[u], side); }).join('');
   };
   var ccl = function (xs, t) { return xs.length ? '<div class="cc-l">' + t + '</div>' : ''; };   // 窄屏三欄上下排列時每段的小標題
   var inM = function (U, m) { return function (u) { return U[u].m === m; }; };
   var byDay = function (U) { return function (u1, u2) { return U[u1].d - U[u2].d; }; };
+  if (CMP.sv && !nSv) h += '<p class="small muted">' + L('這兩本沒有共有的少數日期。', 'These two editions share no minority dates.', 'Ces deux éditions n’ont aucune date minoritaire commune.') + '</p>';
   h += '<div class="cmp-head cmp-2"><div>' + L('甲本', 'A') + '<span class="muted small"> ' + vlab(A) + '</span></div><div>' + L('乙本', 'B') + '<span class="muted small"> ' + vlab(B) + '</span></div></div>';
   for (var m = 1; m <= 12; m++) {
     var sm = shared.filter(inM(UA, m)).sort(byDay(UA)), am = onlyA.filter(inM(UA, m)).sort(byDay(UA)), bm = onlyB.filter(inM(UB, m)).sort(byDay(UB));
+    if (CMP.sv) { sm = sm.filter(isSv); am = []; bm = []; }
     if (!sm.length && !am.length && !bm.length) continue;
     h += '<div class="cmp-m" data-m="' + m + '"><div class="cmp-mn">' + monthName(m) + ' <span class="muted small">' + L('甲 ' + (sm.length + am.length) + ' · 乙 ' + (sm.length + bm.length) + ' · 共有 ' + sm.length, 'A ' + (sm.length + am.length) + ' · B ' + (sm.length + bm.length) + ' · shared ' + sm.length, 'A ' + (sm.length + am.length) + ' · B ' + (sm.length + bm.length) + ' · communes ' + sm.length) + '</span></div><div class="cmp-cols cmp-2">' +
       '<div class="cc">' + ccl(sm.concat(am), L('甲本', 'A') + ' ' + vlab(A)) + colOf(UA, 'a', m) + '</div><div class="cc">' + ccl(sm.concat(bm), L('乙本', 'B') + ' ' + vlab(B)) + colOf(UB, 'b', m) + '</div>' +
@@ -1260,6 +1283,7 @@ function renderCmp(a, b) {
   document.getElementById('cswap').onclick = function () { renderCmp(B.no, A.no); };
   document.getElementById('cmain').onchange = function (e) { CMP.main = e.target.checked; renderCmp(A.no, B.no); };
   document.getElementById('cund').onchange = function (e) { CMP.undated = e.target.checked; renderCmp(A.no, B.no); };
+  document.getElementById('csv').onchange = function (e) { CMP.sv = e.target.checked; renderCmp(A.no, B.no); };
   body.querySelectorAll('a[href^="#"]').forEach(function (x) { x.addEventListener('click', function () { closeCmp(true); }); });
   cmpLines(); setTimeout(cmpLines, 50);
 }
@@ -1510,9 +1534,9 @@ function viewCalendar() {
 }
 
 // ---------- 視圖：實踐與齋曆 ----------
-var FIT = { q: '', rel: '', open: {}, unit: 'rec', pres: 'half', day: 0, fast: true };
+var FIT = { q: '', rel: '', open: {}, unit: 'rec', pres: 'half', day: 0, fast: true, pref: '', jn: false };   // pref：只看某府；jn：只看狹義江南（從版本線索圖跳來時帶上地圖的地點範圍）
 // 默認只計言及持齋的實踐記錄；「僅日期巧合」（原文未提持齋，只是日期與齋曆條目重合）可選擇加入
-function fitEv(p) { return !FIT.fast || p.ev !== NOFAST; }
+function fitEv(p) { return (!FIT.fast || p.ev !== NOFAST) && (!FIT.pref || pracPref(p) === FIT.pref) && (!FIT.jn || p.jn === '是'); }
 var FIT_HEAT = { cnt: {}, pres: function () { return false; } };
 // 月日熱力圖：實踐記錄按所對齋曆條目的農曆月日落格；「規定」按已獲完整文本的版本（見證，1882/1891 算一個）統計
 var FIT_PRES = null;
@@ -1562,6 +1586,7 @@ var PF_DAYS = { '六齋': '每月初八、十四、十五、廿三、廿九、�
 var KSET = null;
 function hasNorm(k) { if (!KSET) { KSET = {}; ED.entries.forEach(function (e) { if (e.k) KSET[e.k] = 1; }); } return !!KSET[k]; }
 function fitKey(p) { var e = EBYID[pCal(p)]; return p.g || ('k:' + (e.k || periodicFast(e) || p.zhai || '—')); }
+function fitPrefName(k) { var P = window.ZHAI_SPREAD && (ZHAI_SPREAD.prefs || []).filter(function (x) { return x.name === k; })[0]; return I.en() && P ? esc(P.en) + ' ' + esc(k) : esc(k); }
 function fitName(k) { return k.indexOf('k:') === 0 ? k.slice(2) : gName(k); }
 function viewFit() {
   var nFit = LINKED.filter(function (p) { return p.rel === REL_FIT; }).length, nDev = LINKED.filter(isDev).length;
@@ -1572,6 +1597,7 @@ function viewFit() {
   var nGF = Object.keys(gFast).length, nGA = Object.keys(gAny).length, nG = D.deities.length, pG = nG ? Math.round(nGF * 1000 / nG) / 10 : 0;
   var h = L('<h1>實踐與齋曆</h1><p class="lede">實踐記錄（敘事史料）與齋曆條目（規範文本）對上的部分，按神明歸在一起：每位神一行，標出對上的實踐記錄有幾條、年代跨度，以及對上的是齋曆中的哪一天；點一行展開逐條明細。沒有神明的實踐（經齋名對上，如中元）按所對條目歸組。每條實踐記錄只取一個對應條目：同一條見於多個版本時，取年代離實踐最近的版本（同樣近時優先《玉匣記》系統），其他版本見「諸本」。「存在偏差」指實踐與規定對得上，但日期、齋期長短、神名或齋名有出入；說明暫空者留待日後論述。對應由研究者逐條覈定（2026-10-28）。</p>',
       '<h1>Practice × calendar</h1><p class="lede">Where practice records (narrative sources) line up with calendar entries (normative texts), grouped by deity: one row per deity, giving how many practice records match, their date range, and which calendar day they match; click a row to see the records one by one. Practice without a deity (matched through the name of the fast, e.g. Zhongyuan) is grouped by the entry it matches. Each practice record is matched to one entry: when the same entry appears in several editions, the edition closest in date to the practice is used (on a tie, the <i>Yuxiaji</i> line is preferred); see “all editions” for the rest. “With deviation” means practice and prescription correspond but differ in date, length of fast, or name of deity or fast; notes left blank will be filled in later. All matches checked by the researcher (28 Oct 2026).</p>') +
+    ((FIT.pref || FIT.jn) ? '<p class="fitplace small">' + L('地點：', 'Place: ', 'Lieu : ') + '<b>' + (FIT.pref ? fitPrefName(FIT.pref) : L('狹義江南（八府一州）', 'narrow Jiangnan (eight prefectures and one department)', 'Jiangnan au sens étroit')) + '</b>' + L('　熱力圖與下方列表只計這裏的實踐記錄（從版本線索圖帶來）', ' · the heat map and the list count only records from here (carried over from the edition map)', ' · la carte de chaleur et la liste ne comptent que les pratiques d’ici (depuis la carte)') + ' <button type="button" class="linkbtn" id="fplx">' + L('取消', 'Clear', 'Effacer') + '</button></p>' : '') +
     '<div class="tiles">' + tile(nGF + ' / ' + nG + ' <small>(' + pG + '%)</small>', L('有持齋實踐的神明', 'Deities with fasting practice', 'Divinités avec pratique de jeûne'), L('佔齋庫神明總數；只計言及持齋的實踐記錄，另有 ' + (nGA - nGF) + ' 位只有日期巧合', 'of all deities in the fasting database; only records mentioning fasting count; ' + (nGA - nGF) + ' more have date coincidences only', 'sur l’ensemble des divinités de la base ; seuls comptent les témoignages mentionnant le jeûne ; ' + (nGA - nGF) + ' autres n’ont que des coïncidences de date')) +
     tile(Object.keys(keys).length, L('神明／齋', 'Deities / fasts'), L('有實踐對上齋曆', 'with practice matched to a calendar')) +
     tile(nFit, L('貼合', 'Fit'), L('實踐與齋曆條目一致', 'practice and calendar entry agree')) +
@@ -1584,6 +1610,7 @@ function viewFit() {
     '<div class="scroll"><table class="fit"><thead><tr><th>' + L('神明／齋', 'Deity / fast') + '</th><th>' + L('實踐記錄', 'Practice records') + '</th><th>' + L('年代', 'Years') + '</th><th>' + L('對上的齋曆日期', 'Calendar days matched') + '</th></tr></thead><tbody id="fb"></tbody></table></div>';
   app.innerHTML = h;
   putFocusNote(L('熱力圖與下方列表只計它的實踐記錄', 'the heat map and the list count only its practice records'));
+  var fplx = document.getElementById('fplx'); if (fplx) fplx.onclick = function () { FIT.pref = ''; FIT.jn = false; viewFit(); };
   var detail = function (p) {
     var e = EBYID[pCal(p)], v = ED.versions[e.v];
     return '<tr class="fitd"><td></td><td><b>' + esc(p.id) + '</b>' + citeBtn(p.id) + ' ' + esc(p.year || '') + ' · ' + N(p.place) + ' ' + relTag(p) + '<div class="small">' + N(p.wt) + '｜' + (p.zhai ? NF(p.zhai) : '—') + ' <span class="tag' + (p.ev === '明確' ? ' strong' : '') + '">' + esc(C(p.ev)) + '</span></div>' + (p.relNote ? '<div class="small muted">' + L('對應說明：', 'Note: ') + FT(p.relNote) + '</div>' : '') + '</td>' +
@@ -1605,8 +1632,12 @@ function viewFit() {
     ps.forEach(function (p) { var k = fitKey(p); if (!grp[k]) { grp[k] = []; order.push(k); } grp[k].push(p); });
     order.sort(function (a, b) { return grp[b].length - grp[a].length || (fitName(a) < fitName(b) ? -1 : 1); });
     document.getElementById('fc').innerHTML = esc(L(order.length + ' 組，' + ps.length + ' / ' + LINKED.length + ' 條', order.length + ' groups, ' + ps.length + ' / ' + LINKED.length + ' records', order.length + ' groupes, ' + ps.length + ' / ' + LINKED.length + ' témoignages')) +
-      (FIT.day ? ' <button type="button" id="fday">' + L('只看 ', 'Only ') + esc(I.en() ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : FIT_MN[Math.floor(FIT.day / 100)] + '月' + FIT_DN(FIT.day % 100)) + ' ✕</button>' : '');
+      (FIT.day ? ' <button type="button" id="fday">' + L('只看 ', 'Only ') + esc(I.en() ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : FIT_MN[Math.floor(FIT.day / 100)] + '月' + FIT_DN(FIT.day % 100)) + ' ✕</button>' : '') +
+      (FIT.pref ? ' <button type="button" id="fpref">' + L('地點：', 'Place: ', 'Lieu : ') + fitPrefName(FIT.pref) + ' ✕</button>' : '') +
+      (FIT.jn ? ' <button type="button" id="fjn">' + L('只計狹義江南', 'Narrow Jiangnan only', 'Jiangnan au sens étroit') + ' ✕</button>' : '');
     var fd = document.getElementById('fday'); if (fd) fd.onclick = function () { FIT.day = 0; heat(); fill(); };
+    var fpr = document.getElementById('fpref'); if (fpr) fpr.onclick = function () { FIT.pref = ''; heat(); fill(); };
+    var fj = document.getElementById('fjn'); if (fj) fj.onclick = function () { FIT.jn = false; heat(); fill(); };
     heat();
     document.getElementById('fb').innerHTML = order.map(function (k) {
       var rs = grp[k].slice().sort(function (a, b) { return (+a.year || 9999) - (+b.year || 9999); });
@@ -1717,7 +1748,7 @@ function viewFit() {
 // ---------- 視圖：刊刻地與版本線索圖（數據見 spread-data.js，資料源 tools/spread/spread_sources.json） ----------
 var spFocus = null;
 var SP = { on: { doc: true, inf: true, f1: true, f2: true, f5: true, f6: true, f0: true }, modern: false,
-  prac: true, pall: false, pweak: false, pref: null, izoom: false };   // izoom：江南放大圖再放大   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
+  prac: true, pall: false, pweak: false, pref: null, izoom: false, edge: null, place: null };   // edge、place：在地圖上點選的連線（序號）、地點（id），供「從地圖接到其他分析」用   // izoom：江南放大圖再放大   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
 // 實踐記錄的府：去掉括注；兩府交界的記在第一個府
 function pracPref(p) { return String(p.pref || '').replace(/（.*?）/g, '').split('、')[0].trim(); }
 // 與齋曆的對應關係歸成三類（待確認刪除的記錄不上圖）
@@ -1785,7 +1816,82 @@ function viewSpread() {
   function pickPref(k) {
     SP.pref = SP.pref === k ? null : k;
     document.querySelectorAll('#smap g.sprp').forEach(function (g) { g.classList.toggle('on', g.getAttribute('data-pref') === SP.pref); });
-    renderPrac();
+    renderPrac(); renderNav();
+  }
+  // ---- 從地圖接到其他分析：選中的連線、地點、府 → 版本親疏（兩本細看）、環形曆／並排日曆、實踐與齋曆 ----
+  // 連線兩端「已錄文」的本子記在 spread_sources.json 各連線的 eds（工作簿版本編號）；各組已錄文的本子記在 FAMEDS
+  var KN = window.ZHAI_KIN || {};
+  var vNo = function (no) { return ED.versions.filter(function (v) { return +v.no === +no; })[0]; };
+  var vLab = function (v) { return v ? edWhen(v) + ' ' + N(v.short) : ''; };
+  var kPair = function (a, b) { return (KN.pairs || []).filter(function (p) { return (p.a === +a && p.b === +b) || (p.a === +b && p.b === +a); })[0]; };
+  var placeNos = function (id) { var o = {}; (M.info[id] || []).forEach(function (x) { (x.match(/編號[\d、，, ]+/g) || []).forEach(function (t) { (t.match(/\d+/g) || []).forEach(function (n) { if (vNo(n)) o[+n] = 1; }); }); }); return Object.keys(o).map(Number).sort(function (a, b) { return (vNo(a).year || 0) - (vNo(b).year || 0); }); };
+  var edEds = function (e) { var d = e.eds || {}; return { a: d.a || [], b: d.b || [] }; };
+  var edPairs = function (e) { var d = edEds(e), out = []; d.a.forEach(function (a) { d.b.forEach(function (b) { if (a !== b) out.push([a, b]); }); }); return out; };
+  var placePref = function (id) { var p = PL[id]; if (!p) return ''; var k = p.name.replace(/（.*?）/g, '') + '府'; return PRF[k] ? k : ''; };
+  var pct = function (x) { return Math.round(x * 100) + '%'; };
+  function markSel() {
+    var mc = document.getElementById('smap'); if (!mc) return;
+    mc.querySelectorAll('g[data-e]').forEach(function (g) { g.classList.toggle('sel', +g.getAttribute('data-e') === SP.edge); });
+    mc.querySelectorAll('g.spt').forEach(function (g) { g.classList.toggle('sel', g.getAttribute('data-p') === SP.place); });
+    app.querySelectorAll('#sev li').forEach(function (li) { li.classList.toggle('on', +li.getAttribute('data-i') === SP.edge); });
+  }
+  function selEdge(i) { SP.edge = SP.edge === i ? null : i; SP.place = null; markSel(); renderNav(); }
+  function selPlace(id) { SP.place = SP.place === id ? null : id; SP.edge = null; markSel(); renderNav(); }
+  function renderNav() {
+    var el = document.getElementById('snav'); if (!el) return;
+    var E = SP.edge != null ? M.edges[SP.edge] : null; if (E && !edgeOn(E)) { E = null; SP.edge = null; }
+    var P = SP.place ? PL[SP.place] : null;
+    var sep = L('、', ', ');
+    var go = function (href, txt) { return '<a class="snav-go snav-btn" href="' + href + '">' + txt + ' →</a>'; };
+    var lst = function (nos) { return nos.map(function (n) { var v = vNo(n); return v ? '<a class="snav-go" href="#ev/' + v.i + '">' + vLab(v) + '</a>' : ''; }).join(sep); };
+    var selTxt = E ? '<b>' + pn(PL[E.a]) + arrow(E) + pn(PL[E.b]) + '</b> <span class="muted">' + (E.t === 'fam' ? famName(E.f) : E.t === 'doc' ? L('個本記錄', 'Copy-level record', 'Exemplaire attesté') : L('個本記錄（一端或途徑不明）', 'Copy-level record (one end or route uncertain)', 'Exemplaire attesté (une extrémité ou voie incertaine)')) + '</span>' : P ? '<b>' + pn(P) + '</b>' : SP.pref ? '<b>' + prefName(SP.pref) + '</b>' : '';
+    // 一、兩地本子內容是否接近 → 版本親疏「兩本細看」（顯示共有的少數日期，即共有異文）
+    var r1;
+    if (E) {
+      var ps = edPairs(E), d = edEds(E), fe = E.t === 'fam' ? ((M.famEds || {})[E.f] || []) : [];
+      if (ps.length) r1 = ps.map(function (q) {
+        var kp = kPair(q[0], q[1]);
+        return go(stLink('kin/' + q[0] + '/' + q[1]), L('版本親疏・兩本細看：', 'Edition kinship, two editions: ', 'Parenté, deux éditions : ') + vLab(vNo(q[0])) + ' ～ ' + vLab(vNo(q[1]))) +
+          '<div class="small muted">' + (kp ? L('重合度 ' + pct(kp.j) + '，包含度 ' + pct(kp.ca) + '／' + pct(kp.cb) + '，共有的少數日期 ' + kp.sv + ' 處（浮窗中標「少」）', 'Overlap ' + pct(kp.j) + ', containment ' + pct(kp.ca) + ' / ' + pct(kp.cb) + ', ' + kp.sv + ' shared minority dates (marked “min.” in the panel)', 'Recouvrement ' + pct(kp.j) + ', inclusion ' + pct(kp.ca) + ' / ' + pct(kp.cb) + ', ' + kp.sv + ' dates minoritaires communes (« min. »)') :
+            L('有一本未計入版本親疏的比較，數值只作參考', 'One edition is outside the kinship comparison; figures are indicative only', 'Une édition est hors de la comparaison ; chiffres indicatifs')) + '</div>';
+      }).join('');
+      else {
+        var one = d.a.concat(d.b);
+        r1 = '<span class="muted">' + (one.length ? L('只有一端有已錄文的本子（', 'Only one end has a transcribed edition (', 'Une seule extrémité a une édition transcrite (') + lst(one) + L('）；另一端沒有可比的錄文，暫不能比較內容。', '); the other end has no transcribed text to compare, so the contents cannot be compared yet.', ') ; l’autre n’a pas de texte transcrit : contenus pas encore comparables.') :
+          L('兩端都沒有已錄文的本子（多爲三浦著錄、未目驗），暫不能比較內容。', 'Neither end has a transcribed edition (mostly copies recorded by Miura and not yet seen), so the contents cannot be compared yet.', 'Aucune extrémité n’a d’édition transcrite (surtout des exemplaires signalés par Miura, non vus) : contenus pas encore comparables.')) + '</span>';
+        if (fe.length) r1 += '<div class="small">' + L('同組已錄文的本子：', 'Transcribed editions in this group: ', 'Éditions transcrites du groupe : ') + lst(fe) + (fe.length < 2 ? L('（組內不足兩本，暫不能在組內比較）', ' (fewer than two, so no comparison within the group yet)', ' (moins de deux : pas de comparaison interne)') : '') + '</div>';
+      }
+    } else {
+      var ready = M.edges.map(function (e, i) { return i; }).filter(function (i) { return edgeOn(M.edges[i]) && edPairs(M.edges[i]).length; });
+      r1 = '<span class="muted">' + L('點地圖上的一條連線，或下方「連線的依據」中的一條。', 'Click a line on the map, or one under “Evidence for each line” below.', 'Cliquer un lien sur la carte, ou dans « Justification des liens » ci-dessous.') + '</span>' +
+        (ready.length ? '<div class="small">' + L('兩端都已錄文的連線：', 'Lines with both ends transcribed: ', 'Liens transcrits aux deux bouts : ') + ready.map(function (i) { var e = M.edges[i]; return '<button type="button" class="linkbtn" data-se="' + i + '">' + pn(PL[e.a]) + arrow(e) + pn(PL[e.b]) + '</button>'; }).join(sep) + '</div>' : '');
+    }
+    // 二、差異在哪些日子、哪些類型 → 並排日曆、環形曆
+    var S = E ? (function () { var d = edEds(E); return d.a.concat(d.b.filter(function (n) { return d.a.indexOf(n) < 0; })); })() : P ? placeNos(P.id) : [];
+    var r2 = S.length ? go(stLink('calendar', { eds: S.join(',') }), L('齋期日曆（並排）：', 'Fasting calendar, side by side: ', 'Calendrier, côte à côte : ') + S.map(function (n) { return vLab(vNo(n)); }).join(sep)) +
+        '<div class="small">' + L('環形曆（逐月統計、日期類型）：', 'Ring (monthly counts, date types): ', 'Cercle (décompte mensuel, types de dates) : ') + S.map(function (n) { return '<a class="snav-go" href="#ring/' + n + '">' + vLab(vNo(n)) + '</a>'; }).join(sep) + '</div>' :
+      '<span class="muted">' + (E ? L('這條線兩端都沒有已錄文的本子。', 'Neither end of this line has a transcribed edition.', 'Aucune extrémité de ce lien n’est transcrite.') : P ? L('這個地點沒有已錄文的本子。', 'No transcribed edition from this place.', 'Aucune édition transcrite pour ce lieu.') : L('點一條連線或一個地點。', 'Click a line or a place.', 'Cliquer un lien ou un lieu.')) + '</span>';
+    r2 += '<div class="small"><button type="button" class="linkbtn" data-sec="sbyp">' + L('按刊刻地比較齋曆內容（本頁下方）', 'Calendar content by place of printing (below)', 'Contenu par lieu d’impression (ci-dessous)') + '</button></div>';
+    // 三、當地實踐 → 實踐與齋曆，帶上地點、年代、聚焦神明
+    var pf = SP.pref || (P ? placePref(P.id) : ''), po = pf && PA ? PA.list.filter(function (x) { return x.name === pf; })[0] : null;
+    var nOff = po ? po.recs.filter(function (r) { return LINKED.indexOf(r) < 0; }).length : 0;   // 沒有對上齋曆條目、不會出現在「實踐與齋曆」的記錄
+    var keep = [pf ? L('地點 ', 'place ', 'lieu ') + prefName(pf) : SP.pall ? L('全部地點', 'all places', 'tous les lieux') : L('狹義江南', 'narrow Jiangnan', 'Jiangnan au sens étroit'),
+      L('年代 ', 'years ', 'années ') + esc(timeLabel() || L('全部', 'all', 'toutes')), FOCUS ? L('神明 ', 'deity ', 'divinité ') + focusName() : L('全部神明', 'all deities', 'toutes les divinités')];
+    var r3 = go(stLink('fit', { pref: pf, jn: !pf && !SP.pall ? 1 : '', fast: SP.pweak ? 'all' : '' }), L('實踐與齋曆', 'Practice × calendar', 'Pratique × calendrier')) +
+      '<div class="small muted">' + L('保留：', 'Keeps: ', 'Conserve : ') + keep.join(sep) + L('。', '.', '.') +
+      (nOff ? L('此府 ' + po.n + ' 條中有 ' + nOff + ' 條沒有對上齋曆條目（未對應，或有偏差而無對應條目），該頁不列，見本頁下方列表。', ' ' + nOff + ' of this prefecture’s ' + po.n + ' records match no calendar entry and are not on that page; see the list below.', ' ' + nOff + ' des ' + po.n + ' pratiques de cette préfecture ne correspondent à aucune entrée et n’y figurent pas ; voir la liste ci-dessous.') : '') + '</div>';
+    var row = function (q, a) { return '<tr><th scope="row">' + q + '</th><td>' + a + '</td></tr>'; };
+    el.innerHTML = '<h2 style="margin-top:0">' + L('從地圖接到其他分析', 'From the map to the other analyses', 'De la carte aux autres analyses') + '</h2>' +
+      '<p class="small" style="margin:0 0 8px">' + (selTxt ? L('已選：', 'Selected: ', 'Sélection : ') + selTxt + ' <button type="button" class="linkbtn" data-sclr>' + L('取消選擇', 'Clear', 'Effacer') + '</button>' :
+        '<span class="muted">' + L('點地圖上的連線、地點或實踐記錄的府，下列鏈接隨之更新；跳過去時帶上當前的年代與聚焦神明，在那一頁點「← 回到版本線索圖」回來，地圖上的選擇仍在。', 'Click a line, a place or a practice prefecture on the map and the links below follow; jumping keeps the current years and focused deity, and “← Back to the edition map” returns here with the selection kept.', 'Cliquer un lien, un lieu ou une préfecture : les liens suivent ; le saut conserve les années et la divinité choisies, et « ← Retour » revient ici avec la sélection.') + '</span>') + '</p>' +
+      '<div class="scroll"><table class="snavt"><thead><tr><th>' + L('從地圖上遇到的問題', 'Question raised by the map', 'Question posée par la carte') + '</th><th>' + L('接到的分析', 'Where to answer it', 'Où y répondre') + '</th></tr></thead><tbody>' +
+      row(L('兩地本子共用序文或題名，內容也接近嗎？', 'Two places’ copies share a preface or title: are their contents close too?', 'Des exemplaires partagent une préface ou un titre : leurs contenus sont-ils proches ?'), r1) +
+      row(L('內容差異主要發生在哪些日子、哪些類型？', 'On which days, and in which kinds of entry, do they differ?', 'Quels jours et quels types d’entrées diffèrent ?'), r2) +
+      row(L('當地實踐對應哪些日期，有何偏差？', 'Which dates does local practice match, and where does it deviate?', 'À quelles dates la pratique locale correspond-elle, et où s’écarte-t-elle ?'), r3) + '</tbody></table></div>';
+    el.querySelectorAll('[data-se]').forEach(function (b) { b.onclick = function () { selEdge(+b.getAttribute('data-se')); }; });
+    el.querySelectorAll('[data-sec]').forEach(function (b) { b.onclick = function () { var t = document.getElementById(b.getAttribute('data-sec')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; });
+    el.querySelectorAll('[data-sclr]').forEach(function (b) { b.onclick = function () { SP.edge = null; SP.place = null; if (SP.pref) pickPref(SP.pref); markSel(); renderNav(); }; });
+    el.querySelectorAll('a.snav-go').forEach(function (a) { a.addEventListener('click', function () { JUMP = true; }); });
   }
   // ---- 按刊刻地比較齋曆內容：據版本目錄「刊刻地」欄；每版一張 12 × 30 小年格，另列少見日 ----
   function renderByPlace() {
@@ -1855,6 +1961,7 @@ function viewSpread() {
       '<p class="small muted" style="margin:8px 0 0">' + L('點一個府，下方列出該府的記錄。圓圈只表示記錄所在的地點，記錄多寡受史料來源影響（見下方史料類型表），刊刻地與實踐地重合不表示兩者有因果關係。', 'Click a prefecture to list its records below. Circles only show where records are located; their number depends on which sources survive (see the source-type table below), and printing places coinciding with practice places do not imply a causal link.', 'Cliquer une préfecture pour lister ses pratiques ci-dessous. Les cercles indiquent seulement où se situent les pratiques ; leur nombre dépend des sources conservées (voir le tableau des types de sources), et la coïncidence d’un lieu d’impression et d’un lieu de pratique n’implique pas de lien causal.') + '</p></div>' +
     (FOCUS ? '<div class="card" style="margin-top:12px" id="sfoc"></div>' : '') +
     '</div></div>' +
+    '<div class="card snav" id="snav" style="margin-top:16px"></div>' +
     // 連線的依據、刊刻地不明兩欄並排放在地圖下方
     '<div class="sbelow">' +
     '<div class="card"><h2 style="margin-top:0">' + L('連線的依據', 'Evidence for each line') + '</h2><ul class="sev" id="sev"></ul></div>' +
@@ -1962,6 +2069,7 @@ function viewSpread() {
       var e = M.edges[+g.getAttribute('data-e')];
       g.addEventListener('mousemove', function (ev) { showTip(ev, edgeTip(e)); });
       g.addEventListener('mouseleave', hideTip);
+      g.addEventListener('click', function () { selEdge(+g.getAttribute('data-e')); });
     });
     mc.querySelectorAll('g.sprp').forEach(function (g) {
       var o = PA.list.filter(function (x) { return x.name === g.getAttribute('data-pref'); })[0];
@@ -1978,6 +2086,7 @@ function viewSpread() {
         hl(id);
       });
       g.addEventListener('mouseleave', function () { hideTip(); hl(null); });
+      g.addEventListener('click', function () { selPlace(id); });
     });
     var evOrd = M.edges.map(function (e, i) { return i; }).sort(function (a, b) { return (M.edges[a].t === 'inf') - (M.edges[b].t === 'inf') || a - b; });   // 一端或途徑不明的排在最後
     document.getElementById('sev').innerHTML = evOrd.map(function (i) {
@@ -1989,7 +2098,9 @@ function viewSpread() {
       var i = li.getAttribute('data-i');
       li.onmouseenter = function () { var g = app.querySelector('#smap g[data-e="' + i + '"] .sedge'); if (g) g.classList.add('hl'); };
       li.onmouseleave = function () { app.querySelectorAll('#smap .sedge.hl').forEach(function (x) { x.classList.remove('hl'); }); };
+      li.onclick = function (ev) { if (ev.target.closest('a')) return; selEdge(+i); var t = document.getElementById('snav'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
     });
+    markSel(); renderNav();
   }
   // 年代：地點按說明裏各條的年份（刊刻、購得、收藏），連線按其年份；無年份的連線隨兩端地點顯示
   var lineYear = function (x) { var m = /(1[2-9]\d\d)/.exec(x); return m ? +m[1] : 0; };
@@ -3044,11 +3155,11 @@ function viewRing(no) {
 // 讀進來以後就從地址欄去掉（之後的改動不受影響）；要重新得到鏈接，點頁首「複製鏈接」
 var SHARE = {
   fit: {
-    get: function () { return { fast: FIT.fast ? '' : 'all', unit: FIT.unit !== 'rec' ? FIT.unit : '', pres: FIT.pres !== 'half' ? FIT.pres : '', rel: FIT.rel === REL_FIT ? 'fit' : FIT.rel === REL_DEV ? 'dev' : '', q: FIT.q, only: FIT.day ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : '', zoom: FIT_ZOOM > 1 ? FIT_ZOOM : '' }; },
+    get: function () { return { fast: FIT.fast ? '' : 'all', unit: FIT.unit !== 'rec' ? FIT.unit : '', pres: FIT.pres !== 'half' ? FIT.pres : '', rel: FIT.rel === REL_FIT ? 'fit' : FIT.rel === REL_DEV ? 'dev' : '', q: FIT.q, only: FIT.day ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : '', zoom: FIT_ZOOM > 1 ? FIT_ZOOM : '', pref: FIT.pref, jn: FIT.jn ? 1 : '' }; },
     set: function (o) {
       FIT.fast = o.fast !== 'all'; FIT.unit = { src: 'src', loc: 'loc' }[o.unit] || 'rec'; FIT.pres = { any: 'any', q: 'q', off: 'off' }[o.pres] || 'half';
       FIT.rel = o.rel === 'fit' ? REL_FIT : o.rel === 'dev' ? REL_DEV : ''; FIT.q = o.q || '';
-      var d = (o.only || '').split('/'); FIT.day = d[1] ? +d[0] * 100 + +d[1] : 0; FIT.open = {};
+      var d = (o.only || '').split('/'); FIT.day = d[1] ? +d[0] * 100 + +d[1] : 0; FIT.open = {}; FIT.pref = o.pref || ''; FIT.jn = o.jn === '1';
       if (o.zoom) FIT_ZOOM = Math.max(1, Math.min(3, +o.zoom || 1));
     }
   },
@@ -3073,8 +3184,8 @@ var SHARE = {
     set: function (o) { var off = (o.off || '').split(','); Object.keys(SP.on).forEach(function (k) { SP.on[k] = off.indexOf(k) < 0; }); SP.modern = !!o.modern; SP.prac = o.prac !== '0'; SP.pall = !!o.pall; SP.pweak = !!o.pweak; SP.pref = o.pref || null; }
   },
   kin: {
-    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, rank: KIN.mode === 'c' && KIN_RANK ? KIN_RANK : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '' }; },
-    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' || o.mode === 'w' ? o.mode : 'j'; KIN.thrw = o.thrw ? Math.max(0.1, Math.min(0.9, +o.thrw)) : 0.25; KIN.small = o.small !== '0'; KIN_RANK = +o.rank || 0; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' || o.hm === 'w' ? o.hm : 'j'; KIN.dir = o.dir !== '0'; KIN.red = o.red !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; }
+    get: function () { return { venn: VN.v.join('-') !== '1-6-17' ? VN.v.join('-') : '', vu: VN.unit !== 'date' ? VN.unit : '', mode: KIN.mode !== 'j' ? KIN.mode : '', thr: KIN.thr !== 0.4 ? KIN.thr : '', thrc: KIN.thrc !== 0.6 ? KIN.thrc : '', thrw: KIN.thrw !== 0.25 ? KIN.thrw : '', small: KIN.small ? '' : 0, rank: KIN.mode === 'c' && KIN_RANK ? KIN_RANK : '', hm: KIN.hm !== 'j' ? KIN.hm : '', dir: KIN.dir ? '' : 0, red: KIN.red ? '' : 0, all: cmpIsOpen() && !CMP.main ? 1 : '', undated: cmpIsOpen() && CMP.undated ? 1 : '', csv: cmpIsOpen() && CMP.sv ? 1 : '' }; },
+    set: function (o) { VN.v = o.venn ? String(o.venn).split('-').map(Number).filter(Boolean).slice(0, 3) : [1, 6, 17]; VN.unit = o.vu === 'god' ? 'god' : 'date'; VN.sel = 0; KIN.mode = o.mode === 'sv' || o.mode === 'c' || o.mode === 'w' ? o.mode : 'j'; KIN.thrw = o.thrw ? Math.max(0.1, Math.min(0.9, +o.thrw)) : 0.25; KIN.small = o.small !== '0'; KIN_RANK = +o.rank || 0; KIN.thr = o.thr ? Math.max(0.1, Math.min(0.9, +o.thr)) : 0.4; KIN.thrc = o.thrc ? Math.max(0.1, Math.min(0.9, +o.thrc)) : 0.6; KIN.hm = o.hm === 'c' || o.hm === 'w' ? o.hm : 'j'; KIN.dir = o.dir !== '0'; KIN.red = o.red !== '0'; CMP.main = !o.all; CMP.undated = !!o.undated; CMP.sv = o.csv === '1'; }
   },
   ring: {
     get: function () { var r = window.ZhaiRing && ZhaiRing.cur ? ZhaiRing.cur() : null, p = window.ZhaiRing && ZhaiRing.prefs ? ZhaiRing.prefs() : {}; var o = r ? { month: r.zoom || '', layers: r.layers } : {}; o.tab = p.tab && p.tab !== 'sm' ? p.tab : ''; o.dom = p.dom ? 'all' : ''; return o; },
@@ -3102,6 +3213,25 @@ function shareApply(v, o) {
   if (o.sec) after.sec = o.sec;   // 打開頁面後捲到這一欄（元素 id，如 r-total、r-dom、sprac、sbyp）
   focusBar();
   return after;
+}
+// 跳到別的頁並設定那一頁的狀態，同時帶上當前的聚焦神明與年代（帶「?」的鏈接會按網址重設這兩項，不寫就會被清掉）
+function stLink(hash, o) {
+  o = o || {};
+  if (FOCUS) o.focus = FOCUS.key;
+  if (TIME.mode === 'period') o.t = TIME.period; else if (TIME.mode === 'range') o.t = TIME.lo + '-' + TIME.hi;
+  return '#' + hash + '?' + (qsBuild(o) || 'v=1');
+}
+// 從版本線索圖「從地圖接到其他分析」跳出去以後，頁面左下角顯示「← 回到版本線索圖」；回到地圖或點 ✕ 後消失
+var JUMP = false;
+function jumpSync(v) {
+  if (v === 'spread') JUMP = false;
+  var b = document.getElementById('jumpback');
+  if (!JUMP) { if (b) b.hidden = true; return; }
+  if (!b) { b = document.createElement('div'); b.id = 'jumpback'; b.className = 'jumpback'; document.body.appendChild(b); }
+  b.innerHTML = '<a href="#spread">← ' + L('回到版本線索圖', 'Back to the edition map', 'Retour à la carte des éditions') + '</a><button type="button" aria-label="' + L('關閉', 'Close', 'Fermer') + '">✕</button>';
+  b.querySelector('a').onclick = function () { closeCmp(true); };
+  b.querySelector('button').onclick = function () { JUMP = false; b.hidden = true; };
+  b.hidden = false;
 }
 // 當前畫面的網址（「複製鏈接」與演示步驟用）
 function shareURL(withBase) {
@@ -3167,7 +3297,7 @@ function csvName(t) {   // 只用英文字母與數字：中文文件名在部�
 }
 function decorateTables(root) {
   root.querySelectorAll('table').forEach(function (t) {
-    if (t.getAttribute('data-csv') || t.closest('#tip, #hcard, .zr-disc') || t.querySelectorAll('tr').length < 3) return;
+    if (t.getAttribute('data-csv') || t.closest('#tip, #hcard, .zr-disc, .snav') || t.querySelectorAll('tr').length < 3) return;
     t.setAttribute('data-csv', '1');
     var b = document.createElement('button'); b.type = 'button'; b.className = 'csvbtn'; b.textContent = L('下載 CSV', 'Download CSV', 'Télécharger CSV');
     b.title = L('下載本表當前顯示的行（含篩選）', 'Download the rows currently shown (with filters)', 'Télécharger les lignes affichées (avec filtres)');
@@ -3393,6 +3523,7 @@ function route(ev) {
   if (after.play && (v === 'fit' || v === 'spread')) setTimeout(timePlay, 400);
   if (after.sec) setTimeout(function () { var el = document.getElementById(after.sec); if (el) el.scrollIntoView({ block: 'start' }); }, 150);
   if (DEMO.on) demoRender();
+  jumpSync(v);
   decorate();
 }
 var LAST_V = '', LAST_HASH = '', PREV_V = '', PREV_HASH = '';

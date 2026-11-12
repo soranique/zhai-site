@@ -268,8 +268,7 @@ body.demo-on .jumpback { bottom: 92px; }
 .kin .knet.bkf g.bg.kf .bl { stroke-width: 3.2; opacity: 1; animation: kbkflow 1.2s linear infinite; } @keyframes kbkflow { to { stroke-dashoffset: -14; } }
 .kin .knet.bkf g.bnd.kf circle { stroke-width: 2.4; } .kin .knet.bkf g.bnd.kf text { fill: var(--ink); font-weight: 600; }
 .kin .kbk { font: inherit; font-size: 13px; color: var(--ink-2); background: none; border: 1px solid transparent; border-radius: 6px; padding: 1px 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-.kin .kbk:hover { border-color: var(--grid); } .kin .kbk.on { border-color: var(--ink-2); background: var(--surface); color: var(--ink); } .kin .kbdemo { background: var(--accent); border-color: var(--accent); color: var(--page); font-weight: 600; padding: 3px 12px; border-radius: 999px; box-shadow: 0 1px 3px rgba(0,0,0,.18); }   /* 「演示六種關係線」：朱色實心膠囊，和六種線的切換按鈕區分開 */
-.kin .kbdemo:hover { border-color: var(--accent); filter: brightness(1.12); } .kin .kbdemo:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kin .kbk:hover { border-color: var(--grid); } .kin .kbk.on { border-color: var(--ink-2); background: var(--surface); color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .kin .knet.bkf g.bg.kf .bl { animation: none; } }
 .kin .bsw { fill: var(--page); stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 1.5; } .kin .kbibl { margin-top: 2px; }
 .kin .nd { cursor: pointer; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
@@ -655,14 +654,14 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <div id="daypanel" class="daypanel" hidden role="dialog" aria-modal="true" aria-label="這一天"><div class="dp-box"><div class="dp-body"></div></div></div>
 <footer class="wrap" id="foot"></footer>
 <div class="tip" id="tip"></div>
-<script src="demo.js?v=a4bed87c"></script>
+<script src="demo.js?v=b60ff7e3"></script>
 <script src="fr.js?v=eef9ec7e"></script>
 <script src="tx.js?v=cd162b65"></script>
 <script src="i18n.js?v=3c33e8de"></script>
 <script src="data.js?v=883dbe4a"></script>
 <script src="editions-data.js?v=a927937b"></script>
-<script src="kinship-data.js?v=9d747e22"></script>
-<script src="kinship-bib.js?v=b250aaf1"></script>
+<script src="kinship-data.js?v=a2bbc18e"></script>
+<script src="kinship-bib.js?v=6feba968"></script>
 <script src="spread-data.js?v=9d2ddcf0"></script>
 <script src="search-data.js?v=e88068a4"></script>
 <script src="ring.js?v=f2cdd376"></script>
@@ -2520,7 +2519,7 @@ function viewKinship() {
       var grp = function (zh, en, fr, ls, sub) { return '<div><span><i class="ksw" style="background:' + LC[ls[0]] + '"></i><b>' + L(zh, en, fr) + '</b>' + (sub ? L('（' + sub[0] + '）', ' (' + sub[1] + ')', ' (' + sub[2] + ')') : ls.length > 1 || ls[0] !== zh ? L('（' + ls.join('、') + '）', ' (' + ls.map(function (l) { return I.T(LEN[l]); }).join(', ') + ')', ' (' + ls.map(function (l) { return I.T(LEN[l]); }).join(', ') + ')') : '') + '</span></div>'; };
       return '<div class="klg">' + grp('道藏系統', 'Daoist canon', 'Canon taoïste', ['道藏本']) + grp('玉匣記系統', 'Yuxiaji tradition', 'Tradition du Yuxiaji', ['玉匣記'], ['單行本、通書', 'standalone editions and almanacs', 'éditions séparées et almanachs']) + grp('宮觀手冊', 'Temple manuals', 'Manuels de temple', ['宮觀手冊']) + grp('善書', 'Morality books', 'Livres de morale', ['善書']) + grp('日用類書', 'Encyclopaedias', 'Encyclopédies', ['日用類書']) + (LANES.indexOf('未定') >= 0 ? grp('未定', 'Undetermined', 'Indéterminé', ['未定']) : '') + '</div>' + (KIN.bib ? '<div class="klg kbibl"><div><span><svg width="16" height="12"><circle cx="8" cy="6" r="4.5" class="bsw"/></svg><b>' + L('只有書目', 'Bibliographic record only', 'Notice seule') + '</b>' + L('（空心虛線圈：三浦 2002、Goossaert 2024 等著錄，無條目，不參與計算）', ' (hollow dashed circle: recorded by Miura 2002, Goossaert 2024 etc.; no entries, not computed)', ' (cercle creux en tirets : recensé par Miura 2002, Goossaert 2024, etc. ; sans entrées, non calculé)') + '</span></div>' +
         Object.keys(KB.kinds).map(function (k) { var kd = KB.kinds[k]; return '<div><button type="button" class="kbk' + (KIN.bk === k ? ' on' : '') + '" data-bk="' + k + '" title="' + esc(L('只突出這一種線；再按一次還原', 'Highlight only this kind of line; press again to reset', 'Ne mettre en valeur que ce type de lien ; cliquer à nouveau pour revenir')) + '"><svg width="26" height="10"><path d="M1,5 L25,5" class="bl bk-' + k + '"/></svg>' + esc(L(kd.zh, kd.en, kd.fr)) + '</button></div>'; }).join('') +
-        '<div><button type="button" class="kbk kbdemo" id="kbdemo">▶ ' + L('演示六種關係線', 'Walk through the six kinds of link', 'Présenter les six types de lien') + '</button></div>' + '</div>' +
+        '</div>' +
         (KB.undated.length ? '<p class="small muted" style="margin:4px 0 0">' + L('年代不詳、未上圖：', 'Undated, not placed on the chart: ', 'Non datées, absentes du graphique : ') + KB.undated.map(function (u) { return esc(L(u.zh, u.en, u.fr)) + '<span class="muted">（' + esc(u.src) + '）</span>'; }).join(L('；', '; ')) + '</p>' : '') : '');
     })() + '<div class="card kcrank" id="kcrank" hidden></div>' +
     '<h2>' + L('共性與差異', 'What editions share and where they differ', 'Points communs et différences') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('任選兩三本，看共同收錄和各自獨有的條目。圓的面積按條目數，重疊大小按比例；三本時圖上的重疊只是近似，以數字爲準。點圖上或表中的區塊，下面列出條目；要按月日逐條對齊，用圖下的按鈕，或點下方矩陣的格子。比較單位與逐條細看相同，專門單獨齋期也可選。共有只說明相近，不說明誰據誰。', 'Pick two or three editions to see what they record in common and what is unique to each. Circle area follows the number of entries and overlaps are proportional; with three editions the picture is approximate, so go by the numbers. Click a region in the diagram or the table to list its entries; to align two editions day by day, use the button below the diagram or click a cell of the matrix further down. The unit is the same as in that view; standalone fast calendars can be chosen too. Shared entries show closeness, not which text drew on which.', 'Choisissez deux ou trois éditions pour voir ce qu’elles ont en commun et ce qui est propre à chacune. L’aire des cercles suit le nombre d’entrées et les recoupements sont proportionnels ; à trois éditions le dessin est approximatif, les chiffres font foi. Cliquez sur une zone du diagramme ou du tableau pour en lister les entrées ; pour aligner deux éditions jour par jour, utilisez le bouton sous le diagramme ou une case de la matrice plus bas. L’unité est celle de cette vue ; les calendriers de jeûne spécifiques peuvent aussi être choisis. Les entrées communes montrent une proximité, non une filiation.') + '</p><div class="card" id="kvenn"></div>' +
@@ -2528,8 +2527,8 @@ function viewKinship() {
     '<h2>' + L('道藏本（1607）條目的保留', 'Retention of the Daozang (1607) entries') + '</h2><p class="small muted" style="margin:0 0 6px">' + L('1607《諸神聖誕日玉匣記》的條目見於各本的比例。', 'Share of the entries of the 1607 Daozang text found in each edition.') + '</p><div class="card" id="kret"></div>' +
     '<h2>' + L('未計入的版本', 'Editions not included') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' + K.excl.map(function (x) { return '<li>' + FT(x) + '</li>'; }).join('') + '</ul></div>' +
     '<h2>' + L('讀圖須知', 'Reading notes') + '</h2><div class="card small"><ul style="margin:0;padding-left:18px">' +
-      L('<li>1882 與 1891 劉誠印本同版，分作兩點，可看到同版兩印之間的差異。</li><li>「通行日期」由見證多數決定，而通書各本與文本相近的本子（如《聖經彙纂》《禪門日誦》）合計最多，所以通書各本的少數日期較少——這是樣本構成造成的，不等於它們更「標準」。</li><li>重合度受規範名歸併的影響：歸併越多，版本間越相近。</li><li>1684 文瑞堂本據截圖錄入，解析度有限，重合度可能偏低。</li>',
-        '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanacs and the texts close to them (such as the <i>Shengjing huizuan</i> 聖經彙纂 and the <i>Chanmen risong</i> 禪門日誦) together form the largest group, the almanacs have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The 1684 Wenrui tang 文瑞堂 edition was entered from screenshots of limited resolution; its overlap may be understated.</li>') +
+      L('<li>1882 與 1891 劉誠印本同版，分作兩點，可看到同版兩印之間的差異。</li><li>「通行日期」由見證多數決定，而通書各本與文本相近的本子（如《聖經彙纂》《禪門日誦》）合計最多，所以通書各本的少數日期較少——這是樣本構成造成的，不等於它們更「標準」。</li><li>重合度受規範名歸併的影響：歸併越多，版本間越相近。</li><li>文瑞堂本抄本據截圖錄入，解析度有限，重合度可能偏低；封面「康熙甲子年」只是王相序年款，抄寫年不詳，圖上排在沖繩諸本（≤1872）旁，標「未定」。</li>',
+        '<li>The 1882 and 1891 Liu Chengyin 劉誠印 editions share the same blocks; they are kept apart to show differences between two printings.</li><li>“Common dates” are decided by majority of witnesses; since the almanacs and the texts close to them (such as the <i>Shengjing huizuan</i> 聖經彙纂 and the <i>Chanmen risong</i> 禪門日誦) together form the largest group, the almanacs have few minority dates — an effect of the sample, not a sign that they are more “standard”.</li><li>Overlap depends on how names are normalized: the more merging, the closer the editions.</li><li>The Wenrui tang 文瑞堂 manuscript was entered from screenshots of limited resolution; its overlap may be understated. The “Kangxi jiazi” on its cover is only the date of Wang Xiang’s preface and its copying date is unknown; the chart places it beside the Okinawan copies (≤1872), marked n.d.</li>') +
     '</ul></div></div></div></div>';
   app.innerHTML = h;
   pageGuide(L('這一頁看關係：本子和本子之間有多近。', 'This page is about relationships: how close the editions are to one another.', 'Cette page porte sur les relations : la proximité des éditions entre elles.'),
@@ -2798,7 +2797,6 @@ function viewKinship() {
   document.getElementById('khmode').onchange = function (e) { KIN.hm = e.target.value; heat(); };
   document.getElementById('kdir').onchange = function (e) { KIN.dir = e.target.checked; draw(); };
   document.querySelectorAll('.kbk[data-bk]').forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-bk'); KIN.bk = KIN.bk === k ? '' : k; document.querySelectorAll('.kbk[data-bk]').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-bk') === KIN.bk); }); draw(); }; });
-  var kbd = document.getElementById('kbdemo'); if (kbd) kbd.onclick = function () { demoGo(0, 'bib'); };
   document.getElementById('kbib').onchange = function (e) { KIN.bib = e.target.checked; var y = scrollY; viewKinship(); scrollTo(0, y); };
   document.getElementById('kunit').onchange = function (e) { KIN.u = e.target.value === 'd' ? 'd' : 'e'; kinUnitApply(K); var y = scrollY; viewKinship(); scrollTo(0, y); if (cmpIsOpen()) renderCmp(CMP.a, CMP.b); };
   draw();
@@ -3047,7 +3045,7 @@ function viewContext() {
       { t: B('雲笈七籤', 'Yunji qiqian'), s: L('十直、三元、五臘', 'Ten zhi 十直 days, three Primes 三元, five la 五臘'), i: 'd' },
       { t: SL, s: L('三元、五臘、小欑齋日', 'Three Primes, five la, xiaozan 小欑 fast days'), y: 1, i: 's' },
       { t: L('道藏本、《朝修》', 'Daozang ed.; ' + CX, 'éd. du Daozang ; ' + CX), s: L('六齋、十直、三元', 'Six fasts, ten zhi, three Primes', 'Six jeûnes, dix zhi, trois Origines'), i: 's',
-        tip: L('道藏本《諸神聖誕日玉匣記》：每月六齋日「持齋念佛」、正月初八至十五「戒齋」；《朝修吉辰章》：十直齋日、三元、正五九月齋。準提十齋在現有明代材料中未見（最早見於 1684 年文瑞堂本）。', 'Daozang ' + ZS + ': fasting and invoking the Buddha on the six fast days, abstinence 1/8–1/15; ' + CX + ': ten zhi 十直 fast days, three Primes, fasts in the 1st, 5th and 9th months. The Zhunti 準提 ten fasts do not appear in the Ming materials so far (first seen in the 1684 Wenruitang edition).', ZS + ' du Daozang : jeûne et invocation du Buddha les six jours, abstinence du 8 au 15 du 1er mois ; ' + CX + ' : dix jours zhi 十直, trois Origines, jeûnes des 1er, 5e et 9e mois. Les dix jeûnes de Zhunti 準提 n’apparaissent pas encore dans les sources Ming (première attestation : édition Wenruitang, 1684).') }] }
+        tip: L('道藏本《諸神聖誕日玉匣記》：每月六齋日「持齋念佛」、正月初八至十五「戒齋」；《朝修吉辰章》：十直齋日、三元、正五九月齋。準提十齋在現有明代材料中未見（有確切年代者，最早見於 1788 年大雅堂本，據三浦著錄；文瑞堂本抄本也有，但抄寫年不詳）。', 'Daozang ' + ZS + ': fasting and invoking the Buddha on the six fast days, abstinence 1/8–1/15; ' + CX + ': ten zhi 十直 fast days, three Primes, fasts in the 1st, 5th and 9th months. The Zhunti 準提 ten fasts do not appear in the Ming materials so far (the earliest dated attestation is the 1788 Dayatang edition, after Miura; the Wenruitang manuscript has them too, but its copying date is unknown).', ZS + ' du Daozang : jeûne et invocation du Buddha les six jours, abstinence du 8 au 15 du 1er mois ; ' + CX + ' : dix jours zhi 十直, trois Origines, jeûnes des 1er, 5e et 9e mois. Les dix jeûnes de Zhunti 準提 n’apparaissent pas encore dans les sources Ming (première attestation datée : édition du Dayatang de 1788, d’après Miura ; le manuscrit du Wenruitang les a aussi, mais sa date de copie est inconnue).') }] }
   ];
   var periods = E ? ['Han–Six Dynasties', 'Tang', 'Song', 'Yuan', 'Ming'] : ['漢魏六朝', '唐', '宋', '元', '明'];
   var g = '<div class="ph"></div>' + periods.map(function (p, i) { return '<div class="ph' + (i === 3 ? ' y' : '') + '">' + p + '</div>'; }).join('') + '<div class="ph"></div><div class="ph">' + L('清', 'Qing') + '</div>';
@@ -3724,10 +3722,9 @@ addEventListener('scroll', function () { if (HC.el && !HC.el.hidden && !TOUCH) h
 
 // ---------- 演示模式：按順序串起幾個畫面，每步一句說明，左右鍵翻頁 ----------
 // 默認步驟在 demo.js（window.ZHAI_DEMO）；在頁面上「編輯步驟」改過的存在瀏覽器裏，可「導出」後貼回 demo.js
-var DEMO = { on: false, i: 0, set: '' };   // set：'' 爲網站導覽（ZHAI_DEMO，可編輯）；'bib' 爲「只有書目的本子」六種關係線（ZHAI_DEMO_BIB，固定）
+var DEMO = { on: false, i: 0, set: '' };   // set 現只有 ''（網站導覽 ZHAI_DEMO，可編輯）；原「演示六種關係線」（'bib'）已於 2026-11-12 刪去
 try { DEMO.set = sessionStorage.getItem('zhai-demo-set') || ''; } catch (e) {}
 function demoSteps() {
-  if (DEMO.set === 'bib') return (window.ZHAI_DEMO_BIB || []).slice();
   try { var s = JSON.parse(localStorage.getItem('zhai-demo') || 'null'); if (s && s.length) return s; } catch (e) {}
   return (window.ZHAI_DEMO || []).slice();
 }
@@ -3755,7 +3752,7 @@ function demoRender() {
   b.innerHTML = '<button type="button" class="db-nav" data-dm="-1" aria-label="' + L('上一步', 'Previous step', 'Étape précédente') + '">←</button>' +
     '<div class="db-cap"><span class="db-n">' + (DEMO.i + 1) + ' / ' + s.length + '</span>' + esc(demoCap(st)) + '</div>' +
     '<button type="button" class="db-nav" data-dm="1" aria-label="' + L('下一步', 'Next step', 'Étape suivante') + '">→</button>' +
-    '<div class="db-tools">' + (DEMO.set === 'bib' ? '' : '<button type="button" data-dm="edit">' + L('編輯步驟', 'Edit steps', 'Modifier les étapes') + '</button>') + '<button type="button" data-dm="fs">' + L('全屏', 'Full screen', 'Plein écran') + '</button><button type="button" data-dm="x">' + L('退出演示', 'Exit', 'Quitter') + '</button></div>';
+    '<div class="db-tools">' + '<button type="button" data-dm="edit">' + L('編輯步驟', 'Edit steps', 'Modifier les étapes') + '</button>' + '<button type="button" data-dm="fs">' + L('全屏', 'Full screen', 'Plein écran') + '</button><button type="button" data-dm="x">' + L('退出演示', 'Exit', 'Quitter') + '</button></div>';
   b.querySelectorAll('[data-dm]').forEach(function (x) { x.onclick = function () { var a = x.getAttribute('data-dm'); if (a === 'x') demoExit(); else if (a === 'edit') demoEdit(); else if (a === 'fs') { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) {} } else demoGo(DEMO.i + +a); }; });
 }
 // 演示時把畫面捲到某張圖：圖頂貼在固定頁首下方（窄屏頁首不固定，就貼窗口頂）
@@ -3766,7 +3763,6 @@ function demoFocus(id) {
 }
 function demoExit() {
   DEMO.on = false; try { sessionStorage.removeItem('zhai-demo-on'); sessionStorage.removeItem('zhai-demo-set'); } catch (e) {}
-  if (DEMO.set === 'bib') { KIN.bk = ''; KIN.zr = null; }
   DEMO.set = '';
   document.body.classList.remove('demo-on'); var b = document.getElementById('demobar'); if (b) b.hidden = true;
   var ed = document.getElementById('demoedit'); if (ed) ed.hidden = true;

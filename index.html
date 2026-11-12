@@ -3754,6 +3754,12 @@ function demoRender() {
     '<div class="db-tools">' + (DEMO.set === 'bib' ? '' : '<button type="button" data-dm="edit">' + L('編輯步驟', 'Edit steps', 'Modifier les étapes') + '</button>') + '<button type="button" data-dm="fs">' + L('全屏', 'Full screen', 'Plein écran') + '</button><button type="button" data-dm="x">' + L('退出演示', 'Exit', 'Quitter') + '</button></div>';
   b.querySelectorAll('[data-dm]').forEach(function (x) { x.onclick = function () { var a = x.getAttribute('data-dm'); if (a === 'x') demoExit(); else if (a === 'edit') demoEdit(); else if (a === 'fs') { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); } catch (e) {} } else demoGo(DEMO.i + +a); }; });
 }
+// 演示時把畫面捲到某張圖：圖頂貼在固定頁首下方（窄屏頁首不固定，就貼窗口頂）
+function demoFocus(id) {
+  var el = document.getElementById(id); if (!el) return;
+  var hd = document.querySelector('header.top'), off = hd && getComputedStyle(hd).position === 'sticky' ? hd.getBoundingClientRect().height : 0;
+  window.scrollTo(0, Math.max(0, el.getBoundingClientRect().top + window.scrollY - off - 8));
+}
 function demoExit() {
   DEMO.on = false; try { sessionStorage.removeItem('zhai-demo-on'); sessionStorage.removeItem('zhai-demo-set'); } catch (e) {}
   if (DEMO.set === 'bib') { KIN.bk = ''; KIN.zr = null; }
@@ -3838,6 +3844,7 @@ function route(ev) {
   if (after.day && after.day[1]) openDay(after.day[0], after.day[1]);
   if (after.play && (v === 'fit' || v === 'spread')) setTimeout(timePlay, 400);
   if (after.sec) setTimeout(function () { var el = document.getElementById(after.sec); if (el) el.scrollIntoView({ block: 'start' }); }, 150);
+  else if (DEMO.on && v === 'kin' && !ab[0]) setTimeout(function () { demoFocus('knet'); }, 150);   // 演示翻到版本親疏：捲到關係圖，不停在頁首
   if (DEMO.on) demoRender();
   jumpSync(v);
   decorate();

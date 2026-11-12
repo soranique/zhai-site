@@ -116,7 +116,11 @@ function prepare(data) {
   var byDay = {};
   daily.forEach(function (r) { var k = r.m * 100 + r.d; (byDay[k] = byDay[k] || []).push(r); });
   Object.keys(byDay).forEach(function (k) { byDay[k].sort(function (a, b) { return ORDER.indexOf(a.p[0]) - ORDER.indexOf(b.p[0]); }); });
-  return { all: all, daily: daily, ranges: ranges, byDay: byDay, srcMain: srcMain, notesOmitted: !!(data.meta && data.meta.notesOmitted), TEN: (data.meta && data.meta.fastDays10) || [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], SIX: (data.meta && data.meta.fastDays6) || [8, 14, 15, 23, 29, 30] };
+  // 神聖日（天數）：單日條目所在的日子，加上多日齋期的完整時段（正月初八至十五算八天）；同一天幾條只算一天（2026-11-12 研究者要求）
+  var sacred = {};
+  Object.keys(byDay).forEach(function (k) { sacred[k] = 1; });
+  ranges.forEach(function (r) { rangesOf(r).forEach(function (a) { for (var d = a[0][1]; d <= a[1][1]; d++) sacred[a[0][0] * 100 + d] = 1; }); });
+  return { all: all, daily: daily, ranges: ranges, byDay: byDay, sacred: sacred, srcMain: srcMain, notesOmitted: !!(data.meta && data.meta.notesOmitted), TEN: (data.meta && data.meta.fastDays10) || [1, 8, 14, 15, 18, 23, 24, 28, 29, 30], SIX: (data.meta && data.meta.fastDays6) || [8, 14, 15, 23, 29, 30] };
 }
 
 // ---------- 曆盤 ----------
@@ -244,9 +248,12 @@ function disc(root, D) {
     if (zoom && !sel) {
       var days = [];
       for (var dd = 1; dd <= 30; dd++) if (D.byDay[zoom * 100 + dd]) days.push(dd);
-      var total = days.reduce(function (t, x) { return t + D.byDay[zoom * 100 + x].length; }, 0);
+      var zr = D.ranges.filter(function (r) { return rangesOf(r).some(function (a) { return a[0][0] === zoom; }); });
+      var total = days.reduce(function (t, x) { return t + D.byDay[zoom * 100 + x].length; }, 0) + zr.length;
+      var nSac = 0; for (var sd = 1; sd <= 30; sd++) if (D.sacred[zoom * 100 + sd]) nSac++;   // 含多日齋期的完整時段
       panel.innerHTML = '<div><div class="zr-pd">' + (EN() ? I18.mon(zoom) : MN[zoom]) + '</div><div class="zr-pmeta">' +
-        L(nEntries(total) + ' · ' + days.length + ' 個神聖日', nEntries(total) + ' · ' + days.length + ' sacred days', nEntries(total) + ' · ' + days.length + ' jours sacrés') + '</div></div>' +
+        L(nEntries(total) + ' · ' + nSac + ' 個神聖日', nEntries(total) + ' · ' + nSac + ' sacred days', nEntries(total) + ' · ' + nSac + ' jours sacrés') + '</div></div>' +
+        (zr.length ? '<p class="zr-hint" style="margin:4px 0">' + L('多日齋期：', 'Multi-day fasts: ', 'Jeûnes de plusieurs jours : ') + zr.map(function (r) { return esc(r.range) + ' ' + NH(r.name); }).join(L('；', '; ')) + '</p>' : '') +
         '<ul class="zr-mlist">' + days.map(function (x) {
           var l = D.byDay[zoom * 100 + x];
           return '<li><i class="zr-sw" style="background:' + (fastCss(D, x, '--zr-gold', '--zr-six-ink') || 'var(--zr-wei)') + '"></i><div><div class="zr-nm">' + lunarLong(zoom, x) + '<span class="zr-chip">' + nEntries(l.length) + '</span></div><div class="zr-sub">' + l.map(function (r) { return NH(r.name); }).join(L('、', '; ')) + '</div></div></li>';
@@ -439,21 +446,24 @@ function treemap(root, D) {
     'The two main sources are made up almost identically: in the ' + NTX('玉匣記') + ', Daoist entries are ' + pct('玉匣記', 'T') + '% and Buddhist ' + pct('玉匣記', 'B') + '%; in the ' + NTX('古今類傳') + ', Daoist ' + pct('古今類傳', 'T') + '% and Buddhist ' + pct('古今類傳', 'B') + '%. No source is “the Buddhist source” or “the Daoist source”.', 'Les deux principales sources ont une composition presque identique : dans le ' + NTX('玉匣記') + ', les entrées taoïstes font ' + pct('玉匣記', 'T') + ' % et les bouddhiques ' + pct('玉匣記', 'B') + ' % ; dans le ' + NTX('古今類傳') + ', taoïstes ' + pct('古今類傳', 'T') + ' % et bouddhiques ' + pct('古今類傳', 'B') + ' %. Aucune source n’est « la source bouddhique » ou « la source taoïste ».');
 }
 
-// ---------- 逐月統計：本版本每個月有多少個日期條目 ----------
-// 「條目」指原書以農曆日期為單位列出的記載，一個日期可能包含多項宗教事件；同一日期幾條只算一個。只數有具體月日的條目，「每月」「六十甲子日」等不計
+// ---------- 逐月統計：本版本每個月有多少個神聖日、多少條條目 ----------
+// 神聖日按天數：同一天幾條只算一天，多日齋期按完整時段逐日計入（正月初八至十五算八天）；條目按條數，多日齋期算一條，記在起始月。
+// 只數有具體月日的，「每月」「六十甲子日」等不計（2026-11-12 研究者要求：多日齋期算完整時段）
 function monthCount(root, D, data) {
-  var meta = (data && data.meta) || {}, seen = {}, cnt = []; for (var i = 0; i < 12; i++) cnt[i] = 0;
-  (D.all || []).forEach(function (e) { if (!(e.m >= 1 && e.m <= 12 && e.d >= 1)) return; var k = e.range || (e.m + '/' + e.d); if (seen[k]) return; seen[k] = 1; cnt[e.m - 1]++; });   // 多日齋期（如正月初八至十五）按一條計，記在起始月
-  var tot = cnt.reduce(function (a, b) { return a + b; }, 0);
-  if (!tot) return;
+  var meta = (data && data.meta) || {}, days = [], ents = []; for (var i = 0; i < 12; i++) { days[i] = 0; ents[i] = 0; }
+  Object.keys(D.sacred).forEach(function (k) { days[Math.floor(k / 100) - 1]++; });
+  (D.all || []).forEach(function (e) { if (e.m >= 1 && e.m <= 12 && e.d >= 1) ents[e.m - 1]++; });
+  var sum = function (a) { return a.reduce(function (x, y) { return x + y; }, 0); }, tot = sum(days), totE = sum(ents);
+  if (!totE) return;
+  var nR = D.ranges.length, rDays = 0; D.ranges.forEach(function (r) { rangesOf(r).forEach(function (a) { rDays += a[1][1] - a[0][1] + 1; }); });
   var sec = document.createElement('section'); sec.className = 'zr-sec'; sec.id = 'r-month';
-  sec.innerHTML = '<div class="zr-eyebrow">' + L('逐月統計', 'Month by month', 'Mois par mois') + '</div><h2 style="margin:0">' + L('每個月有多少個日期條目', 'How many dated entries in each month', 'Combien d’entrées datées par mois') + '</h2>' +
-    '<p class="zr-lede">' + L('本版本逐月核算，共有 ' + tot + ' 個日期條目。這裡的「條目」指原書以農曆日期為單位列出的記載，一個日期可能包含多項宗教事件；同一日期幾條只算一個，多日齋期按一條計。「每月」「六十甲子日」等沒有具體月日的不計' + (meta.undated ? '（本版本有 ' + meta.undated + ' 條）' : '') + '。',
-      'Counted month by month, this edition has ' + tot + ' dated entries. An “entry” is a record the original lists under a lunar date; one date may carry several religious events, and several records on the same date count once, and a multi-day fast counts as one. Entries without a specific month and day (“every month”, the sixty jiazi days) are not counted' + (meta.undated ? ' (' + meta.undated + ' in this edition)' : '') + '.',
-      'Comptée mois par mois, cette édition compte ' + tot + ' entrées datées. Une « entrée » est un article que l’original place sous une date lunaire ; une date peut porter plusieurs événements religieux, et plusieurs articles à la même date comptent une fois, et un jeûne de plusieurs jours compte pour un. Les entrées sans mois ni jour précis (« chaque mois », les soixante jours du cycle) ne sont pas comptées' + (meta.undated ? ' (' + meta.undated + ' dans cette édition)' : '') + '.') + '</p>' +
-    '<div class="zr-sharew"><table class="zr-sharet zr-monthc"><thead><tr><th class="l">' + L('月份', 'Month', 'Mois') + '</th><th>' + L('日期條目數', 'Dated entries', 'Entrées datées') + '</th></tr></thead><tbody>' +
-    cnt.map(function (n, i) { return '<tr><td class="l">' + monthLabel(i + 1) + '</td><td>' + n + '</td></tr>'; }).join('') +
-    '<tr class="med"><td class="l">' + L('合計', 'Total', 'Total') + '</td><td>' + tot + '</td></tr></tbody></table></div>' +
+  sec.innerHTML = '<div class="zr-eyebrow">' + L('逐月統計', 'Month by month', 'Mois par mois') + '</div><h2 style="margin:0">' + L('每個月有多少個神聖日', 'How many sacred days in each month', 'Combien de jours sacrés par mois') + '</h2>' +
+    '<p class="zr-lede">' + L('本版本有具體月日的條目共 ' + totE + ' 條，分佈在 ' + tot + ' 個神聖日。神聖日按天數計：同一天有幾條只算一天；多日齋期按完整時段逐日計入' + (nR ? '（本版本 ' + nR + ' 段，共 ' + rDays + ' 天，與單日條目重合的日子不重複計）' : '') + '。條目按條數計，多日齋期算一條，記在起始月。「每月」「六十甲子日」等沒有具體月日的不計' + (meta.undated ? '（本版本有 ' + meta.undated + ' 條）' : '') + '。',
+      'This edition has ' + totE + ' entries with a specific month and day, spread over ' + tot + ' sacred days. Sacred days are counted as days: several entries on one day count once, and a multi-day fast counts for its full span, day by day' + (nR ? ' (' + nR + ' here, ' + rDays + ' days in all; days already carrying a single-day entry are not counted twice)' : '') + '. Entries are counted one by one; a multi-day fast is one entry, placed in its first month. Entries without a specific month and day (“every month”, the sixty jiazi days) are not counted' + (meta.undated ? ' (' + meta.undated + ' in this edition)' : '') + '.',
+      'Cette édition compte ' + totE + ' entrées avec un mois et un jour précis, réparties sur ' + tot + ' jours sacrés. Les jours sacrés sont comptés en jours : plusieurs entrées le même jour comptent une fois, et un jeûne de plusieurs jours compte pour toute sa durée, jour par jour' + (nR ? ' (' + nR + ' ici, ' + rDays + ' jours en tout ; les jours qui portent déjà une entrée d’un jour ne sont pas comptés deux fois)' : '') + '. Les entrées sont comptées une à une ; un jeûne de plusieurs jours est une entrée, placée dans son premier mois. Les entrées sans mois ni jour précis (« chaque mois », les soixante jours du cycle) ne sont pas comptées' + (meta.undated ? ' (' + meta.undated + ' dans cette édition)' : '') + '.') + '</p>' +
+    '<div class="zr-sharew"><table class="zr-sharet zr-monthc"><thead><tr><th class="l">' + L('月份', 'Month', 'Mois') + '</th><th>' + L('神聖日（天）', 'Sacred days', 'Jours sacrés') + '</th><th>' + L('條目（條）', 'Entries', 'Entrées') + '</th></tr></thead><tbody>' +
+    days.map(function (n, i) { return '<tr><td class="l">' + monthLabel(i + 1) + '</td><td>' + n + '</td><td>' + ents[i] + '</td></tr>'; }).join('') +
+    '<tr class="med"><td class="l">' + L('合計', 'Total', 'Total') + '</td><td>' + tot + '</td><td>' + totE + '</td></tr></tbody></table></div>' +
     '<p class="zr-muted-s">' + L('資料來源：', 'Source: ', 'Source : ') + (meta.editionHtml || esc(meta.edition || '')) + (meta.sourceFile ? L('；源表 ', '; table ', ' ; table ') + esc(meta.sourceFile) : '') + '。</p>';
   root.appendChild(sec);
 }
@@ -768,8 +778,8 @@ window.ZhaiRing = {
     var D = prepare(data); CUR = null;
     var root = document.createElement('div'); root.className = 'zr';
     if (opt.title !== false) {
-      var days = Object.keys(D.byDay).length, gods = {}; D.all.forEach(function (r) { if (r.god) gods[r.god] = 1; });
-      var on = Object.keys(D.byDay).filter(function (k) { return D.TEN.indexOf(k % 100) >= 0; }).length, onSix = Object.keys(D.byDay).filter(function (k) { return D.SIX.indexOf(k % 100) >= 0; }).length;
+      var days = Object.keys(D.sacred).length, gods = {}; D.all.forEach(function (r) { if (r.god) gods[r.god] = 1; });   // 天數含多日齋期的完整時段
+      var on = Object.keys(D.sacred).filter(function (k) { return D.TEN.indexOf(k % 100) >= 0; }).length, onSix = Object.keys(D.sacred).filter(function (k) { return D.SIX.indexOf(k % 100) >= 0; }).length;
       var head = document.createElement('section'); head.className = 'zr-sec';
       var ed = data.meta && data.meta.edition;
       head.innerHTML = '<div><h1>' + esc(opt.title || L('齋期神譜環形曆', 'Ring calendar of sacred days')) + '</h1><p class="zr-lede">' + L('一個版本的全部神聖日，排成一個農曆年。', 'All the sacred days of one edition, laid out as a lunar year.') + (data.meta && data.meta.editionHtml ? ' ' + data.meta.editionHtml : EN() && ed ? ' ' + (data.meta.editionEn || NH(ed)) : '') + '</p></div>' +

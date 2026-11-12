@@ -737,7 +737,7 @@ var ED = window.ZHAI_ED || { versions: [], entries: [], norms: {}, cmap: {}, py:
 I.addPinyin(ED.py, ED.pyTitle);
 // 暫不計入任何計算的版本（仍保留在版本目錄、諸本對照、齋期日曆、神明檔案、搜索中，也可單獨看它的環形曆）。
 // 版本親疏、少數日期由 build_kinship.py 的 INCL／EXCL 控制，兩處要一起改。定了年代版本以後，從這裏和 INCL 加回即可
-var CALC_EXCL = { '18': '年代、版本未定', '28': '只錄入一部分' };
+var CALC_EXCL = { '7': '兩處缺頁', '18': '年代、版本未定', '28': '只錄入一部分' };
 function inCalc(v) { return !CALC_EXCL[String(v.no)]; }
 var EVS = ED.versions.slice().sort(function (a, b) { return (a.year || 9999) - (b.year || 9999) || a.i - b.i; });
 var V0 = (ED.versions.filter(function (v) { return +v.no === 1; })[0] || ED.versions[0] || {}).i;  // 道藏本《玉匣記》1607

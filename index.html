@@ -255,7 +255,7 @@ body.demo-on .jumpback { bottom: 92px; }
 :root[data-theme="dark"] .kin { --edge:#bdbbb3; --heat0:#262624; }
 .kin svg.knet { display: block; width: 100%; height: auto; }
 .kin .lane { fill: var(--surface-2); } .kin .lanet { font-size: 12.5px; fill: var(--ink-2); } .kin .tick { stroke: var(--grid); stroke-width: 1; } .kin .kpy { font-style: italic; } .kin .tickt { font-size: 11px; fill: var(--muted); }
-.kin .e { fill: none; stroke: var(--edge); stroke-linecap: round; cursor: pointer; } .kin .e.sv { stroke: var(--accent); } .kin .e:hover, .kin .e.hl { stroke: var(--accent); opacity: 1 !important; }
+.kin .ehalo { fill: none; stroke: var(--page); stroke-linecap: round; opacity: .85; pointer-events: none; } .kin .e { fill: none; stroke: var(--edge); stroke-linecap: round; cursor: pointer; } .kin .e.sv { stroke: var(--accent); } .kin .e:hover, .kin .e.hl { stroke: var(--accent); opacity: 1 !important; }
 .kin .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
 .kin .bnd circle { fill: var(--page); stroke-width: 1.6; stroke-dasharray: 2.5 2; } .kin .bnd text { font-size: 11px; fill: var(--muted); font-style: italic; paint-order: stroke; stroke: var(--page); stroke-width: 3px; } .kin .bnd .tickt { font-style: normal; }
@@ -2658,7 +2658,7 @@ function viewKinship() {
       (KIN.mode === 'w' ? '<br>' + L('每個共有條目的分量 = ln（見證總數 ÷ 有此條目的見證數），' + kinNW() + ' 個見證都有的條目分量爲 0；加權重合度 = 共有條目的分量和 ÷ 兩本合計條目的分量和。介於重合度與「共有的少數日期」之間。', 'Each unit weighs ln(witnesses ÷ witnesses having it); a unit in all ' + kinNW() + ' weighs 0. Weighted overlap = weight of shared units ÷ weight of all units in the two. It sits between plain overlap and shared minority dates.', 'Chaque unité pèse ln(témoins ÷ témoins qui l’ont) ; une unité présente dans les ' + kinNW() + ' pèse 0. Recouvrement pondéré = poids des unités communes ÷ poids de toutes les unités des deux. Il se situe entre le recouvrement simple et les dates minoritaires communes.') : '');
     ps.sort(function (a, b) { return KIN.mode === 'sv' ? a.sv - b.sv : val(a) - val(b); });
     ps.forEach(function (p) {
-      var A = NB[p.a], B = NB[p.b], w = KIN.mode !== 'sv' ? 0.8 + val(p) * 6 : 1.2 + Math.min(p.sv, 14) * 0.5, op = KIN.mode !== 'sv' ? 0.2 + val(p) * 0.6 : 0.75;
+      var A = NB[p.a], B = NB[p.b], w = KIN.mode !== 'sv' ? 0.7 + val(p) * 3.2 : 1 + Math.min(p.sv, 14) * 0.3, op = KIN.mode !== 'sv' ? 0.15 + val(p) * 0.75 : 0.75;   // 線寬只在 0.7–3.9 之間變化，強弱主要靠深淺，免得高值的線擠成一片
       var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2 - Math.min(70, Math.abs(A.x - B.x) * 0.18) - (A.y === B.y ? 14 : 0);
       var d = 'M' + A.x + ',' + A.y + ' Q' + mx + ',' + my + ' ' + B.x + ',' + B.y;
       var cb = CB[pk(p.a, p.b)];
@@ -2672,7 +2672,7 @@ function viewKinship() {
         s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="e ec" d="' + d + '" stroke-width="' + Math.max(1, cw).toFixed(1) + '" opacity="' + (0.35 + cb.v * 0.6).toFixed(2) + '" marker-end="url(#kcarr)"' + (cb.mutual ? ' marker-start="url(#kcarr2)"' : '') + '/></g>';
         return;
       }
-      s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="e' + (KIN.mode === 'sv' ? ' sv' : '') + (VIA[pk(p.a, p.b)] ? ' via' : '') + '" d="' + d + '" stroke-width="' + w.toFixed(1) + '" opacity="' + op.toFixed(2) + '"/></g>';
+      s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="ehalo" d="' + d + '" stroke-width="' + (w + 2.4).toFixed(1) + '"/><path class="e' + (KIN.mode === 'sv' ? ' sv' : '') + (VIA[pk(p.a, p.b)] ? ' via' : '') + '" d="' + d + '" stroke-width="' + w.toFixed(1) + '" opacity="' + op.toFixed(2) + '"/></g>';
     });
     if (KIN.dir) K.dir.forEach(function (r, i) {
       var A = NB[r.a], B = NB[r.b]; if (!A || !B) return;

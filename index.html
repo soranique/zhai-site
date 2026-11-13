@@ -271,7 +271,7 @@ body.demo-on .jumpback { bottom: 92px; }
 .kin .kbk:hover { border-color: var(--grid); } .kin .kbk.on { border-color: var(--ink-2); background: var(--surface); color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .kin .knet.bkf g.bg.kf .bl { animation: none; } }
 .kin .bsw { fill: var(--page); stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 1.5; } .kin .kbibl { margin-top: 2px; }
-.kin .nd { cursor: pointer; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
+.kin .nd { cursor: pointer; } .kin .nd.kund circle:not(.ksm) { filter: saturate(0.3); opacity: 0.75; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .kin .eg.dim { opacity: .12; } .kin .e.via { stroke-dasharray: 5 4; } .kin .kmodes { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1100px; } @media (max-width: 640px) { .kin .kmodes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kin .kmodes button:nth-child(3) { border-left: 0; } .kin .kmodes button:nth-child(n+3) { border-top: 1px solid var(--axis); } }
 .kin .e.ec { stroke: var(--edge); }
 .ksvpop { position: fixed; z-index: 60; max-height: min(70vh, 560px); overflow: auto; padding: 12px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
@@ -2683,7 +2683,7 @@ function viewKinship() {
     });
     K.nodes.forEach(function (n) {
       var r = 5 + Math.sqrt(n.n) * 0.4, yr = n.yr.replace('暫定', '?').replace('待覈', '?').replace('前後', '±').replace('待填', L('未定', 'n.d.'));
-      s += '<g class="nd' + (FOC[n.no] ? ' kf' : '') + '" data-n="' + n.no + '">' + (n.n < KIN_SMALL ? '<circle class="ksm" cx="' + n.x + '" cy="' + n.y + '" r="' + (r + 4).toFixed(1) + '"/>' : '') + '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + r.toFixed(1) + '" fill="' + LC[n.lane] + '"/><text x="' + n.x + '" y="' + (n.up ? n.y - r - 16 : n.y + r + 13) + '" text-anchor="middle">' + esc(n.sh) + '</text><text class="tickt" x="' + n.x + '" y="' + (n.up ? n.y - r - 4 : n.y + r + 25) + '" text-anchor="middle">' + esc(yr) + '</text>' + (I.en() && I.py(n.sh) ? '<text class="tickt kpy" x="' + n.x + '" y="' + (n.up ? n.y - r - 28 : n.y + r + 37) + '" text-anchor="middle">' + esc(I.py(n.sh)) + '</text>' : '') + '</g>';
+      s += '<g class="nd' + (FOC[n.no] ? ' kf' : '') + (/待填|待覈|待核/.test(n.yr) ? ' kund' : '') + '" data-n="' + n.no + '">' + (n.n < KIN_SMALL ? '<circle class="ksm" cx="' + n.x + '" cy="' + n.y + '" r="' + (r + 4).toFixed(1) + '"/>' : '') + '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + r.toFixed(1) + '" fill="' + LC[n.lane] + '"/><text x="' + n.x + '" y="' + (n.up ? n.y - r - 16 : n.y + r + 13) + '" text-anchor="middle">' + esc(n.sh) + '</text><text class="tickt" x="' + n.x + '" y="' + (n.up ? n.y - r - 4 : n.y + r + 25) + '" text-anchor="middle">' + esc(yr) + '</text>' + (I.en() && I.py(n.sh) ? '<text class="tickt kpy" x="' + n.x + '" y="' + (n.up ? n.y - r - 28 : n.y + r + 37) + '" text-anchor="middle">' + esc(I.py(n.sh)) + '</text>' : '') + '</g>';
     });
     if (KIN.bib) {
       var BEP = function (e) { return typeof e === 'number' ? NB[e] : BB[e]; };

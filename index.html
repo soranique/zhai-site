@@ -255,7 +255,7 @@ body.demo-on .jumpback { bottom: 92px; }
 :root[data-theme="dark"] .kin { --edge:#bdbbb3; --heat0:#262624; }
 .kin svg.knet { display: block; width: 100%; height: auto; }
 .kin .lane { fill: var(--surface-2); } .kin .lanet { font-size: 12.5px; fill: var(--ink-2); } .kin .tick { stroke: var(--grid); stroke-width: 1; } .kin .kpy { font-style: italic; } .kin .tickt { font-size: 11px; fill: var(--muted); }
-.kin .e { fill: none; stroke: var(--edge); stroke-linecap: round; cursor: pointer; } .kin .e.sv { stroke: var(--accent); } .kin .e:hover, .kin .e.hl { stroke: var(--accent); opacity: 1 !important; }
+.kin .ehalo { fill: none; stroke: var(--page); stroke-linecap: round; opacity: .85; pointer-events: none; } .kin .e { fill: none; stroke: var(--ink); stroke-linecap: round; cursor: pointer; } .kin .e.yx { stroke: var(--l4); }   /* 兩端都在玉匣記一欄的連線用該欄顏色，其餘用黑色 */ .kin .e:hover, .kin .e.hl { stroke: var(--accent); opacity: 1 !important; }
 .kin .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
 .kin .d { fill: none; stroke: var(--ink); stroke-width: 2.2; marker-end: url(#karr); } .kin .d.cand { stroke-dasharray: 6 4; }
 .kin .bnd circle { fill: var(--page); stroke-width: 1.6; stroke-dasharray: 2.5 2; } .kin .bnd text { font-size: 11px; fill: var(--muted); font-style: italic; paint-order: stroke; stroke: var(--page); stroke-width: 3px; } .kin .bnd .tickt { font-style: normal; }
@@ -273,7 +273,7 @@ body.demo-on .jumpback { bottom: 92px; }
 .kin .bsw { fill: var(--page); stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 1.5; } .kin .kbibl { margin-top: 2px; }
 .kin .nd { cursor: pointer; } .kin .nd.kund circle:not(.ksm) { filter: saturate(0.3); opacity: 0.75; } .kin .nd circle { stroke: var(--surface); stroke-width: 2; } .kin .nd text { font-size: 12px; fill: var(--ink); paint-order: stroke; stroke: var(--page); stroke-width: 3px; stroke-linejoin: round; }
 .kin .eg.dim { opacity: .12; } .kin .e.via { stroke-dasharray: 5 4; } .kin .kmodes { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1100px; } @media (max-width: 640px) { .kin .kmodes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kin .kmodes button:nth-child(3) { border-left: 0; } .kin .kmodes button:nth-child(n+3) { border-top: 1px solid var(--axis); } }
-.kin .e.ec { stroke: var(--edge); }
+
 .ksvpop { position: fixed; z-index: 60; max-height: min(70vh, 560px); overflow: auto; padding: 12px 14px; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
 .ksvpop .sv-top { display: flex; gap: 6px; align-items: baseline; } .ksvpop .sv-x { margin-left: auto; font: inherit; border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 15px; }
 .ksvpop .sv-list { margin: 0; padding: 0 0 0 1.4em; } .ksvpop .sv-list li { padding: 6px 0; border-top: 1px solid var(--grid); } .ksvpop .sv-list li:first-child { border-top: 0; }
@@ -2658,7 +2658,7 @@ function viewKinship() {
       (KIN.mode === 'w' ? '<br>' + L('每個共有條目的分量 = ln（見證總數 ÷ 有此條目的見證數），' + kinNW() + ' 個見證都有的條目分量爲 0；加權重合度 = 共有條目的分量和 ÷ 兩本合計條目的分量和。介於重合度與「共有的少數日期」之間。', 'Each unit weighs ln(witnesses ÷ witnesses having it); a unit in all ' + kinNW() + ' weighs 0. Weighted overlap = weight of shared units ÷ weight of all units in the two. It sits between plain overlap and shared minority dates.', 'Chaque unité pèse ln(témoins ÷ témoins qui l’ont) ; une unité présente dans les ' + kinNW() + ' pèse 0. Recouvrement pondéré = poids des unités communes ÷ poids de toutes les unités des deux. Il se situe entre le recouvrement simple et les dates minoritaires communes.') : '');
     ps.sort(function (a, b) { return KIN.mode === 'sv' ? a.sv - b.sv : val(a) - val(b); });
     ps.forEach(function (p) {
-      var A = NB[p.a], B = NB[p.b], w = KIN.mode !== 'sv' ? 0.8 + val(p) * 6 : 1.2 + Math.min(p.sv, 14) * 0.5, op = KIN.mode !== 'sv' ? 0.2 + val(p) * 0.6 : 0.75;
+      var A = NB[p.a], B = NB[p.b], w = KIN.mode !== 'sv' ? 0.7 + val(p) * 3.2 : 1 + Math.min(p.sv, 14) * 0.3, op = KIN.mode !== 'sv' ? 0.15 + val(p) * 0.75 : 0.75;   // 線寬只在 0.7–3.9 之間變化，強弱主要靠深淺，免得高值的線擠成一片
       var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2 - Math.min(70, Math.abs(A.x - B.x) * 0.18) - (A.y === B.y ? 14 : 0);
       var d = 'M' + A.x + ',' + A.y + ' Q' + mx + ',' + my + ' ' + B.x + ',' + B.y;
       var cb = CB[pk(p.a, p.b)];
@@ -2669,10 +2669,10 @@ function viewKinship() {
         var x1 = F.x + ux * rF, y1 = F.y + uy * rF, x2 = T.x - ux * rT, y2 = T.y - uy * rT, qx = (x1 + x2) / 2 + uy * bend, qy = (y1 + y2) / 2 - ux * bend;
         var cw = 1 + (cb.v - 0.5) * 6;
         d = 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + qx.toFixed(1) + ',' + qy.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1);
-        s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="e ec" d="' + d + '" stroke-width="' + Math.max(1, cw).toFixed(1) + '" opacity="' + (0.35 + cb.v * 0.6).toFixed(2) + '" marker-end="url(#kcarr)"' + (cb.mutual ? ' marker-start="url(#kcarr2)"' : '') + '/></g>';
+        s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="e ec' + (A.lane === '玉匣記' && B.lane === '玉匣記' ? ' yx' : '') + '" d="' + d + '" stroke-width="' + Math.max(1, cw).toFixed(1) + '" opacity="' + (0.35 + cb.v * 0.6).toFixed(2) + '" marker-end="url(#kcarr)"' + (cb.mutual ? ' marker-start="url(#kcarr2)"' : '') + '/></g>';
         return;
       }
-      s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="e' + (KIN.mode === 'sv' ? ' sv' : '') + (VIA[pk(p.a, p.b)] ? ' via' : '') + '" d="' + d + '" stroke-width="' + w.toFixed(1) + '" opacity="' + op.toFixed(2) + '"/></g>';
+      s += '<g class="eg" data-k="' + pk(p.a, p.b) + '"><path class="hit" d="' + d + '"/><path class="ehalo" d="' + d + '" stroke-width="' + (w + 2.4).toFixed(1) + '"/><path class="e' + (A.lane === '玉匣記' && B.lane === '玉匣記' ? ' yx' : '') + (VIA[pk(p.a, p.b)] ? ' via' : '') + '" d="' + d + '" stroke-width="' + w.toFixed(1) + '" opacity="' + op.toFixed(2) + '"/></g>';
     });
     if (KIN.dir) K.dir.forEach(function (r, i) {
       var A = NB[r.a], B = NB[r.b]; if (!A || !B) return;

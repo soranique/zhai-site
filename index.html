@@ -195,7 +195,11 @@ body.demo-on .jumpback { bottom: 92px; }
 .spread .sptab th, .spread .sptab td { padding: 4px 8px; border-bottom: 1px solid var(--grid); text-align: left; vertical-align: top; }
 .spread .sptab .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .spread .sptab tbody tr { cursor: pointer; } .spread .sptab tbody tr:hover, .spread .sptab tbody tr.on { background: var(--hover, rgba(0,0,0,.04)); }
-.spread .sprg { margin: 12px 0 6px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; } .spread .sprg .muted { font-weight: 400; }
+/* 府的實踐記錄按對應關係分組：每組一塊淡色底，左側色條，小標題用該組顏色 */
+.spread .sprgrp { --gc: var(--pnone); margin: 12px 0; padding: 10px 14px 8px; border-left: 4px solid var(--gc); border-radius: 6px; background: color-mix(in srgb, var(--gc) 9%, var(--surface, transparent)); }
+.spread .sprgrp.g-fit { --gc: var(--pfit); } .spread .sprgrp.g-dev { --gc: var(--pdev); } .spread .sprgrp.g-weak { --gc: var(--pweak); } .spread .sprgrp.g-none { --gc: var(--pnone); }
+.spread .sprg { margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, var(--gc) 35%, transparent); font-size: 15px; font-weight: 700; color: color-mix(in srgb, var(--gc) 70%, var(--ink)); display: flex; align-items: center; gap: 6px; }
+.spread .sprg .sw2 { width: 11px; height: 11px; } .spread .sprg .sprn { font-weight: 400; font-size: 13px; color: var(--muted); }
 .spread .sprecs { padding-left: 0; list-style: none; margin: 0; columns: 2 360px; } .spread .sprecs li { break-inside: avoid; margin-bottom: 4px; }
 .spread .linkbtn { font: inherit; font-size: 12px; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0 4px; }
 .spread .sbyp { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px 20px; }
@@ -1931,9 +1935,9 @@ function viewSpread() {
         PREL.map(function (r) {
           var rs = sel.recs.filter(function (p) { return pracRel(p) === r[0]; }).sort(function (a, b) { return pYear(a) - pYear(b); });
           if (!rs.length) return '';
-          return '<h4 class="sprg"><span class="sw2 pr-' + r[0] + '"></span>' + L(r[1], r[2], r[3]) + ' <span class="muted">' + L(rs.length + ' 條', rs.length + ' records', rs.length + ' pratiques') + '</span></h4><ul class="small sprecs">' + rs.map(function (p) {
+          return '<div class="sprgrp g-' + r[0] + '"><h4 class="sprg"><span class="sw2 pr-' + r[0] + '"></span>' + L(r[1], r[2], r[3]) + ' <span class="sprn">' + L(rs.length + ' 條', rs.length + ' records', rs.length + ' pratiques') + '</span></h4><ul class="small sprecs">' + rs.map(function (p) {
           return '<li><span class="sw2 pr-' + r[0] + '"></span><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit/' + p.id) + '"><b>' + esc(p.id) + '</b></a> ' + esc(p.year || '') + ' · ' + N(p.place) + ' · ' + NF(p.zhai || '') + ' · <span class="muted">' + N(p.wt || '') + '（' + esc(p.genre || '') + '）</span></li>';
-          }).join('') + '</ul>';
+          }).join('') + '</ul></div>';
         }).join('') : '<p class="muted small" style="margin:8px 0 0">' + L('點表中一行或地圖上的圓，列出該府的記錄。', 'Click a row or a circle on the map to list that prefecture’s records.', 'Cliquer une ligne ou un cercle pour lister les pratiques de la préfecture.') + '</p>');
     el.querySelectorAll('tr[data-pref]').forEach(function (tr) { tr.onclick = function () { pickPref(tr.getAttribute('data-pref')); }; });
     var c = document.getElementById('spclr'); if (c) c.onclick = function () { pickPref(null); };

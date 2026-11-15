@@ -24,7 +24,7 @@ var CODES = {
   // 證據強度
   '明確': 'Explicit', '可推斷': 'Inferable', '僅日期巧合': 'Date coincidence only',
   // 實踐記錄與齋曆條目的對應關係（研究者覈定）
-  '貼合': 'Fit', '存在偏差': 'With deviation', '存在偏差（無對應條目）': 'Deviation (no matching entry)', '不對應': 'No match',
+  '貼合': 'Fit', '存在偏差': 'With deviation', '存在偏差（無對應條目）': 'Deviation (no matching entry)', '不對應': 'No match', '弱對應': 'Weak match',
   '待查': 'To check', '待確認刪除': 'Deletion to confirm',
   // 時段
   '晚明': 'Late Ming', '清代': 'Qing', '晚清民國': 'Late Qing & Republic', '明中期': 'Mid-Ming', '清': 'Qing', '民國': 'Republic', '明末': 'Late Ming', '明萬曆': 'Ming, Wanli 萬曆 era', '明萬曆': 'Ming, Wanli 萬曆 era',

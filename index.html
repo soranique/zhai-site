@@ -148,6 +148,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chip.lk::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--v3); margin-left: 4px; vertical-align: middle; }
 .chip.lk.dev::after { background: var(--v4); }
 .tag.fit { border-color: var(--v3); color: var(--ink); }
+.tag.weak { border-color: var(--cat2); color: var(--ink); }
 .tag.dev { border-color: var(--v4); color: var(--ink); background: color-mix(in srgb, var(--v4) 14%, transparent); }
 .plk { white-space: nowrap; margin-right: 6px; font-size: 12px; }
 .fit td { vertical-align: top; }
@@ -167,8 +168,8 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; } }
 :root[data-theme="dark"] .spread { --sea:#1a1f22; --land:#23231f; --coast:#4a4944; }
 .spread .sgrid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
-.spread { --pfit: var(--cat5); --pdev: var(--accent); --pnone: var(--cat-o); }   /* 實踐記錄：符合＝天青，偏離＝硃紅，無對應＝暖灰；避開地點的藤黃（玉匣記系統）與石綠（其他齋曆） */
-.spread .pr-fit { fill: var(--pfit); } .spread .pr-dev { fill: var(--pdev); } .spread .pr-none { fill: var(--pnone); }
+.spread { --pfit: var(--cat5); --pdev: var(--accent); --pweak: var(--cat2); --pnone: var(--cat-o); }   /* 實踐記錄：符合＝天青，偏離＝硃紅，無對應＝暖灰；避開地點的藤黃（玉匣記系統）與石綠（其他齋曆） */
+.spread .pr-fit { fill: var(--pfit); } .spread .pr-dev { fill: var(--pdev); } .spread .pr-weak { fill: var(--pweak); } .spread .pr-none { fill: var(--pnone); }
 .spread .pr-ring { fill: none; stroke: var(--surface); stroke-width: 1.2; }
 .spread .sprp { cursor: pointer; opacity: .82; } .spread .sprp:hover, .spread .sprp.on { opacity: 1; } .spread .sprp.on .pr-ring { stroke: var(--ink); stroke-width: 2; }
 .spread g[data-e] { cursor: pointer; } .spread g.spt { cursor: pointer; }
@@ -189,7 +190,7 @@ body.demo-on .jumpback { bottom: 92px; }
 .spread .seg button { font: inherit; font-size: 12.5px; background: none; border: 0; padding: 3px 10px; cursor: pointer; color: var(--ink-2); }
 .spread .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
 .spread .sw2 { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
-.spread .sw2.pr-fit { background: var(--pfit); } .spread .sw2.pr-dev { background: var(--pdev); } .spread .sw2.pr-none { background: var(--pnone); }
+.spread .sw2.pr-fit { background: var(--pfit); } .spread .sw2.pr-dev { background: var(--pdev); } .spread .sw2.pr-weak { background: var(--pweak); } .spread .sw2.pr-none { background: var(--pnone); }
 .spread table.sptab { width: 100%; border-collapse: collapse; font-size: 13px; }
 .spread .sptab th, .spread .sptab td { padding: 4px 8px; border-bottom: 1px solid var(--grid); text-align: left; vertical-align: top; }
 .spread .sptab .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -413,7 +414,7 @@ a.kcmp { display: inline-block; text-decoration: none; font-weight: 600; } a.rca
 .dp-v li { padding: 3px 6px; border-radius: 4px; } .dp-v li.fx { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .dp-t { font-size: 15px; }
 .dp-p { border: 1px solid var(--grid); border-left: 3px solid var(--axis); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; font-size: 14px; background: var(--surface); }
-.dp-p.fit { border-left-color: var(--v3); } .dp-p.dev { border-left-color: var(--v4); }
+.dp-p.fit { border-left-color: var(--v3); } .dp-p.dev { border-left-color: var(--v4); } .dp-p.weak { border-left-color: var(--cat2); }
 body.dayopen { overflow: hidden; }
 @media (max-width: 760px) { .gsearch { max-width: none; flex-basis: 100%; order: 5; } }
 .prof-head { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
@@ -657,8 +658,8 @@ html:not([lang^="zh"]) table.edm th.edc .vt { max-height: 14em; text-overflow: e
 <script src="demo.js?v=b60ff7e3"></script>
 <script src="fr.js?v=eef9ec7e"></script>
 <script src="tx.js?v=1af5b5b4"></script>
-<script src="i18n.js?v=3c33e8de"></script>
-<script src="data.js?v=883dbe4a"></script>
+<script src="i18n.js?v=9d69db76"></script>
+<script src="data.js?v=3936431e"></script>
 <script src="editions-data.js?v=3bfd2cff"></script>
 <script src="kinship-data.js?v=f88999c1"></script>
 <script src="kinship-bib.js?v=6470b22c"></script>
@@ -762,23 +763,34 @@ ED.entries.forEach(function (e) {
     if (normPending(e.k)) b.pending = true;
   });
 });
+// 《清嘉錄》與《吳郡歲華紀麗》重複的條目只計一次：標了 dup（被重複的記錄ID）的記錄不計入任何統計，只在被重複的那條下列出
+D.practiceAll = D.practice;
+var DUPOF = {}; D.practice.forEach(function (p) { (p.dup || []).forEach(function (id) { (DUPOF[id] = DUPOF[id] || []).push(p); }); });
+D.practice = D.practice.filter(function (p) { return !(p.dup && p.dup.length); });
+var NDUP = D.practiceAll.length - D.practice.length;
 D.practice.forEach(function (p) { if (p.g) bucket(p.g).prac.push(p); });
 // 實踐記錄 ↔ 齋曆條目：實踐記錄的「對應齋期表條目ID」（舊 C 編號經 cmap 換算）與「對應關係」
-var REL_FIT = '貼合', REL_DEV = '存在偏差';
+var REL_FIT = '貼合', REL_DEV = '存在偏差', REL_WEAK = '弱對應';
 function pCal(p) { return p.cal ? (ED.cmap[p.cal] || p.cal) : ''; }
 function isDev(p) { return String(p.rel || '').indexOf(REL_DEV) === 0; }
+function isWeak(p) { return p.rel === REL_WEAK; }
+// 被重複的記錄下列出另一書的同條（只計一次，不另計入統計）
+function dupHTML(p) {
+  var ds = DUPOF[p.id]; if (!ds) return '';
+  return '<div class="nt small">' + L('同一事又見：', 'The same item also appears in: ', 'Le même élément figure aussi dans : ') + ds.map(function (d) { return N(d.wt) + ' ' + esc(d.id) + (d.loc ? ' ' + FT(d.loc, 1) : ''); }).join(L('；', '; ')) + L('（只計一次，統計以本條爲準）', ' (counted once; this record is the one counted)', ' (compté une seule fois ; c’est ce témoignage qui est compté)') + '</div>';
+}
 var PBYE = {};
 D.practice.forEach(function (p) { var id = pCal(p); if (id && EBYID[id]) (PBYE[id] = PBYE[id] || []).push(p); });
 var LINKED = D.practice.filter(function (p) { return pCal(p) && EBYID[pCal(p)]; });
 function relTag(p) {
   if (!p.rel) return '';
-  return '<span class="tag' + (p.rel === REL_FIT ? ' fit' : isDev(p) ? ' dev' : '') + '">' + esc(C(p.rel)) + '</span>';
+  return '<span class="tag' + (p.rel === REL_FIT ? ' fit' : isDev(p) ? ' dev' : isWeak(p) ? ' weak' : '') + '">' + esc(C(p.rel)) + '</span>';
 }
 // 齋曆條目下列出對應的實踐記錄（點擊到該神明檔案中的這條記錄）
 function pLinks(e) {
   var ps = PBYE[e.id]; if (!ps) return '';
   return '<div class="small">' + L('實踐：', 'Practice: ') + ps.map(function (p) {
-    return '<a class="plk" href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '" title="' + esc(DTX(p.date) + '｜' + NT(p.wt) + '｜' + C(p.rel)) + '">' + esc(p.id) + (isDev(p) ? L('（偏差）', ' (dev.)') : '') + '</a>';
+    return '<a class="plk" href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '" title="' + esc(DTX(p.date) + '｜' + NT(p.wt) + '｜' + C(p.rel)) + '">' + esc(p.id) + (isDev(p) ? L('（偏差）', ' (dev.)') : isWeak(p) ? L('（弱對應）', ' (weak)') : '') + '</a>';
   }).join('') + '</div>';
 }
 function eShort(e) { var v = ED.versions[e.v]; return edWhen(v) + ' ' + N(v.short) + ' ' + esc(DT((e.mo || '') + (e.dy || ''))); }
@@ -914,11 +926,11 @@ function renderDay() {
   var nAllP = ps.length;
   ps = ps.filter(function (x) { return fYear(x.p); });
   ps.sort(function (a, b) { return (+a.p.year || 9999) - (+b.p.year || 9999); });
-  var nFit = ps.filter(function (x) { return x.p.rel === REL_FIT; }).length, nDev = ps.filter(function (x) { return isDev(x.p); }).length;
+  var nFit = ps.filter(function (x) { return x.p.rel === REL_FIT; }).length, nDev = ps.filter(function (x) { return isDev(x.p); }).length, nWk = ps.filter(function (x) { return isWeak(x.p); }).length;
   var prev = d > 1 ? [m, d - 1] : m > 1 ? [m - 1, 30] : [12, 30], next = d < 30 ? [m, d + 1] : m < 12 ? [m + 1, 1] : [1, 1];
   var h = '<div class="dp-head"><div><div class="dp-title">' + esc(dayName(m, d)) + (I.en() ? '' : ' <span class="muted small">' + m + '/' + d + '</span>') + '</div>' +
-    '<div class="muted small">' + L('齋曆 ' + es.length + ' 條，見於 ' + nvC + ' / ' + EVC.length + ' 個版本' + (nvC < vs.length ? '（另有暫不計入的版本 ' + (vs.length - nvC) + ' 個）' : '') + '；對上的實踐 ' + ps.length + ' 條（貼合 ' + nFit + '，偏差 ' + nDev + '）',
-      es.length + ' calendar entries in ' + nvC + ' of ' + EVC.length + ' editions' + (nvC < vs.length ? ' (plus ' + (vs.length - nvC) + ' not yet counted)' : '') + '; ' + ps.length + ' practice records matched (fit ' + nFit + ', deviation ' + nDev + ')', es.length + ' entrées dans ' + nvC + ' éditions sur ' + EVC.length + (nvC < vs.length ? ' (plus ' + (vs.length - nvC) + ' non comptée(s))' : '') + ' ; ' + ps.length + ' témoignages de pratique rattachés (conformes ' + nFit + ', avec écart ' + nDev + ')') + '</div></div>' +
+    '<div class="muted small">' + L('齋曆 ' + es.length + ' 條，見於 ' + nvC + ' / ' + EVC.length + ' 個版本' + (nvC < vs.length ? '（另有暫不計入的版本 ' + (vs.length - nvC) + ' 個）' : '') + '；對上的實踐 ' + ps.length + ' 條（貼合 ' + nFit + '，偏差 ' + nDev + (nWk ? '，弱對應 ' + nWk : '') + '）',
+      es.length + ' calendar entries in ' + nvC + ' of ' + EVC.length + ' editions' + (nvC < vs.length ? ' (plus ' + (vs.length - nvC) + ' not yet counted)' : '') + '; ' + ps.length + ' practice records matched (fit ' + nFit + ', deviation ' + nDev + (nWk ? ', weak ' + nWk : '') + ')', es.length + ' entrées dans ' + nvC + ' éditions sur ' + EVC.length + (nvC < vs.length ? ' (plus ' + (vs.length - nvC) + ' non comptée(s))' : '') + ' ; ' + ps.length + ' témoignages de pratique rattachés (conformes ' + nFit + ', avec écart ' + nDev + (nWk ? ', faibles ' + nWk : '') + ')') + '</div></div>' +
     '<div class="dp-nav"><button type="button" data-dayto="' + prev.join('/') + '" aria-label="' + L('前一天', 'Previous day') + '">‹</button><button type="button" data-dayto="' + next.join('/') + '" aria-label="' + L('後一天', 'Next day') + '">›</button><button type="button" class="dp-close" aria-label="' + L('關閉', 'Close') + '">✕</button></div></div>' +
     (FOCUS ? '<label class="small dp-only"><input type="checkbox" id="dponly"' + (DAY.only ? ' checked' : '') + '> ' + L('只看聚焦神明 ', 'Only the focused deity ') + focusName() + (only ? L('（這一天共 ' + all.length + ' 條）', ' (' + all.length + ' entries on this day in all)', ' (' + all.length + ' entrées ce jour-là au total)') : '') + '</label>' : '') +
     '<div class="dp-cols"><section><h3>' + L('各版本的條目（原文照錄）', 'Entries in each edition (original text)') + '</h3>';
@@ -937,7 +949,7 @@ function renderDay() {
   if (!ps.length) h += '<p class="muted">' + L('沒有實踐記錄對上這一天的條目。', 'No practice record is matched to this day’s entries.') + '</p>';
   h += ps.map(function (x) {
     var p = x.p, v = ED.versions[x.e.v];
-    return '<div class="dp-p' + (isDev(p) ? ' dev' : p.rel === REL_FIT ? ' fit' : '') + '"><div><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '"><b>' + esc(p.id) + '</b></a>' + citeBtn(p.id) + ' ' + esc(p.year || '') + ' · ' + N(p.place) + ' ' + relTag(p) + '</div>' +
+    return '<div class="dp-p' + (isDev(p) ? ' dev' : p.rel === REL_FIT ? ' fit' : isWeak(p) ? ' weak' : '') + '"><div><a href="' + (p.g ? '#g/' + p.g + '/' + p.id : '#fit') + '"><b>' + esc(p.id) + '</b></a>' + citeBtn(p.id) + ' ' + esc(p.year || '') + ' · ' + N(p.place) + ' ' + relTag(p) + '</div>' +
       '<div class="small">' + (p.g ? godLink(p.g) + ' · ' : '') + (p.zhai ? NF(p.zhai) : '—') + ' · ' + L('日期：', 'Date: ') + esc(DTX(p.date) || '—') + '</div>' +
       '<div class="small muted">' + N(p.wt) + ' · ' + L('對上 ', 'matched to ') + esc(x.e.id) + ' ' + edWhen(v) + ' ' + N(v.short) + '</div>' +
       (p.relNote ? '<div class="small">' + L('偏差說明：', 'Deviation: ') + FT(p.relNote) + '</div>' : (isDev(p) ? '<div class="small muted">' + L('偏差說明暫空', 'Deviation note to be written') + '</div>' : '')) + '</div>';
@@ -1694,7 +1706,7 @@ function fitPrefName(k) { var P = window.ZHAI_SPREAD && (ZHAI_SPREAD.prefs || []
 function fitName(k) { return k.indexOf('k:') === 0 ? k.slice(2) : gName(k); }
 function viewFit() {
   var nFit = LINKED.filter(function (p) { return p.rel === REL_FIT; }).length, nDev = LINKED.filter(isDev).length;
-  var nNo = D.practice.filter(function (p) { return p.rel === '不對應'; }).length;
+  var nNo = D.practice.filter(function (p) { return p.rel === '不對應'; }).length, nWeak = D.practice.filter(isWeak).length, nWeakL = LINKED.filter(isWeak).length;
   var keys = {}; LINKED.forEach(function (p) { if (fPrac(p)) keys[fitKey(p)] = 1; });
   // 有持齋實踐記錄的神明佔齋庫神明總數：只計言及持齋的記錄（明確、可推斷），「僅日期巧合」不算；不受年代、聚焦篩選影響
   var gFast = {}, gAny = {}; D.practice.forEach(function (p) { if (!p.g) return; gAny[p.g] = 1; if (p.ev !== NOFAST) gFast[p.g] = 1; });
@@ -1706,9 +1718,10 @@ function viewFit() {
     tile(Object.keys(keys).length, L('神明／齋', 'Deities / fasts'), L('有實踐對上齋曆', 'with practice matched to a calendar')) +
     tile(nFit, L('貼合', 'Fit'), L('實踐與齋曆條目一致', 'practice and calendar entry agree')) +
     tile(nDev, L('存在偏差', 'With deviation'), L('對得上，但有出入', 'corresponding, but differing')) +
+    tile(nWeak, L('弱對應', 'Weak match', 'Correspondance faible'), L('研究者判定；其中 ' + nWeakL + ' 條有對應條目，列入下表', 'researcher’s judgement; ' + nWeakL + ' have a matching entry and are listed below', 'jugement de la chercheuse ; ' + nWeakL + ' ont une entrée correspondante et figurent ci-dessous')) +
     tile(nNo, L('不對應', 'No match'), L('齋曆未載的實踐（研究者判定）', 'practice absent from the calendars (researcher’s judgement)')) + '</div>' + timeBarHTML() + fitHeatHTML() +
     '<h2>' + L('按神明', 'By deity') + '</h2><div class="controls"><input type="search" id="fq" placeholder="' + L('搜索神名、齋名、文獻、地點、記錄ID', 'Search deity, fast, source, place, record ID') + '" value="' + esc(FIT.q) + '">' +
-    '<select id="frel"><option value="">' + L('全部', 'All') + '</option><option value="' + REL_FIT + '"' + (FIT.rel === REL_FIT ? ' selected' : '') + '>' + L('貼合', 'Fit') + '</option><option value="' + REL_DEV + '"' + (FIT.rel === REL_DEV ? ' selected' : '') + '>' + L('存在偏差', 'With deviation') + '</option></select>' +
+    '<select id="frel"><option value="">' + L('全部', 'All') + '</option><option value="' + REL_FIT + '"' + (FIT.rel === REL_FIT ? ' selected' : '') + '>' + L('貼合', 'Fit') + '</option><option value="' + REL_DEV + '"' + (FIT.rel === REL_DEV ? ' selected' : '') + '>' + L('存在偏差', 'With deviation') + '</option><option value="' + REL_WEAK + '"' + (FIT.rel === REL_WEAK ? ' selected' : '') + '>' + L('弱對應', 'Weak match', 'Correspondance faible') + '</option></select>' +
     '<button type="button" id="fall">' + L('全部展開', 'Expand all') + '</button><button type="button" id="fnone">' + L('全部收起', 'Collapse all') + '</button>' +
     '<span class="muted small" id="fc"></span></div>' +
     '<div class="scroll"><table class="fit"><thead><tr><th>' + L('神明／齋', 'Deity / fast') + '</th><th>' + L('實踐記錄', 'Practice records') + '</th><th>' + L('年代', 'Years') + '</th><th>' + L('對上的齋曆日期', 'Calendar days matched') + '</th></tr></thead><tbody id="fb"></tbody></table></div>';
@@ -1727,6 +1740,7 @@ function viewFit() {
       if (!fPrac(p) || !fYear(p) || !fitEv(p)) return false;
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return false;
       if (FIT.rel === REL_DEV && !isDev(p)) return false;
+      if (FIT.rel === REL_WEAK && !isWeak(p)) return false;
       if (FIT.day && fitDayOf(p) !== FIT.day) return false;
       if (!q) return true;
       var e = EBYID[pCal(p)];
@@ -1771,6 +1785,7 @@ function viewFit() {
       if (!fPrac(p) || !fYear(p) || !fitEv(p)) return;
       if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return;
       if (FIT.rel === REL_DEV && !isDev(p)) return;
+      if (FIT.rel === REL_WEAK && !isWeak(p)) return;
       var k = fitDayOf(p); if (!k) return;
       var u = FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id;
       (set[k] = set[k] || {})[u] = 1;
@@ -1785,7 +1800,7 @@ function viewFit() {
     };
     if (TIME.play) {  // 播放時色階按整個年代區間定，格子才是逐年加深、不會忽深忽淺
       var setW = {};
-      LINKED.forEach(function (p) { if (!fPrac(p) || !fYear(p, true) || !fitEv(p)) return; if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return; if (FIT.rel === REL_DEV && !isDev(p)) return; var k = fitDayOf(p); if (!k) return; (setW[k] = setW[k] || {})[FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id] = 1; });
+      LINKED.forEach(function (p) { if (!fPrac(p) || !fYear(p, true) || !fitEv(p)) return; if (FIT.rel === REL_FIT && p.rel !== REL_FIT) return; if (FIT.rel === REL_DEV && !isDev(p)) return; if (FIT.rel === REL_WEAK && !isWeak(p)) return; var k = fitDayOf(p); if (!k) return; (setW[k] = setW[k] || {})[FIT.unit === 'src' ? (p.w || p.wt || p.id) : FIT.unit === 'loc' ? (p.place || '?') : p.id] = 1; });
       Object.keys(setW).forEach(function (k) { max = Math.max(max, Object.keys(setW[k]).length); });
     }
     var lv = function (n) { return !n ? 0 : max <= 4 ? Math.min(n, 4) : n <= max * 0.12 ? 1 : n <= max * 0.3 ? 2 : n <= max * 0.6 ? 3 : 4; };
@@ -1855,9 +1870,9 @@ var SP = { on: { doc: true, inf: true, f1: true, f2: true, f5: true, f6: true, f
   prac: true, pall: false, pweak: false, pref: null, izoom: false, edge: null, place: null, printOnly: false };   // printOnly：只看刊刻地（隱藏署名地、購藏地、相關連線與實踐記錄）   // edge、place：在地圖上點選的連線（序號）、地點（id），供「從地圖接到其他分析」用   // izoom：江南放大圖再放大   // 實踐記錄圖層：顯示、全部記錄（默認只畫狹義江南）、含僅日期巧合、選中的府
 // 實踐記錄的府：去掉括注；兩府交界的記在第一個府
 function pracPref(p) { return String(p.pref || '').replace(/（.*?）/g, '').split('、')[0].trim(); }
-// 與齋曆的對應關係歸成三類（待確認刪除的記錄不上圖）
-function pracRel(p) { return p.rel === REL_FIT ? 'fit' : String(p.rel || '').indexOf(REL_DEV) === 0 ? 'dev' : 'none'; }
-var PREL = [['fit', '貼合', 'Fit', 'Concordant'], ['dev', '存在偏差', 'Deviation', 'Écart'], ['none', '未對應（不對應、待查）', 'Not matched (no match, to check)', 'Non apparié (pas de correspondance, à vérifier)']];
+// 與齋曆的對應關係歸成四類（待確認刪除的記錄不上圖）；弱對應算作對上
+function pracRel(p) { return p.rel === REL_FIT ? 'fit' : String(p.rel || '').indexOf(REL_DEV) === 0 ? 'dev' : p.rel === REL_WEAK ? 'weak' : 'none'; }
+var PREL = [['fit', '貼合', 'Fit', 'Concordant'], ['dev', '存在偏差', 'Deviation', 'Écart'], ['weak', '弱對應', 'Weak match', 'Correspondance faible'], ['none', '未對應（不對應、待查）', 'Not matched (no match, to check)', 'Non apparié (pas de correspondance, à vérifier)']];
 function viewSpread() {
   var M = window.ZHAI_SPREAD;
   if (!M) { app.innerHTML = '<p>' + L('缺少 spread-data.js。', 'spread-data.js is missing.') + '</p>'; return; }
@@ -2872,7 +2887,7 @@ function viewGod(id, jump) {
       var es = b.ed[v.i]; if (!es) return;
       es.forEach(function (e, i) {
         h += '<tr>' + (i ? '' : '<td rowspan="' + es.length + '"><a href="#ev/' + v.i + '">' + edWhen(v) + ' ' + N(v.short) + '</a></td>') +
-          '<td class="nw">' + edDate(e) + '</td><td>' + (e.t ? yt(e.t) : '—') + (e.g && e.g !== e.k ? '<div class="muted small">' + N(e.g) + '</div>' : '') + '</td><td>' + (e.l ? N(e.l) : '—') + '</td><td>' + esc(C(e.c) || '—') + '</td><td>' + esc(e.q || '—') + '</td><td class="small muted">' + esc(e.id) + '</td><td>' + (PBYE[e.id] || []).map(function (p) { return '<a class="plk pj" href="#g/' + id + '/' + p.id + '" data-p="' + p.id + '">' + esc(p.id) + (isDev(p) ? L('（偏差）', ' (dev.)') : '') + '</a>'; }).join('') + '</td></tr>';
+          '<td class="nw">' + edDate(e) + '</td><td>' + (e.t ? yt(e.t) : '—') + (e.g && e.g !== e.k ? '<div class="muted small">' + N(e.g) + '</div>' : '') + '</td><td>' + (e.l ? N(e.l) : '—') + '</td><td>' + esc(C(e.c) || '—') + '</td><td>' + esc(e.q || '—') + '</td><td class="small muted">' + esc(e.id) + '</td><td>' + (PBYE[e.id] || []).map(function (p) { return '<a class="plk pj" href="#g/' + id + '/' + p.id + '" data-p="' + p.id + '">' + esc(p.id) + (isDev(p) ? L('（偏差）', ' (dev.)') : isWeak(p) ? L('（弱對應）', ' (weak)') : '') + '</a>'; }).join('') + '</td></tr>';
       });
     });
     h += '</tbody></table></div>';
@@ -2899,7 +2914,7 @@ function viewGod(id, jump) {
         '<div class="meta">' + N(p.wt) + (p.loc ? ' · ' + FT(p.loc, 1) : '') + ' · ' + esc(C(p.genre)) + L('｜齋名：', ' | Fast: ') + (p.zhai ? NF(p.zhai) : '—') + L('｜日期：', ' | Date: ') + esc(DTX(p.date) || '—') + L('｜形式：', ' | Form: ') + esc(C(p.form) || '—') + '</div>' +
         '<div class="meta">D ' + esc(C(p.D)) + ' · A ' + esc(C(p.A)) + ' · C ' + esc(C(p.C)) + ' · B ' + esc(C(p.B)) + (p.who ? L('｜持齋者：', ' | Faster: ') + NF(p.who) : '') + (p.cal ? L('｜對應齋曆條目：', ' | Calendar entry: ') + calRef(p.cal) : '') + '</div>' +
         (p.relNote ? '<div class="nt">' + L('對應說明：', 'Note on the match: ') + FT(p.relNote) + '</div>' : '') +
-        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + FT(p.note) + '</div>' : '') + '</div>';
+        (p.text ? '<div class="q">' + esc(p.text) + '</div>' : '') + (p.note ? '<div class="nt">' + FT(p.note) + '</div>' : '') + dupHTML(p) + '</div>';
     }).join('') + '</div>';
   } else h += '<p class="muted">' + L('無。', 'None.') + '</p>';
 
@@ -2999,8 +3014,8 @@ function viewGaps() {
     li(pend + ' / ' + (conf + pend), L('個已接到齋曆的神明是程序按名稱對應的，待覈（在工作簿「神明總表」填「齋庫神明ID（ZS）」欄即爲已核）；另有 ' + (D.deities.length - conf - pend) + ' 個神明尚未對應到任何齋曆條目。',
       'deities linked to calendar entries were matched by name and await verification (fill the database ID (ZS) column in the workbook’s deity table to confirm); ' + (D.deities.length - conf - pend) + ' more deities are not yet matched to any calendar entry.', 'divinités rattachées aux entrées des calendriers l’ont été par le nom et attendent vérification (remplir la colonne d’identifiant de base (ZS) de la table des divinités du classeur pour confirmer) ; ' + (D.deities.length - conf - pend) + ' autres divinités ne sont encore rattachées à aucune entrée.')) +
     h3(L('實踐與齋曆', 'Practice and calendars', 'Pratique et calendriers')) +
-    li(linked + ' / ' + D.practice.length, L('條實踐記錄已對上齋曆條目（' + relCount(REL_FIT) + ' 條貼合，' + relCount(REL_DEV) + ' 條存在偏差），見 <a href="#fit">實踐與齋曆</a>。另有 ' + relCount('不對應') + ' 條判爲「不對應」（齋曆未載的實踐），' + relCount('存在偏差（無對應條目）') + ' 條存在偏差但無對應條目，' + relCount('待查') + ' 條待查，' + relCount('待確認刪除') + ' 條待確認刪除。',
-      'practice records are matched to a calendar entry (' + relCount(REL_FIT) + ' fit, ' + relCount(REL_DEV) + ' with deviations); see <a href="#fit">Practice × calendar</a>. A further ' + relCount('不對應') + ' are judged “no match” (practice not in any calendar), ' + relCount('存在偏差（無對應條目）') + ' deviate without a matching entry, ' + relCount('待查') + ' are to be checked and ' + relCount('待確認刪除') + ' await confirmation of deletion.', 'témoignages de pratique sont rattachés à une entrée des calendriers (' + relCount(REL_FIT) + ' conformes, ' + relCount(REL_DEV) + ' avec écart) ; voir <a href="#fit">Pratique × calendrier</a>. En outre, ' + relCount('不對應') + ' sont jugés « sans correspondance » (pratique absente de tout calendrier), ' + relCount('存在偏差（無對應條目）') + ' présentent un écart sans entrée correspondante, ' + relCount('待查') + ' sont à vérifier et ' + relCount('待確認刪除') + ' attendent la confirmation de leur suppression.')) +
+    li(linked + ' / ' + D.practice.length, L('條實踐記錄已對上齋曆條目（' + relCount(REL_FIT) + ' 條貼合，' + relCount(REL_DEV) + ' 條存在偏差），見 <a href="#fit">實踐與齋曆</a>。另有 ' + relCount(REL_WEAK) + ' 條弱對應，' + relCount('不對應') + ' 條判爲「不對應」（齋曆未載的實踐），' + relCount('存在偏差（無對應條目）') + ' 條存在偏差但無對應條目，' + relCount('待查') + ' 條待查，' + relCount('待確認刪除') + ' 條待確認刪除。' + (NDUP ? '《清嘉錄》與《吳郡歲華紀麗》重複的 ' + NDUP + ' 條只計一次，不在以上數字內。' : ''),
+      'practice records are matched to a calendar entry (' + relCount(REL_FIT) + ' fit, ' + relCount(REL_DEV) + ' with deviations); see <a href="#fit">Practice × calendar</a>. A further ' + relCount(REL_WEAK) + ' are weak matches, ' + relCount('不對應') + ' are judged “no match” (practice not in any calendar), ' + relCount('存在偏差（無對應條目）') + ' deviate without a matching entry, ' + relCount('待查') + ' are to be checked and ' + relCount('待確認刪除') + ' await confirmation of deletion.' + (NDUP ? ' ' + NDUP + ' records duplicating the same item in the <i>Qingjia lu</i> and the <i>Wujun suihua jili</i> are counted once and are not included in these figures.' : ''), 'témoignages de pratique sont rattachés à une entrée des calendriers (' + relCount(REL_FIT) + ' conformes, ' + relCount(REL_DEV) + ' avec écart) ; voir <a href="#fit">Pratique × calendrier</a>. En outre, ' + relCount(REL_WEAK) + ' sont des correspondances faibles, ' + relCount('不對應') + ' sont jugés « sans correspondance » (pratique absente de tout calendrier), ' + relCount('存在偏差（無對應條目）') + ' présentent un écart sans entrée correspondante, ' + relCount('待查') + ' sont à vérifier et ' + relCount('待確認刪除') + ' attendent la confirmation de leur suppression.' + (NDUP ? ' ' + NDUP + ' témoignages qui doublent le même élément dans le <i>Qingjia lu</i> et le <i>Wujun suihua jili</i> ne sont comptés qu’une fois et ne figurent pas dans ces chiffres.' : ''))) +
     li(unlinked, L('條言及持齋的實踐記錄尚未覈對與齋曆的對應。', 'practice records that mention fasting have not yet been checked against the calendars.', 'témoignages mentionnant le jeûne n’ont pas encore été confrontés aux calendriers.')) +
     li(notAny.length, L('個神明有持齋實踐記錄，但目前所有齋曆版本都未收，或尚未對應（括號內爲言及持齋的實踐條數）：', 'deities have fasting practice records but appear in no calendar edition, or are not yet matched (in brackets: practice records mentioning fasting):', 'divinités ont des témoignages de pratique du jeûne mais ne figurent dans aucune édition, ou ne sont pas encore rattachées (entre parenthèses : témoignages mentionnant le jeûne) :'), links(notAny)) +
     li(common.length, L('個神明見於半數以上計入的齋曆版本（共 ' + calcV.length + ' 本），目前還沒有言及持齋的實踐記錄（括號內爲收錄它的版本數）：', 'deities appear in at least half of the counted editions (' + calcV.length + ' in all) but have no practice record mentioning fasting yet (in brackets: editions that include them):', 'divinités figurent dans au moins la moitié des éditions comptées (' + calcV.length + ' en tout) mais n’ont encore aucun témoignage mentionnant le jeûne (entre parenthèses : éditions qui les incluent) :'),
@@ -3476,10 +3491,10 @@ function viewRing(no) {
 // 讀進來以後就從地址欄去掉（之後的改動不受影響）；要重新得到鏈接，點頁首「複製鏈接」
 var SHARE = {
   fit: {
-    get: function () { return { fast: FIT.fast ? '' : 'all', unit: FIT.unit !== 'rec' ? FIT.unit : '', pres: FIT.pres !== 'half' ? FIT.pres : '', rel: FIT.rel === REL_FIT ? 'fit' : FIT.rel === REL_DEV ? 'dev' : '', q: FIT.q, only: FIT.day ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : '', zoom: FIT_ZOOM > 1 ? FIT_ZOOM : '', pref: FIT.pref, jn: FIT.jn ? 1 : '' }; },
+    get: function () { return { fast: FIT.fast ? '' : 'all', unit: FIT.unit !== 'rec' ? FIT.unit : '', pres: FIT.pres !== 'half' ? FIT.pres : '', rel: FIT.rel === REL_FIT ? 'fit' : FIT.rel === REL_DEV ? 'dev' : FIT.rel === REL_WEAK ? 'weak' : '', q: FIT.q, only: FIT.day ? Math.floor(FIT.day / 100) + '/' + FIT.day % 100 : '', zoom: FIT_ZOOM > 1 ? FIT_ZOOM : '', pref: FIT.pref, jn: FIT.jn ? 1 : '' }; },
     set: function (o) {
       FIT.fast = o.fast !== 'all'; FIT.unit = { src: 'src', loc: 'loc' }[o.unit] || 'rec'; FIT.pres = { any: 'any', q: 'q', off: 'off' }[o.pres] || 'half';
-      FIT.rel = o.rel === 'fit' ? REL_FIT : o.rel === 'dev' ? REL_DEV : ''; FIT.q = o.q || '';
+      FIT.rel = o.rel === 'fit' ? REL_FIT : o.rel === 'dev' ? REL_DEV : o.rel === 'weak' ? REL_WEAK : ''; FIT.q = o.q || '';
       var d = (o.only || '').split('/'); FIT.day = d[1] ? +d[0] * 100 + +d[1] : 0; FIT.open = {}; FIT.pref = o.pref || ''; FIT.jn = o.jn === '1';
       if (o.zoom) FIT_ZOOM = Math.max(1, Math.min(3, +o.zoom || 1));
     }
@@ -3584,7 +3599,7 @@ function copyText(s, what) {
   try { if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(s).then(done, fall); else fall(); } catch (e) { fall(); }
 }
 // ---------- 引用格式 ----------
-var PBYID = {}; D.practice.forEach(function (p) { PBYID[p.id] = p; });
+var PBYID = {}; D.practiceAll.forEach(function (p) { PBYID[p.id] = p; });
 var WBYID = {}; D.versions.forEach(function (w) { WBYID[w.id] = w; });
 var HBYID = {}; D.fengsu.forEach(function (h) { if (h.id) HBYID[h.id] = h; });
 function bookT(t) { if (!t) return ''; return I.en() && I.py(t) ? I.py(t) + ' ' + t : '《' + t + '》'; }

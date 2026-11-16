@@ -3707,7 +3707,10 @@ function decorateTables(root) {
     var b = document.createElement('button'); b.type = 'button'; b.className = 'csvbtn'; b.textContent = L('下載 CSV', 'Download CSV', 'Télécharger CSV');
     b.title = L('下載本表當前顯示的行（含篩選）', 'Download the rows currently shown (with filters)', 'Télécharger les lignes affichées (avec filtres)');
     b.onclick = function () { csvDownload(tableRows(t), csvName(t)); };
-    var w = t.closest('.scroll, .zr-tbl') || t, bar = document.createElement('div'); bar.className = 'csvbar'; bar.appendChild(b);
+    var w = t.closest('.scroll, .zr-tbl') || t, prev = w.previousElementSibling;
+    // 外框（如重合度矩陣的 #khm）不變、只換裏面的表格時，沿用原有按鈕列，不再疊加新的
+    if (prev && prev.classList.contains('csvbar')) { prev.replaceChildren(b); return; }
+    var bar = document.createElement('div'); bar.className = 'csvbar'; bar.appendChild(b);
     w.parentNode.insertBefore(bar, w);
   });
 }

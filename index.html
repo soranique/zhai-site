@@ -147,6 +147,11 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chip.hl { background: var(--hl); outline: 1px solid var(--ink-2); }
 .chip.lk::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--v3); margin-left: 4px; vertical-align: middle; }
 .chip.lk.dev::after { background: var(--v4); }
+/* 齋期日曆選兩本時：共有條目綠底，其餘淡化（實踐記錄一欄不變） */
+.calsh { flex-wrap: wrap; gap: 4px 14px; } .calsh-n { flex-basis: 100%; }
+.chip.shr { background: color-mix(in srgb, var(--cat3) 22%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cat3) 55%, transparent); }
+.chip.shr2 { background: color-mix(in srgb, var(--cat3) 9%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cat3) 30%, transparent); }
+.chip.ncmp { outline: 1px dashed var(--ink-2); outline-offset: -1px; } .chip.nshr { opacity: .5; } .chip.nshr:hover, .chip.nshr.hl { opacity: 1; }
 .tag.fit { border-color: var(--v3); color: var(--ink); }
 .tag.weak { border-color: var(--cat2); color: var(--ink); }
 .tag.dev { border-color: var(--v4); color: var(--ink); background: color-mix(in srgb, var(--v4) 14%, transparent); }
@@ -1570,7 +1575,7 @@ function edDeityPanel(box) {   // 版本目錄和內容對照「每行一個數�
 }
 
 // ---------- 視圖：齋期日曆 ----------
-var CAL = { weak: false, vs: null };
+var CAL = { weak: false, vs: null, sh: true };   // sh：選兩本時標出兩本共有的條目
 function calDefault() {
   // 默認四個：道藏本 1607、1684、1891、《同善錄》正心致福齋期
   var pick = [function (v) { return +v.no === 1; }, function (v) { return v.year === 1684; }, function (v) { return v.year === 1891; }, function (v) { return /正心致福/.test(v.sheet); }];
@@ -1583,6 +1588,24 @@ function viewCalendar() {
   if (!CAL.vs) CAL.vs = calDefault();
   var lanes = CAL.vs.map(function (vi, j) { return { v: ED.versions[vi], cls: 'v-L' + (j % 4) }; });   // 超過 4 欄時顏色循環，以欄頭書名爲準
   lanes.push({ p: 1 });
+  // 選 2–4 本時標出共有的條目（2026-11-16 研究者要求，最多四本）：比較單位與「兩本細看」、版本親疏相同（規範名＋編碼日期類型＋月日；兼標兩類的各算一個單位）。
+  // 每條條目看它的單位最多見於所選的幾本：全部都有＝all（深綠），見於部分（兩本以上）＝some（淺綠），只見於本本＝淡化；不參與比較的條目（無神名日、KOMIT）虛線框
+  var SHR = null;
+  if (CAL.vs.length >= 2 && CAL.vs.length <= 4) {
+    var uOf = function (e) { var out = []; if (!e.id || KOMIT[e.id] || !kName(e)) return out; kUnitDays(e).forEach(function (x) { cTypes(e.c).forEach(function (ty) { out.push(kName(e) + '|' + ty + '|' + x[0] + '|' + x[1]); }); }); return out; };
+    var UV = CAL.vs.map(function (vi) { var U = {}; ED.entries.forEach(function (e) { if (e.v === vi) uOf(e).forEach(function (u) { U[u] = 1; }); }); return U; });
+    var NV = CAL.vs.length;
+    SHR = { lv: {}, who: {}, nc: {}, all: CAL.vs.map(function () { return 0; }), some: CAL.vs.map(function () { return 0; }), tot: CAL.vs.map(function () { return 0; }) };
+    CAL.vs.forEach(function (vi, j) {
+      ED.entries.forEach(function (e) {
+        if (e.v !== vi) return; var us = uOf(e); if (!us.length) { SHR.nc[e.id] = 1; return; } SHR.tot[j]++;
+        var best = [j];   // 見於哪幾本（取單位中見本最多的一個）
+        us.forEach(function (u) { var w = CAL.vs.map(function (x, k) { return k; }).filter(function (k) { return UV[k][u]; }); if (w.length > best.length) best = w; });
+        if (best.length === NV) { SHR.lv[e.id] = 'all'; SHR.all[j]++; } else if (best.length > 1) { SHR.lv[e.id] = 'some'; SHR.some[j]++; }
+        if (best.length > 1) SHR.who[e.id] = best;
+      });
+    });
+  }
   var h = L('<h1>齋期日曆</h1><p class="lede">按月排列所選齋曆版本的神誕與齋日，最右一列是實踐記錄中的日期。把鼠標移到一個神名上，所有版本里同一個神都會高亮。神名後的綠點表示有實踐記錄對上這一條（黃點：存在偏差），鼠標移上去可看是哪幾條。點擊進入神明檔案或版本目錄和內容對照。</p>',
       '<h1>Fasting calendar</h1><p class="lede">Deity birthdays and fast days in the chosen editions, arranged by lunar month; the right-hand column gives dates from practice records. Hover over a deity and the same deity lights up in every column. A green dot after a name means a practice record has been matched to that entry (yellow: with deviation); hover to see which. Click to open the deity’s profile or its collation.</p>') +
     '<p class="small muted" style="margin:0 0 6px">' + L('選擇要對照的版本（已選 ' + CAL.vs.length + ' / ' + EVS.length + '；超過 4 個時表格可左右滑動）：', 'Choose editions to compare (' + CAL.vs.length + ' / ' + EVS.length + ' selected; with more than 4 the table scrolls sideways):', 'Choisir les éditions à comparer (' + CAL.vs.length + ' / ' + EVS.length + ' choisies ; au-delà de 4, le tableau défile horizontalement) :') +
@@ -1591,16 +1614,25 @@ function viewCalendar() {
       return '<button type="button" data-v="' + v.i + '" aria-pressed="' + on + '">' + edWhen(v) + ' ' + N(v.short) + '</button>';
     }).join('') + '</div>' +
     '<div class="controls"><label><input type="checkbox" id="weak"' + (CAL.weak ? ' checked' : '') + '> ' + L('實踐記錄也顯示「僅日期巧合」（未言齋）的條目（虛線）', 'Also show practice records that only coincide with the date (no fasting mentioned; dotted)') + '</label></div>' +
+    (SHR ? '<div class="controls calsh"><label><input type="checkbox" id="calsh"' + (CAL.sh ? ' checked' : '') + '> ' + (CAL.vs.length === 2 ? L('標出兩本共有的條目', 'Mark entries shared by the two editions', 'Marquer les entrées communes aux deux éditions') : L('標出各本共有的條目', 'Mark entries shared between the editions', 'Marquer les entrées communes aux éditions')) + '</label>' +
+      '<span class="small muted">' + L('共有：', 'Shared: ', 'Communes : ') + CAL.vs.map(function (vi, j) { return N(ED.versions[vi].short) + ' ' + SHR.all[j] + (CAL.vs.length > 2 ? '＋' + SHR.some[j] : '') + ' / ' + SHR.tot[j]; }).join(L('，', ', ', ', ')) + L(' 條', '', '') +
+      (CAL.vs.length === 2 ? ' · <a href="#kin/' + ED.versions[CAL.vs[0]].no + '/' + ED.versions[CAL.vs[1]].no + '">' + L('兩本細看 →', 'Two editions in detail →', 'Deux éditions en détail →') + '</a>' : '') + '</span>' +
+      '<span class="small muted calsh-n">' + (CAL.vs.length === 2 ? L('比較單位同「兩本細看」：規範名＋日期類型＋月日。綠底是兩本共有，淡化的只見於一本；虛線框是不參與比較的條目（天臘之辰等無神名日），不判斷是否共有。', 'Same unit as “two editions in detail”: normalized name + day type + date. Green = shared by both; faded = in one edition only; dashed outline = entries left out of the comparison (days without a named deity, such as the Heavenly La day), not judged either way.', 'Même unité que « deux éditions en détail » : nom normalisé + type de jour + date. Vert = commun aux deux ; estompé = dans une seule édition ; contour pointillé = entrées hors comparaison (jours sans divinité nommée, comme le jour La céleste), non évaluées.')
+        : L('比較單位同「兩本細看」：規範名＋日期類型＋月日。深綠是所選 ' + CAL.vs.length + ' 本都有，淺綠是見於其中幾本（懸停看是哪幾本），淡化的只見於一本；虛線框是不參與比較的條目（天臘之辰等無神名日），不判斷是否共有。上面的數字是「各本都有＋見於部分 / 參與比較的條數」。最多同時比較四本。',
+          'Same unit as “two editions in detail”: normalized name + day type + date. Dark green = in all ' + CAL.vs.length + ' chosen editions; light green = in some of them (hover to see which); faded = in one edition only; dashed outline = entries left out of the comparison (days without a named deity, such as the Heavenly La day). The figures read “in all + in some / entries compared”. Up to four editions can be compared.',
+          'Même unité que « deux éditions en détail » : nom normalisé + type de jour + date. Vert foncé = dans les ' + CAL.vs.length + ' éditions choisies ; vert clair = dans certaines (survoler pour voir lesquelles) ; estompé = dans une seule ; contour pointillé = entrées hors comparaison (jours sans divinité nommée). Les chiffres se lisent « dans toutes + dans certaines / entrées comparées ». Quatre éditions au plus.')) + '</span></div>'
+      : CAL.vs.length > 4 ? '<p class="small muted calsh-off">' + L('選 2 至 4 本時，可標出各本共有的條目。', 'Choose two to four editions to mark the entries they share.', 'Choisir de deux à quatre éditions pour marquer leurs entrées communes.') + '</p>' : '') +
     '<div class="legend">' + lanes.filter(function (l) { return l.v; }).map(function (l) { return '<span>' + vSw(l.cls) + edWhen(l.v) + ' ' + N(l.v.short) + '</span>'; }).join('') + '<span><span class="sw" style="background:var(--ink-2)"></span>' + L('實踐記錄', 'Practice records') + '</span></div>' +
-    '<div class="scroll"><div class="cal" style="--lanes:' + lanes.length + '">' +
+    '<div class="scroll"><div class="cal' + (SHR && CAL.sh ? ' cal-sh' : '') + '" style="--lanes:' + lanes.length + '">' +
     '<div class="hd">' + L('月', 'Month') + '</div>' + lanes.map(function (l) {
       return '<div class="hd">' + (l.v ? vSw(l.cls) + '<a href="#ev/' + l.v.i + '">' + N(l.v.short) + '</a> <span class="muted small">' + edWhen(l.v) + '</span>' : L('實踐記錄 <span class="muted small">敘事史料</span>', 'Practice records <span class="muted small">narrative sources</span>')) + '</div>';
     }).join('');
   var chip = function (e, cls) {
     var k = eKey(e), nm = e.k ? N(e.k) : N(e.l || e.t || '—'), ps = PBYE[e.id] || [];
     var lk = ps.length ? ' lk' + (ps.every(isDev) ? ' dev' : '') : '';
+    var sw = SHR && CAL.sh && CAL.vs.length > 2 && SHR.who[e.id] ? '\n' + L('見於 ' + SHR.who[e.id].length + ' / ' + CAL.vs.length + ' 本：', 'In ' + SHR.who[e.id].length + ' / ' + CAL.vs.length + ' editions: ', 'Dans ' + SHR.who[e.id].length + ' / ' + CAL.vs.length + ' éditions : ') + SHR.who[e.id].map(function (k) { return NT(ED.versions[CAL.vs[k]].short); }).join(L('、', ', ', ', ')) : '';
     var pt = ps.length ? '\n' + L('實踐：', 'Practice: ') + ps.map(function (p) { return p.id + '（' + C(p.rel) + '）'; }).join(L('、', ', ')) : '';
-    return '<span class="chip ' + cls + lk + (fNorm(e.k) ? ' fx' : '') + '"' + (k ? ' data-g="' + esc(k) + '"' : '') + ' data-t="' + esc(e.id + ' ' + (e.mo || '') + (e.dy || '') + '｜' + (e.t || e.g || '') + (e.q ? '｜' + e.q : '') + pt) + '">' + (e.d ? '<span class="dd">' + e.d + '</span>' : '') + nm + '</span>';
+    return '<span class="chip ' + cls + lk + (fNorm(e.k) ? ' fx' : '') + (SHR && CAL.sh ? (SHR.lv[e.id] === 'all' ? ' shr' : SHR.lv[e.id] === 'some' ? ' shr2' : SHR.nc[e.id] ? ' ncmp' : ' nshr') : '') + '"' + (k ? ' data-g="' + esc(k) + '"' : '') + ' data-t="' + esc(e.id + ' ' + (e.mo || '') + (e.dy || '') + '｜' + (e.t || e.g || '') + (e.q ? '｜' + e.q : '') + sw + pt) + '">' + (e.d ? '<span class="dd">' + e.d + '</span>' : '') + nm + '</span>';
   };
   var cell = function (mn, l) {
     if (l.p) {
@@ -1628,6 +1660,7 @@ function viewCalendar() {
   app.innerHTML = h;
   putFocusNote(L('它的條目加框', 'its entries are outlined'));
   document.getElementById('weak').onchange = function (e) { CAL.weak = e.target.checked; viewCalendar(); };
+  var shb = document.getElementById('calsh'); if (shb) shb.onchange = function (e) { CAL.sh = e.target.checked; viewCalendar(); };
   app.querySelectorAll('.vpick button').forEach(function (b) {
     b.onclick = function () {
       var vi = +b.getAttribute('data-v'), k = CAL.vs.indexOf(vi);

@@ -501,10 +501,23 @@ body.demo-on { padding-bottom: 130px; }
 /* 齋期日曆：版本選擇 */
 .vpick { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 .vpick button { font: inherit; font-size: 12.5px; background: none; border: 1px solid var(--axis); color: var(--ink-2); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
-.vpick button[aria-pressed="true"] { border-color: var(--ink-2); color: var(--ink); background: var(--surface-2); font-weight: 600; }
+.vpick button[aria-pressed="true"] { border-color: var(--c, var(--ink-2)); color: var(--ink); background: color-mix(in srgb, var(--c, var(--ink-2)) 14%, var(--surface)); font-weight: 600; box-shadow: inset 0 0 0 1px var(--c, var(--ink-2)); }
+.vpick button[aria-pressed="false"] { border-color: var(--grid); background: var(--page); }
+.vpick button:hover:not(:disabled) { border-color: var(--ink-2); color: var(--ink); }
+.vpick .vck { color: var(--c, var(--ink)); font-weight: 700; margin-right: 4px; }
+/* 齋期日曆：版本選擇與顯示選項放在一個框裏，分兩段；全選／全不選做成文字按鈕，與書名膠囊區分 */
+.calbox { border: 1px solid var(--grid); border-radius: 10px; background: var(--surface); padding: 12px 14px 4px; margin: 0 0 14px; }
+.calbox .vpick { margin-bottom: 12px; }
+.calbox-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 8px; }
+.calbox-t { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.vall-g { margin-left: auto; display: inline-flex; align-items: baseline; gap: 6px; }
+.vall-sep { color: var(--axis); }
+.calopt { border-top: 1px solid var(--grid); padding-top: 10px; }
+.calopt .controls { margin-bottom: 8px; }
 .vpick button:disabled { opacity: .45; cursor: default; }
-.vall { font: inherit; font-size: 12px; background: none; border: 1px solid var(--axis); color: var(--ink-2); border-radius: 6px; padding: 1px 8px; margin-left: 4px; cursor: pointer; }
-.vall:hover:not(:disabled) { border-color: var(--ink-2); color: var(--ink); }
+.vall { font: inherit; font-size: 13px; background: none; border: 0; color: var(--accent); padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.vall:hover:not(:disabled) { text-decoration-color: currentColor; }
+.vall:disabled { color: var(--muted); text-decoration: none; }
 .vall:disabled { opacity: .45; cursor: default; }
 .ringpick select { max-width: 100%; }
 /* 版本目錄和內容對照 */
@@ -1608,11 +1621,12 @@ function viewCalendar() {
   }
   var h = L('<h1>齋期日曆</h1><p class="lede">按月排列所選齋曆版本的神誕與齋日，最右一列是實踐記錄中的日期。把鼠標移到一個神名上，所有版本里同一個神都會高亮。神名後的綠點表示有實踐記錄對上這一條（黃點：存在偏差），鼠標移上去可看是哪幾條。點擊進入神明檔案或版本目錄和內容對照。</p>',
       '<h1>Fasting calendar</h1><p class="lede">Deity birthdays and fast days in the chosen editions, arranged by lunar month; the right-hand column gives dates from practice records. Hover over a deity and the same deity lights up in every column. A green dot after a name means a practice record has been matched to that entry (yellow: with deviation); hover to see which. Click to open the deity’s profile or its collation.</p>') +
-    '<p class="small muted" style="margin:0 0 6px">' + L('選擇要對照的版本（已選 ' + CAL.vs.length + ' / ' + EVS.length + '；超過 4 個時表格可左右滑動）：', 'Choose editions to compare (' + CAL.vs.length + ' / ' + EVS.length + ' selected; with more than 4 the table scrolls sideways):', 'Choisir les éditions à comparer (' + CAL.vs.length + ' / ' + EVS.length + ' choisies ; au-delà de 4, le tableau défile horizontalement) :') +
-      ' <button type="button" class="vall" data-all="1"' + (CAL.vs.length === EVS.length ? ' disabled' : '') + '>' + L('全選', 'Select all', 'Tout sélectionner') + '</button> <button type="button" class="vall" data-all="0"' + (CAL.vs.length ? '' : ' disabled') + '>' + L('全不選', 'Select none', 'Tout désélectionner') + '</button></p><div class="vpick">' + EVS.map(function (v) {
-      var on = CAL.vs.indexOf(v.i) >= 0;
-      return '<button type="button" data-v="' + v.i + '" aria-pressed="' + on + '">' + edWhen(v) + ' ' + N(v.short) + '</button>';
+    '<div class="calbox"><div class="calbox-h"><span class="calbox-t">' + L('版本', 'Editions', 'Éditions') + '</span><span class="small muted">' + L('已選 ' + CAL.vs.length + ' / ' + EVS.length + '　點書名加入或移除；超過 4 本時表格可左右滑動', CAL.vs.length + ' / ' + EVS.length + ' selected · click a title to add or remove it; with more than 4 the table scrolls sideways', CAL.vs.length + ' / ' + EVS.length + ' choisies · cliquer un titre pour l’ajouter ou le retirer ; au-delà de 4, le tableau défile horizontalement') + '</span>' +
+      '<span class="vall-g"><button type="button" class="vall" data-all="1"' + (CAL.vs.length === EVS.length ? ' disabled' : '') + '>' + L('全選', 'Select all', 'Tout sélectionner') + '</button><span class="vall-sep" aria-hidden="true">|</span><button type="button" class="vall" data-all="0"' + (CAL.vs.length ? '' : ' disabled') + '>' + L('全不選', 'Select none', 'Tout désélectionner') + '</button></span></div><div class="vpick">' + EVS.map(function (v) {
+      var j = CAL.vs.indexOf(v.i), on = j >= 0;
+      return '<button type="button" data-v="' + v.i + '" aria-pressed="' + on + '"' + (on ? ' class="v-L' + (j % 4) + '"' : '') + '>' + (on ? '<span class="vck" aria-hidden="true">✓</span>' : '') + edWhen(v) + ' ' + N(v.short) + '</button>';
     }).join('') + '</div>' +
+    '<div class="calopt"><div class="calbox-h"><span class="calbox-t">' + L('顯示', 'Display', 'Affichage') + '</span></div>' +
     '<div class="controls"><label><input type="checkbox" id="weak"' + (CAL.weak ? ' checked' : '') + '> ' + L('實踐記錄也顯示「僅日期巧合」（未言齋）的條目（虛線）', 'Also show practice records that only coincide with the date (no fasting mentioned; dotted)') + '</label></div>' +
     (SHR ? '<div class="controls calsh"><label><input type="checkbox" id="calsh"' + (CAL.sh ? ' checked' : '') + '> ' + (CAL.vs.length === 2 ? L('標出兩本共有的條目', 'Mark entries shared by the two editions', 'Marquer les entrées communes aux deux éditions') : L('標出各本共有的條目', 'Mark entries shared between the editions', 'Marquer les entrées communes aux éditions')) + '</label>' +
       '<span class="small muted">' + L('共有：', 'Shared: ', 'Communes : ') + CAL.vs.map(function (vi, j) { return N(ED.versions[vi].short) + ' ' + SHR.all[j] + (CAL.vs.length > 2 ? '＋' + SHR.some[j] : '') + ' / ' + SHR.tot[j]; }).join(L('，', ', ', ', ')) + L(' 條', '', '') +
@@ -1621,7 +1635,7 @@ function viewCalendar() {
         : L('比較單位同「兩本細看」：規範名＋日期類型＋月日。深綠是所選 ' + CAL.vs.length + ' 本都有，淺綠是見於其中幾本（懸停看是哪幾本），淡化的只見於一本；虛線框是不參與比較的條目（天臘之辰等無神名日），不判斷是否共有。上面的數字是「各本都有＋見於部分 / 參與比較的條數」。最多同時比較四本。',
           'Same unit as “two editions in detail”: normalized name + day type + date. Dark green = in all ' + CAL.vs.length + ' chosen editions; light green = in some of them (hover to see which); faded = in one edition only; dashed outline = entries left out of the comparison (days without a named deity, such as the Heavenly La day). The figures read “in all + in some / entries compared”. Up to four editions can be compared.',
           'Même unité que « deux éditions en détail » : nom normalisé + type de jour + date. Vert foncé = dans les ' + CAL.vs.length + ' éditions choisies ; vert clair = dans certaines (survoler pour voir lesquelles) ; estompé = dans une seule ; contour pointillé = entrées hors comparaison (jours sans divinité nommée). Les chiffres se lisent « dans toutes + dans certaines / entrées comparées ». Quatre éditions au plus.')) + '</span></div>'
-      : CAL.vs.length > 4 ? '<p class="small muted calsh-off">' + L('選 2 至 4 本時，可標出各本共有的條目。', 'Choose two to four editions to mark the entries they share.', 'Choisir de deux à quatre éditions pour marquer leurs entrées communes.') + '</p>' : '') +
+      : CAL.vs.length > 4 ? '<p class="small muted calsh-off">' + L('選 2 至 4 本時，可標出各本共有的條目。', 'Choose two to four editions to mark the entries they share.', 'Choisir de deux à quatre éditions pour marquer leurs entrées communes.') + '</p>' : '') + '</div></div>' +
     '<div class="legend">' + lanes.filter(function (l) { return l.v; }).map(function (l) { return '<span>' + vSw(l.cls) + edWhen(l.v) + ' ' + N(l.v.short) + '</span>'; }).join('') + '<span><span class="sw" style="background:var(--ink-2)"></span>' + L('實踐記錄', 'Practice records') + '</span></div>' +
     '<div class="scroll"><div class="cal' + (SHR && CAL.sh ? ' cal-sh' : '') + '" style="--lanes:' + lanes.length + '">' +
     '<div class="hd">' + L('月', 'Month') + '</div>' + lanes.map(function (l) {
